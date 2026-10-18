@@ -1,0 +1,10 @@
+{
+  "purpose": "Control-flow/prompt/result equivalence, not fresh inference quality or timing",
+  "matched": 450,
+  "api_calls": 0,
+  "reference_commit": "bddc796b8f9403c67bfefe3c750aaf3bd4241dc5",
+  "original_service_sha256": "b69f6df7d9745897f199418f14f259efb8732ed73fdcff01cdc084a5303a4b1f",
+  "current_service_sha256": "79bb11a7fdfef1007eb27d939c220d8812b0430ec5e1a37d3ea354b74150b2f0",
+  "dataset_sha256": "5fb54735bc2d51045dbde3209004172987081e64870e81322118c853d682237b",
+  "recorded_decisions_sha256": "15b0ca5570f16fbacebb7531a84ed86d927fd549bea2854095f3d055eea5e13f"
+}

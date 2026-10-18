@@ -1,0 +1,571 @@
+{
+  "manifest": {
+    "schema_version": 1,
+    "dataset_sha256": "5fb54735bc2d51045dbde3209004172987081e64870e81322118c853d682237b",
+    "topic": {
+      "topic_id": "digitalisation",
+      "name": "Digitalisierung",
+      "description": "Parlamentarische Geschäfte zur digitalen Transformation von Staat, Wirtschaft und Gesellschaft: digitale Verwaltung und E-Government, elektronische Identität, Informatik, IT-Projekte, Software und IT-Infrastruktur der Verwaltung, Cybersicherheit, künstliche Intelligenz und Automatisierung, Datenschutz und Datennutzung, Geodaten, digitale Medien, Plattformen und Desinformation, Breitband, Mobilfunk und 5G, Digitalisierung in Bildung, Gesundheit und Wirtschaft. Regel: Ordne das Thema zu, sobald digitale Technologie, Informatik, Daten, Online-Dienste oder Telekommunikation ein wesentlicher Aspekt des Geschäfts ist, auch wenn nur der Titel vorliegt. Ein Titel wie \"Digital first\" oder \"Projekt Digital+\" genügt. Verwende not_assigned nur, wenn kein digitaler Bezug erkennbar ist; bei einem möglichen, aber unklaren Bezug verwende uncertain.",
+      "synonyms": [
+        "Digitalisierung",
+        "digital",
+        "E-Government",
+        "digitale Verwaltung",
+        "elektronische Identität",
+        "E-ID",
+        "Informatik",
+        "Cybersicherheit",
+        "künstliche Intelligenz",
+        "Datenschutz",
+        "Breitband",
+        "numérique",
+        "numérisation",
+        "cyberadministration",
+        "identité électronique",
+        "informatique",
+        "cybersécurité",
+        "intelligence artificielle",
+        "protection des données",
+        "digitalizzazione",
+        "digitale",
+        "identità elettronica",
+        "informatica",
+        "cibersicurezza",
+        "intelligenza artificiale",
+        "protezione dei dati",
+        "online",
+        "NFT"
+      ],
+      "title_synonyms": [],
+      "normalize_online_variants": false,
+      "positive_examples": [
+        "Einführung einer elektronischen Identität für kantonale Dienstleistungen.",
+        "Digitale Einreichung und Verarbeitung von Behördengesuchen.",
+        "Schutz kritischer Infrastrukturen vor Cyberangriffen.",
+        "Kredit für die Erneuerung der Informatik bzw. eines ERP-Systems der Verwaltung.",
+        "Umgang mit KI-Werkzeugen wie ChatGPT an Schulen.",
+        "Ausbau von Glasfaser oder 5G-Mobilfunk.",
+        "Tätigkeitsbericht der Datenschutzaufsicht.",
+        "Mobile Arbeit und Homeoffice, wenn digitale Arbeitsformen geregelt werden.",
+        "Regulierung von Online-Buchungsplattformen und digitalem Konsum.",
+        "Finanzierung oder Migration von SAP-, ERP-, Software- oder Verwaltungssystemen.",
+        "Statistik, Geodaten oder Messindikatoren, wenn Datenerhebung und -verarbeitung zentral sind.",
+        "Réglementation des plateformes en ligne, des contenus numériques ou de la désinformation.",
+        "Regolamentazione di piattaforme online, commercio elettronico e servizi digitali.",
+        "Applicazioni online come strumento per accedere ad alloggi o servizi pubblici.",
+        "Incitamento all'odio e discriminazione su Internet o sulle piattaforme sociali."
+      ],
+      "negative_examples": [
+        "Sanierung einer Kantonsstrasse ohne digitalen Bezug.",
+        "Finanzierung eines konventionellen Schulgebäudes.",
+        "Rentenreform ohne Bezug zu digitalen Prozessen."
+      ]
+    },
+    "system_prompt": "You are a deterministic taxonomy annotator for Swiss parliamentary affairs.\nDecide whether the affair belongs to the supplied topic. Classify subject matter only; never\njudge a political position, party, institution, or proposal.\n\nDECISION POLICY\n1. Read the topic definition, inclusions, and exclusions as one operational taxonomy.\n2. Return assigned when at least one passage shows that the topic is a substantive object,\n   instrument, infrastructure, regulatory concern, implementation method, or material context\n   of the affair. The topic need not be the affair's sole or primary policy area.\n3. Procurement, financing, governance, supervision, labour rules, consumer rules, reporting,\n   security, rights, and public debate count when they concern an included technology or digital\n   practice. Do not require the literal words 'digital' or 'Digitalisierung'.\n4. A precise title is evidence. Strong technical anchors such as software, ERP, IT systems,\n   algorithms, online platforms, electronic communication, data processing, cybersecurity,\n   telecom networks, digital media, or remote digital work are sufficient even when the body is\n   short. Do not dismiss a named technical system merely because its purpose is not explained.\n5. Return not_assigned only when the supplied passages provide affirmative grounds that the\n   affair is outside the topic, or contain no included concept after considering synonyms and\n   functional equivalents.\n6. Return uncertain when there is a plausible topic connection but the available wording is too\n   ambiguous to decide. Return not_evaluable only when there is effectively no meaningful text.\n7. Before answering, silently test the strongest reason for assigned and the strongest reason\n   for not_assigned. Prefer the decision supported by explicit passage evidence.\n\nOUTPUT CONTRACT\nReturn one JSON object with exactly these keys:\n- status: assigned, not_assigned, uncertain, or not_evaluable\n- score: a number from 0 to 1 expressing decision strength, not a calibrated probability\n- explanation: one concise sentence grounded in the supplied text\n- evidence_ids: passage IDs copied exactly from the input\n\nassigned and uncertain require at least one evidence ID. not_assigned may cite the most relevant\npassage but must not invent evidence. Only cite IDs present in the input.",
+    "settings": {
+      "llm_name": "swiss-ai/Apertus-v1.5-70B",
+      "llm_base_url": "https://api.inference.cscs.ch/v1",
+      "classifier_prompt_version": "topic-v2",
+      "classifier_policy_version": "hybrid-v3",
+      "keyword_rescue_enabled": true,
+      "chunk_size": 1400,
+      "chunk_overlap": 200,
+      "retrieval_top_k": 5,
+      "keyword_document_gate_enabled": true,
+      "retrieval_pin_title": false
+    },
+    "implementation_sha256": {
+      "classification/service.py": "b69f6df7d9745897f199418f14f259efb8732ed73fdcff01cdc084a5303a4b1f",
+      "classification/keyword.py": "b019cc03b5a5b0db3c786cf0793ff57402ee64be4b0689abe241d9b2bd8e62b4",
+      "classification/prompts.py": "f9d23543c20aa6bb4d460da75f5f83ae1099c19c78f1d60e977e11933259d1b8",
+      "classification/apertus_client.py": "6ecc2efedc4eccd94c525a4bbec8a40d6f309041eafcb678cc5a37466a9e16ac",
+      "retrieval/chunker.py": "854f283f9611b75b37fdcc740dddbb6ac951d68ae4a7ee4f25e3a53bd4f05b43",
+      "retrieval/bm25.py": "69ddb35be9aea273704cc355cdc159f95cdfc46837f7997b21627315c44d6f3a",
+      "models.py": "bc111db82e1faacf75f27773a57a26624ca2d4dabaf434e9ece40c3e947fd069"
+    },
+    "branch": "experiment/classifier-quality",
+    "commit": "bddc796b8f9403c67bfefe3c750aaf3bd4241dc5",
+    "created_utc": "2026-10-18T13:16:58.842900+00:00",
+    "python": "3.12.6",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "httpx": "0.28.1",
+    "seed": 20261018,
+    "source_path": "data/eval/e1_digitalisation_dev.jsonl",
+    "topic_path": "configs/topics/digitalisation.yaml",
+    "panel_sha256": "4161d4be931f384ac6442663d9f7883e68fc774c14ebaa8324a4d8059566a860",
+    "instrumentation_sha256": "d0c0cd2dcf2765001db588c270ba08d538971b5cd71fff2d17885eddd42bf508",
+    "requests_per_minute_cap": 30.0,
+    "parallel_workers": 4,
+    "http_attempt_cap": 100,
+    "smoke_http_attempt_cap": 10,
+    "transport_settings": {
+      "timeout": 60.0,
+      "max_retries": 2,
+      "retry_backoff": 0.5
+    }
+  },
+  "artifacts_sha256": {
+    "attempts.jsonl": "fdf7e5953ffb236214c499f8e2c23a5a95697be158ebaf458c2254d8afbffef5",
+    "calibration.jsonl": "dd4e9b4911c28c3271d526cf94cd2ea21c33b33dbf25c1254dd0053439ab3f3f",
+    "panel.jsonl": "4161d4be931f384ac6442663d9f7883e68fc774c14ebaa8324a4d8059566a860",
+    "parallel.jsonl": "52d09e0d861fa9c94b694aca91daccb3163ea2c64abf5d6062e5134e260e0257",
+    "responses.jsonl": "83ba7088130eee0803e1a914e1f045be14308945820757994f21a99742673a48",
+    "sequential.jsonl": "c129876b89088de197aa27775dd348b88eabbe011379d23997a59bb8d9df537f",
+    "smoke.jsonl": "d27f25a24d0af714aca4bbad422264593c97d1a3d6b7225b3790393ff01cc822"
+  },
+  "unique_affairs": 100,
+  "http_attempts": 91,
+  "http_responses": 91,
+  "arms": {
+    "sequential": {
+      "n": 50,
+      "successful": 50,
+      "decisive": 50,
+      "model_cases": 42,
+      "strata": {
+        "de/False": 21,
+        "de/True": 10,
+        "fr/False": 7,
+        "fr/True": 3,
+        "it/False": 6,
+        "it/True": 3
+      },
+      "chars": {
+        "n": 50,
+        "mean": 772.2,
+        "p50": 214.5,
+        "p95": 2740.7499999999995,
+        "p99": 3250.579999999999,
+        "max": 3524
+      },
+      "title_only": 20,
+      "wall_seconds": 98.53790991699498,
+      "throughput_affairs_s": 0.5074189217339633,
+      "successful_throughput_s": 0.5074189217339633,
+      "timings_ms": {
+        "total_ms": {
+          "n": 50,
+          "mean": 1970.0808249608963,
+          "p50": 2059.271083002386,
+          "p95": 3212.7418809555807,
+          "p99": 4568.344310170065,
+          "max": 5575.801541999681
+        },
+        "pre_ms": {
+          "n": 50,
+          "mean": 1.0303974605631083,
+          "p50": 0.5425830095191486,
+          "p95": 2.3420873490977097,
+          "p99": 9.355744999338613,
+          "max": 15.82349999807775
+        },
+        "post_ms": {
+          "n": 50,
+          "mean": 0.09948844031896442,
+          "p50": 0.08256299770437181,
+          "p95": 0.23499984818045047,
+          "p99": 0.2512387490423862,
+          "max": 0.2537499967729673
+        },
+        "client_ms": {
+          "n": 50,
+          "mean": 1968.9509390600142,
+          "p50": 2058.71006250527,
+          "p95": 3210.5191750029903,
+          "p99": 4559.8820971675705,
+          "max": 5574.538041008054
+        },
+        "http_ms": {
+          "n": 50,
+          "mean": 1891.392530039593,
+          "p50": 1935.5380830020295,
+          "p95": 3141.02130000101,
+          "p99": 4557.686586588094,
+          "max": 5572.0469590014545
+        },
+        "limiter_ms": {
+          "n": 50,
+          "mean": 75.80586666066665,
+          "p50": 0.5378959976951592,
+          "p95": 364.2509501558377,
+          "p99": 508.41968474836904,
+          "max": 510.8103330130689
+        }
+      },
+      "model_http_ms": {
+        "n": 42,
+        "mean": 2251.6577738566584,
+        "p50": 2089.603916996566,
+        "p95": 3369.422699998538,
+        "p99": 4723.296443308638,
+        "max": 5572.0469590014545
+      },
+      "tokens": {
+        "prompt_tokens": 57371,
+        "completion_tokens": 4228
+      },
+      "http_usage_rows": 42,
+      "estimated_cost": null,
+      "currency": null,
+      "projection_300k_hours": 164.2298498616583,
+      "projection_300k_tokens": {
+        "prompt_tokens": 344226000.0,
+        "completion_tokens": 25368000.0
+      },
+      "quality_decisive_only": {
+        "precision": 1.0,
+        "recall": 0.875,
+        "f1": 0.9333333333333333,
+        "negative_precision": 0.9444444444444444,
+        "negative_recall": 1.0,
+        "negative_f1": 0.9714285714285714,
+        "macro_precision": 0.9722222222222222,
+        "macro_recall": 0.9375,
+        "macro_f1": 0.9523809523809523,
+        "micro_f1": 0.96,
+        "accuracy": 0.96,
+        "count": 50,
+        "true_positive": 14,
+        "false_positive": 0,
+        "false_negative": 2,
+        "true_negative": 34
+      }
+    },
+    "parallel": {
+      "n": 50,
+      "successful": 50,
+      "decisive": 50,
+      "model_cases": 41,
+      "strata": {
+        "de/False": 20,
+        "de/True": 10,
+        "fr/False": 8,
+        "fr/True": 3,
+        "it/False": 5,
+        "it/True": 4
+      },
+      "chars": {
+        "n": 50,
+        "mean": 819.5,
+        "p50": 247.5,
+        "p95": 2844.549999999999,
+        "p99": 3718.5299999999984,
+        "max": 4112
+      },
+      "title_only": 17,
+      "wall_seconds": 83.12181195899029,
+      "throughput_affairs_s": 0.6015268293798557,
+      "successful_throughput_s": 0.6015268293798557,
+      "timings_ms": {
+        "total_ms": {
+          "n": 50,
+          "mean": 6493.804493338976,
+          "p50": 6426.595500000985,
+          "p95": 12022.507748100179,
+          "p99": 12109.79300099978,
+          "max": 12190.065290997154
+        },
+        "pre_ms": {
+          "n": 50,
+          "mean": 0.6897124790702946,
+          "p50": 0.35183399450033903,
+          "p95": 2.4324358986632424,
+          "p99": 2.9820047430985133,
+          "max": 3.2200830028159544
+        },
+        "post_ms": {
+          "n": 50,
+          "mean": 0.25310005905339494,
+          "p50": 0.04358399746706709,
+          "p95": 1.0643062516464845,
+          "p99": 3.399203660665074,
+          "max": 4.840374997002073
+        },
+        "client_ms": {
+          "n": 50,
+          "mean": 6492.861680800852,
+          "p50": 6425.070333498297,
+          "p95": 12021.732210048503,
+          "p99": 12108.96307601215,
+          "max": 12189.794334000908
+        },
+        "http_ms": {
+          "n": 50,
+          "mean": 1648.2638582398067,
+          "p50": 1822.0131249981932,
+          "p95": 2728.996752458624,
+          "p99": 2869.1666654103024,
+          "max": 2937.3490830039373
+        },
+        "limiter_ms": {
+          "n": 50,
+          "mean": 2891.366521581367,
+          "p50": 2087.2521870041965,
+          "p95": 6006.114825154509,
+          "p99": 6104.338206246612,
+          "max": 6180.626000001212
+        }
+      },
+      "model_http_ms": {
+        "n": 41,
+        "mean": 2010.0778759022032,
+        "p50": 1932.6272500038613,
+        "p95": 2784.3953340052394,
+        "p99": 2881.6899666009704,
+        "max": 2937.3490830039373
+      },
+      "tokens": {
+        "prompt_tokens": 55347,
+        "completion_tokens": 3997
+      },
+      "http_usage_rows": 41,
+      "estimated_cost": null,
+      "currency": null,
+      "projection_300k_hours": 138.53635326498383,
+      "projection_300k_tokens": {
+        "prompt_tokens": 332082000.0,
+        "completion_tokens": 23982000.0
+      },
+      "quality_decisive_only": {
+        "precision": 0.875,
+        "recall": 0.8235294117647058,
+        "f1": 0.8484848484848485,
+        "negative_precision": 0.9117647058823529,
+        "negative_recall": 0.9393939393939394,
+        "negative_f1": 0.9253731343283583,
+        "macro_precision": 0.8933823529411764,
+        "macro_recall": 0.8814616755793226,
+        "macro_f1": 0.8869289914066034,
+        "micro_f1": 0.9,
+        "accuracy": 0.9,
+        "count": 50,
+        "true_positive": 14,
+        "false_positive": 2,
+        "false_negative": 3,
+        "true_negative": 31
+      }
+    },
+    "all": {
+      "n": 100,
+      "successful": 100,
+      "decisive": 100,
+      "model_cases": 83,
+      "strata": {
+        "de/False": 41,
+        "de/True": 20,
+        "fr/False": 15,
+        "fr/True": 6,
+        "it/False": 11,
+        "it/True": 7
+      },
+      "chars": {
+        "n": 100,
+        "mean": 795.85,
+        "p50": 232.0,
+        "p95": 2822.5499999999997,
+        "p99": 3529.880000000003,
+        "max": 4112
+      },
+      "title_only": 37,
+      "wall_seconds": 181.65972187598527,
+      "throughput_affairs_s": 0.5504797594497453,
+      "successful_throughput_s": 0.5504797594497453,
+      "timings_ms": {
+        "total_ms": {
+          "n": 100,
+          "mean": 4231.942659149936,
+          "p50": 2600.114250504703,
+          "p95": 10032.343135395058,
+          "p99": 12027.88250100246,
+          "max": 12190.065290997154
+        },
+        "pre_ms": {
+          "n": 100,
+          "mean": 0.8600549698167015,
+          "p50": 0.47170851030386984,
+          "p95": 2.3959895981533914,
+          "p99": 3.3461171727686367,
+          "max": 15.82349999807775
+        },
+        "post_ms": {
+          "n": 100,
+          "mean": 0.17629424968617968,
+          "p50": 0.06510400271508843,
+          "p95": 0.3334420012834006,
+          "p99": 1.9286206644028576,
+          "max": 4.840374997002073
+        },
+        "client_ms": {
+          "n": 100,
+          "mean": 4230.906309930433,
+          "p50": 2599.3090414922335,
+          "p95": 10026.861416949396,
+          "p99": 12026.48220051342,
+          "max": 12189.794334000908
+        },
+        "http_ms": {
+          "n": 100,
+          "mean": 1769.8281941397,
+          "p50": 1871.7408750017057,
+          "p95": 2803.4218437394884,
+          "p99": 3522.624982084682,
+          "max": 5572.0469590014545
+        },
+        "limiter_ms": {
+          "n": 100,
+          "mean": 1483.586194121017,
+          "p50": 168.43104150757426,
+          "p95": 6001.882585398562,
+          "p99": 6026.493518741919,
+          "max": 6180.626000001212
+        }
+      },
+      "model_http_ms": {
+        "n": 83,
+        "mean": 2132.323125469518,
+        "p50": 2019.0964999928838,
+        "p95": 2824.490687502839,
+        "p99": 3874.545927615821,
+        "max": 5572.0469590014545
+      },
+      "tokens": {
+        "prompt_tokens": 112718,
+        "completion_tokens": 8225
+      },
+      "http_usage_rows": 83,
+      "estimated_cost": null,
+      "currency": null,
+      "projection_300k_hours": 151.38310156332105,
+      "projection_300k_tokens": {
+        "prompt_tokens": 338154000.0,
+        "completion_tokens": 24675000.0
+      },
+      "quality_decisive_only": {
+        "precision": 0.9333333333333333,
+        "recall": 0.8484848484848485,
+        "f1": 0.888888888888889,
+        "negative_precision": 0.9285714285714286,
+        "negative_recall": 0.9701492537313433,
+        "negative_f1": 0.948905109489051,
+        "macro_precision": 0.930952380952381,
+        "macro_recall": 0.9093170511080959,
+        "macro_f1": 0.9188969991889699,
+        "micro_f1": 0.93,
+        "accuracy": 0.93,
+        "count": 100,
+        "true_positive": 28,
+        "false_positive": 2,
+        "false_negative": 5,
+        "true_negative": 65
+      }
+    }
+  },
+  "cost_basis": {
+    "input_per_million": null,
+    "output_per_million": null,
+    "source": null,
+    "unknown_without_verified_tariff": true
+  },
+  "http_statuses": {
+    "200": 91
+  },
+  "calibration": {
+    "manifest": {
+      "reason": "Separate response logging lock from admission wait lock",
+      "parent_manifest_sha256": "b7fc2683d167770edc8d78d55c26660c55c8c2041620bf581c25a946796123e5",
+      "original_instrumentation_sha256": "d0c0cd2dcf2765001db588c270ba08d538971b5cd71fff2d17885eddd42bf508",
+      "corrected_instrumentation_sha256": "3884ad2b664ac9086643d5e6fe5e61d681458acd92149b52f675fec19b2b4064",
+      "selected_ids": [
+        "182527",
+        "271839",
+        "220233",
+        "240502",
+        "63660",
+        "226501",
+        "213897",
+        "67348"
+      ],
+      "workers": 4,
+      "additional_attempt_cap": 8
+    },
+    "runtime": {
+      "phase": "calibration",
+      "workers": 4,
+      "wall_seconds": 15.909184582997113,
+      "completed": 8,
+      "expected": 8,
+      "stopped": false,
+      "http_attempts_total": 91
+    },
+    "n": 8,
+    "status_counts": {
+      "not_assigned": 8
+    },
+    "timings_ms": {
+      "total_ms": {
+        "n": 8,
+        "mean": 6490.822401001424,
+        "p50": 7900.939458500943,
+        "p95": 8105.9309057935025,
+        "p99": 8152.73284755036,
+        "max": 8164.433332989574
+      },
+      "pre_ms": {
+        "n": 8,
+        "mean": 0.8818545029498637,
+        "p50": 0.40495849680155516,
+        "p95": 2.045538050151663,
+        "p99": 2.1006748093350325,
+        "max": 2.114458999130875
+      },
+      "post_ms": {
+        "n": 8,
+        "mean": 0.4381405033200281,
+        "p50": 0.1845619990490377,
+        "p95": 1.3418774047750046,
+        "p99": 1.451742687204387,
+        "max": 1.4792090078117326
+      },
+      "client_ms": {
+        "n": 8,
+        "mean": 6489.502405995154,
+        "p50": 7898.868603995652,
+        "p95": 8105.049241541565,
+        "p99": 8152.005148301396,
+        "max": 8163.744124991354
+      },
+      "http_ms": {
+        "n": 8,
+        "mean": 1983.00918737732,
+        "p50": 1983.8108539988752,
+        "p95": 2109.5833125014906,
+        "p99": 2127.0626624990837,
+        "max": 2131.432499998482
+      },
+      "limiter_ms": {
+        "n": 8,
+        "mean": 4504.146598750594,
+        "p50": 5944.168583002465,
+        "p95": 6068.755908648745,
+        "p99": 6088.533148928691,
+        "max": 6093.477458998677
+      }
+    },
+    "client_residual_ms": {
+      "n": 8,
+      "mean": 2.3466198672394967,
+      "p50": 1.9566459959605709,
+      "p95": 5.076666989771182,
+      "p99": 5.743766992527525,
+      "max": 5.9105419932166114
+    },
+    "throughput_affairs_s": 0.5028541820144555
+  },
+  "primary_http_attempts": 83,
+  "all_billed_usage_tokens": {
+    "prompt_tokens": 123858,
+    "completion_tokens": 9025
+  },
+  "reported_cached_input_tokens": 91840,
+  "primary_timing_limitation": "v1 response logging contended with admission lock; parallel total/client latencies include observer waiting. HTTP timings are uncontaminated. Eight-call v2 calibration checks a separate response logging lock; it does not replace 50-case percentiles."
+}

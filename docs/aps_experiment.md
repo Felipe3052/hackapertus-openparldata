@@ -103,10 +103,11 @@ Only exact agreement on chapter, topic, secondary topic and `none` is retained. 
 reports and excludes disputed affairs instead of silently choosing one annotator.
 
 On the checked-in 20 double annotations, this produced 9 unanimous labels and excluded 11
-disputes. The offline router diagnostic on those 9 labels reached 14.3 % chapter recall and
-28.6 % topic recall at the configured candidate limits. This is evidence that the current
-deterministic label-overlap router is not yet suitable as a hard APS classifier; it remains a
-candidate/context pre-filter until its recall is improved and validated on a larger holdout.
+disputes. After hierarchical parent closure and conservative word-prefix matching, the offline
+router diagnostic on those 9 labels reached 42.9 % chapter recall and 42.9 % topic recall at the
+configured candidate limits (previously 14.3 % and 28.6 %). This small diagnostic is not a
+generalizable quality metric: the deterministic router is still not suitable as a hard APS
+classifier and remains a candidate/context pre-filter until it is validated on a larger holdout.
 
 Compare the actual retrieval context sent to a future prompt:
 

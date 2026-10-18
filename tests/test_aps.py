@@ -75,6 +75,25 @@ def test_aps_router_is_deterministic_and_returns_candidates() -> None:
     assert first.topic_candidates
 
 
+def test_aps_router_closes_topic_candidates_to_parent_chapters() -> None:
+    taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
+    affair = Affair(affair_id="a", title="Eintritt in den Kindergarten")
+    route = ApsRouter(taxonomy).route(affair)
+    topic_codes = {candidate.code for candidate in route.topic_candidates}
+    chapter_codes = {candidate.code for candidate in route.chapter_candidates}
+    assert "4.1.6" in topic_codes
+    assert "4.1" in chapter_codes
+
+
+def test_aps_router_matches_longer_word_forms_conservatively() -> None:
+    taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
+    route = ApsRouter(taxonomy).route(
+        Affair(affair_id="a", title="Verwaltungsrechtliche Anpassung")
+    )
+    assert route.topic_candidates
+    assert any("verwaltungs" in term for term in route.topic_candidates[0].matched_terms)
+
+
 def test_aps_decision_requires_hierarchically_valid_codes() -> None:
     taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
     decision = ApsDecision(

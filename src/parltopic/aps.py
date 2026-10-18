@@ -25,6 +25,21 @@ def _tokens(text: str) -> set[str]:
     return {token for token in TOKEN_RE.findall(normalized) if len(token) > 2}
 
 
+def _term_matches(label_terms: set[str], text_terms: set[str]) -> tuple[str, ...]:
+    """Match exact terms and conservative inflection/compound prefixes."""
+    matched: set[str] = set()
+    for label_term in label_terms:
+        for text_term in text_terms:
+            if label_term == text_term or (
+                len(label_term) >= 5
+                and len(text_term) >= 5
+                and (label_term.startswith(text_term[:5]) or text_term.startswith(label_term[:5]))
+            ):
+                matched.add(text_term)
+                break
+    return tuple(sorted(matched))
+
+
 def _with_aliases(labels: dict[str, str], code: str, aliases: dict[str, object]) -> dict[str, str]:
     merged = dict(labels)
     values_by_language = aliases.get(code, {})
@@ -231,8 +246,30 @@ class ApsRouter:
 
         topic_candidates = self._rank(self.taxonomy.topics(), text_terms, max_topics)
         chapter_candidates = self._rank(self.taxonomy.chapters(), text_terms, max_chapters)
+        chapter_by_code = {candidate.code: candidate for candidate in chapter_candidates}
+        for candidate in topic_candidates:
+            parent_code = self.taxonomy.node(candidate.code).parent_code
+            if parent_code and parent_code not in chapter_by_code:
+                chapter_by_code[parent_code] = ApsCandidate(
+                    parent_code, "chapter", candidate.score, candidate.matched_terms
+                )
+        chapter_candidates = tuple(
+            sorted(chapter_by_code.values(), key=lambda item: (-item.score, item.code))[
+                :max_chapters
+            ]
+        )
         domain_candidates = self._rank(
             self.taxonomy.domains(), text_terms, len(self.taxonomy.domains())
+        )
+        domain_by_code = {candidate.code: candidate for candidate in domain_candidates}
+        for candidate in chapter_candidates:
+            parent_code = self.taxonomy.node(candidate.code).parent_code
+            if parent_code and parent_code not in domain_by_code:
+                domain_by_code[parent_code] = ApsCandidate(
+                    parent_code, "domain", candidate.score, candidate.matched_terms
+                )
+        domain_candidates = tuple(
+            sorted(domain_by_code.values(), key=lambda item: (-item.score, item.code))
         )
         if not chapter_candidates:
             return ApsRoute(
@@ -248,7 +285,7 @@ class ApsRouter:
     ) -> tuple[ApsCandidate, ...]:
         ranked = []
         for node in nodes:
-            matched = tuple(sorted(node.label_terms & text_terms))
+            matched = _term_matches(node.label_terms, text_terms)
             if matched:
                 # Phrase labels receive a small bonus through the number of matched tokens;
                 # this remains deterministic and language agnostic.

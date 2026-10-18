@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
 
-from parltopic.aps import ApsRouter, ApsTaxonomy, select_context
+import pytest
+
+from parltopic.aps import ApsDecision, ApsRouter, ApsTaxonomy, build_aps_prompt, select_context
 from parltopic.evaluation.aps import evaluate_shadow
 from parltopic.models import Affair
 from parltopic.retrieval.chunker import chunk_affair
@@ -27,6 +29,32 @@ def test_aps_router_is_deterministic_and_returns_candidates() -> None:
     assert first == second
     assert first.chapter_candidates
     assert first.topic_candidates
+
+
+def test_aps_decision_requires_hierarchically_valid_codes() -> None:
+    taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
+    decision = ApsDecision(
+        status="assigned",
+        score=0.8,
+        topic_codes=["1.2.2"],
+        chapter_codes=["1.2"],
+        explanation="Verwaltung ist Gegenstand des Geschäfts.",
+    )
+    assert taxonomy.validate_decision(decision) == decision
+    with pytest.raises(ValueError, match="requires chapter"):
+        taxonomy.validate_decision(decision.model_copy(update={"chapter_codes": []}))
+
+
+def test_aps_prompt_is_bounded_to_router_candidates_and_evidence() -> None:
+    taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
+    affair = Affair(affair_id="a", title="Verwaltung und Parlament", text="Kantone")
+    router = ApsRouter(taxonomy)
+    route = router.route(affair)
+    selected = chunk_affair(affair)
+    system, user = build_aps_prompt(route, taxonomy, selected)
+    assert "topic_codes" in system
+    assert all(candidate.code in user for candidate in route.topic_candidates)
+    assert selected[0].segment_id in user
 
 
 def test_aps_context_selection_preserves_title_and_reports_compression() -> None:

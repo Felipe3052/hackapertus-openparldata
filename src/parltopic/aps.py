@@ -10,6 +10,9 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from parltopic.models import Affair, TextSegment
 
@@ -41,6 +44,26 @@ class ApsCandidate:
     level: str
     score: float
     matched_terms: tuple[str, ...]
+
+
+class ApsDecision(BaseModel):
+    """Strict multi-label response contract for a future APS Apertus call."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["assigned", "not_assigned", "uncertain", "not_evaluable"]
+    score: float = Field(ge=0.0, le=1.0)
+    topic_codes: list[str] = Field(default_factory=list, max_length=8)
+    chapter_codes: list[str] = Field(default_factory=list, max_length=4)
+    explanation: str = Field(min_length=1, max_length=800)
+    evidence_ids: list[str] = Field(default_factory=list, max_length=8)
+
+    @field_validator("topic_codes", "chapter_codes", "evidence_ids")
+    @classmethod
+    def unique_codes(cls, values: list[str]) -> list[str]:
+        if len(values) != len(set(values)):
+            raise ValueError("APS response lists must contain unique values")
+        return values
 
 
 @dataclass(frozen=True)
@@ -123,6 +146,23 @@ class ApsTaxonomy:
 
     def node(self, code: str) -> ApsNode:
         return self._by_code[code]
+
+    def validate_decision(self, decision: ApsDecision) -> ApsDecision:
+        for topic_code in decision.topic_codes:
+            node = self._by_code.get(topic_code)
+            if node is None or node.level != "topic":
+                raise ValueError(f"Unknown APS topic code: {topic_code}")
+            if node.parent_code not in decision.chapter_codes:
+                raise ValueError(
+                    f"APS topic {topic_code} requires chapter {node.parent_code} in the response"
+                )
+        for chapter_code in decision.chapter_codes:
+            node = self._by_code.get(chapter_code)
+            if node is None or node.level != "chapter":
+                raise ValueError(f"Unknown APS chapter code: {chapter_code}")
+        if decision.status == "assigned" and not decision.topic_codes:
+            raise ValueError("Assigned APS decision requires at least one topic code")
+        return decision
 
     def chapters(self) -> tuple[ApsNode, ...]:
         return tuple(node for node in self.nodes if node.level == "chapter")
@@ -213,3 +253,28 @@ def select_context(
         "compression_ratio": round(after / before, 6) if before else 1.0,
         "fallback_reason": route.fallback_reason,
     }
+
+
+def build_aps_prompt(
+    route: ApsRoute, taxonomy: ApsTaxonomy, segments: list[TextSegment]
+) -> tuple[str, str]:
+    """Build a bounded, evidence-grounded prompt for a future APS multi-label call."""
+    candidates = [
+        taxonomy.node(candidate.code)
+        for candidate in (*route.chapter_candidates, *route.topic_candidates)
+    ]
+    candidate_lines = "\n".join(
+        f"- {node.code}: "
+        + " / ".join(f"{language}={label}" for language, label in node.labels.items())
+        for node in candidates
+    ) or "- none; return not_evaluable if the passages are insufficient"
+    passage_lines = "\n\n".join(f"[{segment.segment_id}] {segment.text}" for segment in segments)
+    system = (
+        "You assign Swiss parliamentary affairs to the supplied APS hierarchy. "
+        "Return JSON with exactly status, score, topic_codes, chapter_codes, explanation, "
+        "and evidence_ids. Use only candidate codes and passage IDs. An affair may have "
+        "multiple topics; every topic's parent chapter must be included."
+    )
+    user = f"""APS CANDIDATES\n{candidate_lines}\n\nAFFAIR PASSAGES\n{passage_lines}\n\n"""
+    user += "Choose all materially supported APS topics and cite the supporting passage IDs."
+    return system, user

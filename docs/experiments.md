@@ -135,6 +135,43 @@ main's scope examples and online/NFT terms). Paired bootstrap with 10,000 sample
   useful as evidence for title-only affairs. No further prompt or rule tuning on this dev split.
 - 78 of 450 affairs are assigned by the keyword rule without a model call.
 
+### M-A on the test split, DVS list and ad-hoc topics — predeclared
+
+Run once on 2026-10-18 (~16:30) with the frozen M-A configuration, nothing tuned afterwards. The
+test split is opened validation (B · protocol), not a sealed holdout. Expected: test F1 ≥ 0.84
+(the pre-merge fast pass E1.6), per-language F1 within 0.05 of each other, DVS ≥ 27 of 30, each
+ad-hoc topic F1 ≥ 0.80.
+
+### M-A on the test split, DVS list and ad-hoc topics — results
+
+| Set | P | R | F1 | Notes |
+|---|---:|---:|---:|---|
+| E1 test (1,200) | 0.875 | 0.877 | **0.876** | macro-F1 0.907; F1 DE 0.897 / FR 0.849 / IT 0.846; federal 0.854, cantonal 0.898; 1,102 / 80 tokens per affair; 253 of 1,200 decided by the term rule; 379 s wall clock with 8 workers |
+| E4 DVS list (30) | | | | 27 assigned, 1 uncertain, 2 not assigned |
+| E2 migration | 0.762 | 0.762 | 0.762 | frozen digitalisation policy |
+| E2 health | 0.608 | 0.711 | 0.656 | frozen digitalisation policy |
+| E2 transport | 0.667 | 0.618 | 0.642 | frozen digitalisation policy |
+
+Against the predeclared expectations: test F1 ≥ 0.84 met; DVS ≥ 27 met; language spread 0.051
+narrowly misses 0.05; ad-hoc F1 ≥ 0.80 **missed** for all three topics.
+
+Precision at the test-period base rate (2.29 %): keyword search 0.24 (recall 0.55), E1.6 0.32
+(0.80), E1.7 0.22 (0.89), M-A 0.25 (0.88).
+
+**Post-hoc diagnosis of the ad-hoc drop (not tuning):** with the term rule off and prompt v2 the
+three topics reach P 0.975 / 0.935 / 1.00 but R 0.62 / 0.52 / 0.53 (F1 0.757 / 0.667 / 0.690).
+Prompt v2 names digital anchors and makes Apertus strict on other topics; quickly chosen terms
+(*Spital*, *Strasse*) make the term rule fire on unrelated affairs. Topic files now carry their own
+policy (`prompt_version`, `keyword_rule`); the ad-hoc topics use `topic-v1` without the rule:
+
+| Topic | P | R | F1 | Coverage |
+|---|---:|---:|---:|---:|
+| Migration | 0.929 | 0.825 | **0.874** | 489 / 500 |
+| Health | 0.849 | 0.765 | **0.805** | 487 / 500 |
+| Transport | 0.905 | 0.691 | **0.784** | 490 / 500 |
+
+The 34 failed answers cite the affair ID instead of a passage ID; the validator rejects them.
+
 ## A · E3 — human agreement on APS topics (20 affairs, blind)
 
 Felipe and Josip labelled the first 20 affairs of `data/eval/e3_aps_sample.jsonl` independently

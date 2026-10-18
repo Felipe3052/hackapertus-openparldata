@@ -35,12 +35,21 @@ class ClassificationService:
             return prepared
         try:
             response = self.client.classify(
-                system_prompt(self.settings.classifier_prompt_version),
+                system_prompt(self._prompt_version(topic)),
                 build_user_prompt(topic, prepared.selected),
             )
             return self.finish(prepared, response)
         except Exception as error:
             return self._result(affair, topic, ClassificationStatus.FAILED, str(error))
+
+    def _prompt_version(self, topic: TopicDefinition) -> str:
+        """A topic file may set its own prompt; otherwise the configured default applies."""
+        return topic.prompt_version or self.settings.classifier_prompt_version
+
+    def _keyword_rule(self, topic: TopicDefinition) -> bool:
+        if topic.keyword_rule is None:
+            return self.settings.keyword_rescue_enabled
+        return topic.keyword_rule
 
     def close(self):
         self.client.close()
@@ -57,10 +66,12 @@ class ClassificationService:
         segments = chunk_affair(affair, self.settings.chunk_size, self.settings.chunk_overlap)
         if not segments:
             return self._result(affair, topic, ClassificationStatus.NOT_EVALUABLE)
-        if self.settings.keyword_rescue_enabled:
-            gate_segments = segments if self.settings.keyword_document_gate_enabled else [
-                segment for segment in segments if segment.document_id is None
-            ]
+        if self._keyword_rule(topic):
+            gate_segments = (
+                segments
+                if self.settings.keyword_document_gate_enabled
+                else [segment for segment in segments if segment.document_id is None]
+            )
             hit = first_keyword_hit(gate_segments, topic)
             if hit is None and affair.title.strip():
                 hit = first_keyword_hit([segments[0]], topic, terms=topic.title_synonyms)
@@ -83,7 +94,7 @@ class ClassificationService:
                     ],
                     needs_review=False,
                     model=self.settings.llm_name,
-                    prompt_version=self.settings.classifier_prompt_version,
+                    prompt_version=self._prompt_version(topic),
                     classifier_version=self.settings.classifier_policy_version,
                     input_tokens=0,
                     output_tokens=0,
@@ -94,7 +105,7 @@ class ClassificationService:
             title = segments[0]
             title_rank = next((item for item in ranked if item[0] == title), (title, 0.0))
             ranked = [title_rank, *(item for item in ranked if item[0] != title)][
-                :self.settings.retrieval_top_k
+                : self.settings.retrieval_top_k
             ]
         selected = [segment for segment, _ in ranked]
         score_by_id = {segment.segment_id: score for segment, score in ranked}
@@ -112,26 +123,29 @@ class ClassificationService:
                 document_id=selected_by_id[segment_id].document_id,
                 source_url=selected_by_id[segment_id].source_url,
                 retrieval_score=prepared.score_by_id[segment_id],
-            ) for segment_id in evidence_ids
+            )
+            for segment_id in evidence_ids
         ]
         return ClassificationResult(
-            affair_id=affair.affair_id, topic_id=topic.topic_id, status=status,
+            affair_id=affair.affair_id,
+            topic_id=topic.topic_id,
+            status=status,
             score=max(0.0, min(1.0, response.payload.score)),
-            explanation=response.payload.explanation, language=affair.language,
+            explanation=response.payload.explanation,
+            language=affair.language,
             evidence=evidence,
-            needs_review=status in {
-                ClassificationStatus.UNCERTAIN, ClassificationStatus.NOT_EVALUABLE
-            },
-            model=self.settings.llm_name, prompt_version=self.settings.classifier_prompt_version,
+            needs_review=status
+            in {ClassificationStatus.UNCERTAIN, ClassificationStatus.NOT_EVALUABLE},
+            model=self.settings.llm_name,
+            prompt_version=self._prompt_version(topic),
             classifier_version=self.settings.classifier_policy_version,
-            input_tokens=response.input_tokens, output_tokens=response.output_tokens,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
             latency_ms=response.latency_ms,
         )
 
     @staticmethod
-    def _resolve_evidence_ids(
-        requested: list[str], selected_by_id: dict[str, object]
-    ) -> list[str]:
+    def _resolve_evidence_ids(requested: list[str], selected_by_id: dict[str, object]) -> list[str]:
         """Repair only unambiguous prefix typos when the content hash still matches exactly."""
         resolved = []
         for segment_id in requested:
@@ -165,8 +179,7 @@ class ClassificationService:
             language=affair.language,
             needs_review=True,
             model=self.settings.llm_name,
-            prompt_version=self.settings.classifier_prompt_version,
+            prompt_version=self._prompt_version(topic),
             classifier_version=self.settings.classifier_policy_version,
             error=error,
         )
-

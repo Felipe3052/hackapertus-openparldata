@@ -1,7 +1,10 @@
-# Ad-hoc topic written once from the name only, no tuning (E5: does a short definition generalise?).
+# Ad-hoc topic written once from the name only, no tuning (E5). Quick topics use the generic
+# prompt topic-v1 without the term rule (A · M-A in docs/experiments.md).
 topic_id: migration
 name: Migration
 description: >-
   Geschäfte zu Migration und Asyl: Einwanderung, Aufenthalt, Asylverfahren, Flüchtlinge,
   Integration, Einbürgerung, Ausschaffung und Personenfreizügigkeit.
 synonyms: [Migration, Asyl, Flüchtling, Einbürgerung, Ausländer, migration, asile, réfugié, naturalisation, étrangers, migrazione, asilo, rifugiati, naturalizzazione, stranieri]
+prompt_version: topic-v1
+keyword_rule: false

@@ -90,3 +90,46 @@ def test_title_synonyms_do_not_trigger_on_body_mentions() -> None:
     assert service.classify(
         Affair(affair_id="b", title="Fake news and media literacy"), topic
     ).status == ClassificationStatus.ASSIGNED
+
+
+class PromptRecordingClient:
+    def __init__(self) -> None:
+        self.system_prompts: list[str] = []
+
+    def classify(self, system_prompt: str, user_prompt: str) -> ApertusResponse:
+        self.system_prompts.append(system_prompt)
+        return ApertusResponse(
+            payload=ModelDecision(
+                status=ClassificationStatus.NOT_ASSIGNED, score=0.0, explanation="No topic."
+            ),
+            input_tokens=10,
+            output_tokens=5,
+            latency_ms=1.0,
+        )
+
+
+def test_topic_policy_overrides_settings() -> None:
+    from parltopic.classification.prompts import system_prompt
+
+    settings = Settings(
+        llm_api_key="unused", keyword_rescue_enabled=True, classifier_prompt_version="topic-v2"
+    )
+    client = PromptRecordingClient()
+    service = ClassificationService(settings, client=client)  # type: ignore[arg-type]
+    topic = TopicDefinition(
+        topic_id="health",
+        name="Gesundheit",
+        description="Health affairs",
+        synonyms=["Spital"],
+        prompt_version="topic-v1",
+        keyword_rule=False,
+    )
+
+    result = service.classify(
+        Affair(affair_id="h", title="Parkplätze beim Spital", language="de"), topic
+    )
+
+    # The term occurs, but the topic disables the rule, so Apertus decides with prompt v1.
+    assert result.status == ClassificationStatus.NOT_ASSIGNED
+    assert result.prompt_version == "topic-v1"
+    assert client.system_prompts == [system_prompt("topic-v1")]

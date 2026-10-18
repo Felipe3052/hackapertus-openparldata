@@ -5,7 +5,6 @@ Artifacts are immutable by phase. No automatic reruns or paid warmups.
 """
 
 import argparse
-import fcntl
 import hashlib
 import json
 import math
@@ -151,7 +150,14 @@ def prepare(args):
 @contextmanager
 def run_lock(root):
     with (root / "run.lock").open("a") as stream:
-        fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        try:
+            import fcntl  # POSIX only; imported here so the module also loads on Windows
+        except ImportError:
+            import msvcrt
+
+            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
         yield
 
 

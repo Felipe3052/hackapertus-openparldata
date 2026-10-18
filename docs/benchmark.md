@@ -120,3 +120,24 @@ not persisted as an executable model artifact. Implementation follows the offici
 [text feature extraction](https://scikit-learn.org/stable/modules/feature_extraction.html)
 and [logistic regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
 interfaces.
+
+## Temporal validation baseline and uncertainty
+
+The current keyword baseline (including `online` and token-safe `NFT`) scores precision `0.870`,
+recall `0.550`, positive F1 `0.674` and macro-F1 `0.776` on the 1,200 affairs from 2024–2026.
+Its confusion counts are TP=220, FP=33, FN=180, TN=767. A full fixed-policy hybrid-v3 inference
+run is stored at `results/hybrid_v3_validation1200.jsonl`; incomplete runs must not be reported
+as final temporal-validation results.
+
+For the existing complete 450-case v3 development run, 5,000 class-stratified bootstrap
+samples give these conditional 95% percentile intervals:
+
+| Metric | Estimate | Interval |
+| --- | ---: | --- |
+| Precision | 0.9318 | [0.8897, 0.9695] |
+| Recall | 0.8200 | [0.7533, 0.8800] |
+| Positive F1 | 0.8723 | [0.8278, 0.9116] |
+| Macro-F1 | 0.9070 | [0.8761, 0.9353] |
+
+These intervals quantify sampling variability under the fixed proxy labels and sampled class
+ratio, not model-selection uncertainty or production precision at natural class prevalence.

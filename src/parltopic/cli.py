@@ -135,6 +135,19 @@ def compare_run_outputs(
     typer.echo(json.dumps(report, indent=2))
 
 
+@app.command("score-confidence")
+def score_confidence(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    results: Annotated[Path, typer.Option(exists=True, readable=True)],
+    samples: Annotated[int, typer.Option(min=1)] = 2000,
+    seed: int = 42,
+) -> None:
+    """Report class-stratified bootstrap intervals for precision, recall and F1."""
+    from parltopic.evaluation.uncertainty import bootstrap_metrics
+
+    typer.echo(json.dumps(bootstrap_metrics(eval_set, results, samples, seed), indent=2))
+
+
 @app.command()
 def baseline(
     eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],

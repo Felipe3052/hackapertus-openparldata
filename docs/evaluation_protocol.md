@@ -65,3 +65,25 @@ The two local snapshots yielded identical normalized content for all 183 federal
 affairs after this ordering rule (174 had usable text). Four affairs previously differed only
 in paragraph order. Future `build-eval` metadata records the chosen source and ordering rule;
 the checked-in evaluation sets and existing benchmark results remain unchanged.
+
+## Frozen temporal validation run
+
+The chosen hybrid-v3 policy is evaluated unchanged on all 1,200 existing E1 affairs from
+2024–2026. The result path is `results/hybrid_v3_validation1200.jsonl`; the sibling manifest
+freezes topic, prompt, dataset, model and implementation inputs. This benchmark was opened
+earlier, so it remains temporal validation rather than a sealed final holdout. Its results
+must not be used to select subsequent prompt or threshold changes.
+
+To report uncertainty after the run:
+
+```bash
+parltopic score-confidence \
+  --eval-set data/eval/e1_digitalisation_test.jsonl \
+  --results results/hybrid_v3_validation1200.jsonl --samples 5000
+```
+
+This command resamples within each proxy-label class, preserving the case-control sample ratio.
+It reports percentile intervals for precision, recall, positive F1 and macro-F1, together with
+coverage. Missing, failed and abstained predictions are excluded from selective metrics and
+remain visible in the coverage count. The intervals condition on the supplied proxy labels and
+do not include label uncertainty, source-family correlation or changes in class prevalence.

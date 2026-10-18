@@ -102,6 +102,29 @@ def aps_route(
         typer.echo(rendered, nl=False)
 
 
+@app.command("aps-coverage")
+def aps_coverage(
+    taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
+        "configs/taxonomies/aps_topics.json"
+    ),
+    aliases: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
+) -> None:
+    """Report APS label coverage by language and hierarchy level without model calls."""
+    from parltopic.aps import ApsTaxonomy
+
+    loaded = ApsTaxonomy.load(taxonomy, aliases_path=aliases)
+    typer.echo(
+        json.dumps(
+            {
+                "taxonomy_version": loaded.version,
+                "nodes": len(loaded.nodes),
+                "coverage": loaded.language_coverage(),
+            },
+            indent=2,
+        )
+    )
+
+
 @app.command("aps-evaluate")
 def aps_evaluate(
     sample: Annotated[Path, typer.Option(exists=True, readable=True)],

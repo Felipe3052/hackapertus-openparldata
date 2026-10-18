@@ -32,6 +32,16 @@ An optional, version-matched alias file can be supplied with `APS_ALIASES_PATH` 
 `--aliases` option. It is intended for reviewed Italian or domain-specific synonyms. Such aliases
 are project additions, not official APS translations, and must be evaluated before use.
 
+Check label coverage before enabling a language:
+
+```bash
+parltopic aps-coverage \
+  --taxonomy configs/taxonomies/aps_topics.json
+```
+
+The current base taxonomy reports 165 topics, 22 chapters and 8 domains for German and French;
+Italian appears only after a version-matched alias file supplies reviewed labels.
+
 The classifier now exposes the same router as an opt-in experiment through
 `APS_CONTEXT_ENABLED=true`. The default is `false`; with the flag enabled, the result records the
 taxonomy version, context policy, segment counts and approximate token counts. If no APS candidate

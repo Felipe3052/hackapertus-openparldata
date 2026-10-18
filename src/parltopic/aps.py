@@ -170,7 +170,7 @@ class ApsTaxonomy:
                 labels = {
                     key[8:]: str(value)
                     for key, value in item.items()
-                    if key.startswith("chapter_")
+                    if key.startswith("chapter_") and key != "chapter_code"
                 }
             labels = {key: value for key, value in labels.items() if value}
             labels = _with_aliases(labels, code, aliases)
@@ -179,7 +179,7 @@ class ApsTaxonomy:
                 chapter_labels[parent_code] = {
                     key[8:]: str(value)
                     for key, value in item.items()
-                    if key.startswith("chapter_") and value
+                    if key.startswith("chapter_") and key != "chapter_code" and value
                 }
                 domain_labels[parts[0]] = {
                     key[7:]: str(value)
@@ -238,6 +238,21 @@ class ApsTaxonomy:
 
     def topics(self) -> tuple[ApsNode, ...]:
         return tuple(node for node in self.nodes if node.level == "topic")
+
+    def language_coverage(self) -> dict[str, dict[str, int]]:
+        """Count labelled nodes by language and hierarchy level."""
+        languages = sorted({language for node in self.nodes for language in node.labels})
+        return {
+            language: {
+                level: sum(
+                    bool(node.labels.get(language))
+                    for node in self.nodes
+                    if node.level == level
+                )
+                for level in ("domain", "chapter", "topic")
+            }
+            for language in languages
+        }
 
 
 class ApsRouter:

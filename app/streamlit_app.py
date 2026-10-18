@@ -14,6 +14,16 @@ st.set_page_config(page_title="ParlTopic", page_icon="🏛️", layout="wide")
 st.title("ParlTopic")
 st.caption("Mehrsprachige Themenklassifikation für Schweizer Parlamentsdaten mit Apertus")
 
+mode = st.radio("Modus", ["Einzelnes Geschäft", "Thema über Parlamente suchen"], horizontal=True)
+if mode == "Thema über Parlamente suchen":
+    import sys
+
+    sys.path.insert(0, str(ROOT / "app"))
+    from search_page import render
+
+    render()
+    st.stop()
+
 with st.sidebar:
     st.header("Thema")
     policy = st.selectbox("Konfiguration", ["Digitalisierung (validiert)", "Eigenes Thema"])

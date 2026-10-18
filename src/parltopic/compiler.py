@@ -131,12 +131,15 @@ def search_candidates(
     bodies: Iterable[str] | None = None,
     page_size: int = 1000,
     client: httpx.Client | None = None,
+    newest_first: bool = False,
+    max_pages: int | None = None,
 ) -> dict[str, list[int]]:
     """Affair IDs that OpenParlData's full-text search returns for each language's query.
 
     The search backend ignores date filters and gets slow at deep offsets (about 60 s per page
     at offset 5,000), so the query runs per parliament (`body_key`), which keeps every request
-    to one or a few pages; filter by date locally.
+    to one or a few pages; filter by date locally. For a live view, `newest_first` with
+    `max_pages=1` returns the newest matches of each parliament in about a second.
     """
     own = client is None
     client = client or httpx.Client(timeout=300, follow_redirects=True)
@@ -148,7 +151,8 @@ def search_candidates(
                 continue
             ids: list[int] = []
             for body_key in bodies or [None]:
-                ids.extend(_search_window(client, query, language, scope, body_key, page_size))
+                ids.extend(_search_window(client, query, language, scope, body_key, page_size,
+                                          newest_first, max_pages))
             found[language] = list(dict.fromkeys(ids))
     finally:
         if own:
@@ -156,8 +160,10 @@ def search_candidates(
     return found
 
 
-def _search_window(client, query, language, scope, body_key, page_size) -> list[int]:
-    ids, offset = [], 0
+def _search_window(
+    client, query, language, scope, body_key, page_size, newest_first=False, max_pages=None
+) -> list[int]:
+    ids, offset, pages = [], 0, 0
     while True:
         params = {
             "search": query, "search_mode": "boolean", "search_scope": scope,
@@ -165,6 +171,8 @@ def _search_window(client, query, language, scope, body_key, page_size) -> list[
         }
         if body_key:
             params["body_key"] = body_key
+        if newest_first:
+            params["sort_by"] = "-begin_date"
         page = client.get(f"{OPD_API}/affairs/", params=params)
         page.raise_for_status()
         data = page.json()
@@ -172,8 +180,11 @@ def _search_window(client, query, language, scope, body_key, page_size) -> list[
         ids.extend(int(row["id"]) for row in rows)
         total = data.get("meta", {}).get("total_records") or 0
         offset += page_size
+        pages += 1
         # Stop on the last page; never trust has_more alone (it can stay true).
         if not rows or offset >= total or not data.get("meta", {}).get("has_more"):
+            return ids
+        if max_pages and pages >= max_pages:
             return ids
 
 

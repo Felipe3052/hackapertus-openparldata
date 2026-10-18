@@ -86,6 +86,28 @@ Apertus 70B (USD 0.82 / 2.92 per million tokens) that is about USD 0.92 per 1,00
 8 of 338 re-checks returned no parseable answer (reasoning ran into the 4,000-token limit); these
 keep the fast-pass label, so a failed re-check can never add a false positive.
 
+## E3 — human agreement on APS topics (20 affairs, blind)
+
+Felipe and Josip labelled the first 20 affairs of `data/eval/e3_aps_sample.jsonl` independently
+(main topic, optional second topic, or "not classifiable"; FR/IT shown in German: official federal
+version or Apertus translation). Labels: `data/eval/e3_aps_labels.jsonl`.
+
+| Level | Agreement | Cohen's κ |
+|---|---:|---:|
+| APS chapter (22) | 11 / 20 = 55 % | 0.51 |
+| APS topic (165), main topic | 9 / 20 = 45 % | |
+| APS topic, main or second topic overlaps | 8 / 20 + 1 both "not classifiable" | |
+
+- **Two people agree on the APS chapter only about half the time**, far below the ~80 % the
+  parliamentary services report for their own scheme. n = 20 is small (±11 points), but the pattern
+  is clear: 4 of the 11 topic disagreements stay within one chapter (army basics vs. army
+  organisation, land law vs. housing), the others are multi-aspect affairs (*no transfer of tax data
+  without anonymisation*: data protection vs. taxes; *SBB procurement abroad*: competition vs.
+  labour market).
+- Consequences for the APS evaluation: score the model **multi-label and at chapter level first**,
+  and report it next to this human ceiling rather than against a single "gold" label. It also
+  supports presenting topics as suggestions a person confirms.
+
 ## E1 — test split (1,200 affairs, 2024–2026, run once)
 
 | Run | P | R | F1 | F1 lang=de | F1 lang=fr | F1 lang=it | F1 level=federal | F1 level=cantonal | tokens in/out per affair |

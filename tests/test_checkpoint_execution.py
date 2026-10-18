@@ -3,6 +3,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import pytest
 
@@ -121,4 +122,25 @@ checkpointed_run(sys.argv[1], sys.argv[2], {}, classify, workers=1)
     checkpointed_run(source, out, {}, resume, workers=1)
     assert "0" not in calls
     assert len(calls) == 7
+    assert len(out.read_text().splitlines()) == 8
+
+
+def test_interrupted_manifest_publish_preserves_previous_provenance(tmp_path, monkeypatch):
+    source, out = dataset(tmp_path), tmp_path / "out.jsonl"
+    checkpointed_run(source, out, {}, decision, workers=1, limit=1)
+    manifest = out.with_suffix(".jsonl.manifest.json")
+    before = manifest.read_bytes()
+    original_replace = Path.replace
+
+    def interrupt(path, target):
+        if path.name.endswith(".manifest.json.part"):
+            raise RuntimeError("Simulated manifest publication interruption")
+        return original_replace(path, target)
+
+    with monkeypatch.context() as context:
+        context.setattr(Path, "replace", interrupt)
+        with pytest.raises(RuntimeError, match="publication"):
+            checkpointed_run(source, out, {}, decision, workers=1)
+    assert manifest.read_bytes() == before
+    checkpointed_run(source, out, {}, decision, workers=1)
     assert len(out.read_text().splitlines()) == 8

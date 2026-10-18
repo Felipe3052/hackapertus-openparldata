@@ -87,7 +87,12 @@ def checkpointed_run(dataset, output, manifest, classify, workers=8, limit=None,
                                         (result.affair_id, result.status.value,
                                          result.model_dump_json()))
                 journal.commit()
-            manifest_path.write_text(serialized_manifest + "\n", encoding="utf-8")
+            manifest_temporary = manifest_path.with_suffix(manifest_path.suffix + ".part")
+            with manifest_temporary.open("w", encoding="utf-8") as stream:
+                stream.write(serialized_manifest + "\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+            manifest_temporary.replace(manifest_path)
 
             def todo():
                 rows = iter_rows(dataset)

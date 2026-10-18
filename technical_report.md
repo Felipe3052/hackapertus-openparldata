@@ -239,12 +239,17 @@ ceiling. The APS scheme (8 domains, 22 chapters, 165 topics) is exported to
 ### 5.6 Cost and runtime
 
 The frozen configuration needs 1,102 / 80 tokens per affair on average; the term rule decides
-21 % of the test affairs without a model call. With 8 parallel requests the 1,200 test affairs took
-379 s (190 affairs per minute), i.e. about 28 hours for one topic over 325,000
-affairs. At the Public AI list price for Apertus 70B (USD 0.82 / 2.92 per million input / output
-tokens) one topic over the full corpus costs about USD 370; on CSCS or a Swiss provider the
-price depends on the contract. A pre-filter that sends only candidate affairs to Apertus is the
-next step to cut both numbers.
+21 % of the test affairs without a model call. Measured throughput on the shared CSCS endpoint
+varied with load: the 1,200 test affairs took 379 s with 8 parallel requests at midday (about
+150 answered requests per minute); a 500-affair probe with 16 parallel requests and no client
+limit reached 64 per minute in the late afternoon (p95 latency 71 s) without a single rate-limit
+error. Classifying every one of 325,000 affairs for one topic therefore takes about 28–67 hours
+on one key; the client's default limit of 30 requests per minute (`LLM_REQUESTS_PER_MINUTE`,
+an unverified quota assumption, see `docs/performance.md`) would stretch this to about 140 hours
+and can be raised or disabled. At the Public AI list price for Apertus 70B (USD 0.82 / 2.92 per
+million input / output tokens) one topic over the full corpus costs about USD 370; on CSCS or a
+Swiss provider the price depends on the contract. Reading every affair for every new topic does
+not scale; sending only candidate affairs to Apertus is the next step.
 
 ---
 

@@ -45,6 +45,7 @@ def _run_manifest(eval_path: str | Path, topic: TopicDefinition, settings: Setti
                 "classifier_policy_version", "keyword_rescue_enabled", "chunk_size",
                 "chunk_overlap", "retrieval_top_k",
                 "keyword_document_gate_enabled", "retrieval_pin_title",
+                "llm_connection_reuse", "llm_requests_per_minute", "llm_batch_size",
             )
         },
         "implementation_sha256": {
@@ -92,7 +93,7 @@ def run_classifier(
         return out
     service = ClassificationService(settings)
     affairs = [Affair.model_validate(row) for row in todo]
-    with out.open("w", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
+    with service, out.open("w", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
         for row in existing:
             file.write(json.dumps(row, ensure_ascii=False) + "\n")
         futures = [

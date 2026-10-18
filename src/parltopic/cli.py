@@ -34,19 +34,19 @@ def classify(
             "hybrid-title-online-v2" if definition.normalize_online_variants else "hybrid-title-v1"
         )
         settings = settings.model_copy(update={"classifier_policy_version": policy})
-    service = ClassificationService(settings)
     rows = []
-    for affair in read_affairs(input):
-        if offline:
-            row = {
-                "affair_id": affair.affair_id,
-                "topic_id": definition.topic_id,
-                "status": "not_evaluable",
-                "note": "Offline validation succeeded; no model call was made.",
-            }
-        else:
-            row = service.classify(affair, definition).model_dump(mode="json")
-        rows.append(row)
+    with ClassificationService(settings) as service:
+        for affair in read_affairs(input):
+            if offline:
+                row = {
+                    "affair_id": affair.affair_id,
+                    "topic_id": definition.topic_id,
+                    "status": "not_evaluable",
+                    "note": "Offline validation succeeded; no model call was made.",
+                }
+            else:
+                row = service.classify(affair, definition).model_dump(mode="json")
+            rows.append(row)
     rendered = "\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n"
     if output:
         output.parent.mkdir(parents=True, exist_ok=True)

@@ -1,4 +1,6 @@
-from parltopic.classification.apertus_client import ApertusClient
+from dataclasses import dataclass
+
+from parltopic.classification.apertus_client import ApertusClient, ApertusResponse
 from parltopic.classification.keyword import first_keyword_hit
 from parltopic.classification.prompts import build_user_prompt, system_prompt
 from parltopic.config import Settings
@@ -7,10 +9,19 @@ from parltopic.models import (
     ClassificationResult,
     ClassificationStatus,
     Evidence,
+    TextSegment,
     TopicDefinition,
 )
 from parltopic.retrieval.bm25 import retrieve
 from parltopic.retrieval.chunker import chunk_affair
+
+
+@dataclass
+class PreparedAffair:
+    affair: Affair
+    topic: TopicDefinition
+    selected: list[TextSegment]
+    score_by_id: dict[str, float]
 
 
 class ClassificationService:
@@ -19,6 +30,30 @@ class ClassificationService:
         self.client = client or ApertusClient(settings)
 
     def classify(self, affair: Affair, topic: TopicDefinition) -> ClassificationResult:
+        prepared = self.prepare(affair, topic)
+        if isinstance(prepared, ClassificationResult):
+            return prepared
+        try:
+            response = self.client.classify(
+                system_prompt(self.settings.classifier_prompt_version),
+                build_user_prompt(topic, prepared.selected),
+            )
+            return self.finish(prepared, response)
+        except Exception as error:
+            return self._result(affair, topic, ClassificationStatus.FAILED, str(error))
+
+    def close(self):
+        self.client.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def prepare(
+        self, affair: Affair, topic: TopicDefinition
+    ) -> PreparedAffair | ClassificationResult:
         segments = chunk_affair(affair, self.settings.chunk_size, self.settings.chunk_overlap)
         if not segments:
             return self._result(affair, topic, ClassificationStatus.NOT_EVALUABLE)
@@ -63,46 +98,35 @@ class ClassificationService:
             ]
         selected = [segment for segment, _ in ranked]
         score_by_id = {segment.segment_id: score for segment, score in ranked}
-        try:
-            prompt_version = self.settings.classifier_prompt_version
-            response = self.client.classify(
-                system_prompt(prompt_version), build_user_prompt(topic, selected)
-            )
-            status = response.payload.status
-            selected_by_id = {segment.segment_id: segment for segment in selected}
-            evidence_ids = self._resolve_evidence_ids(
-                response.payload.evidence_ids, selected_by_id
-            )
-            evidence = [
-                Evidence(
-                    segment_id=segment_id,
-                    text=selected_by_id[segment_id].text,
-                    document_id=selected_by_id[segment_id].document_id,
-                    source_url=selected_by_id[segment_id].source_url,
-                    retrieval_score=score_by_id[segment_id],
-                )
-                for segment_id in evidence_ids
-            ]
-            model_score = response.payload.score
-            return ClassificationResult(
-                affair_id=affair.affair_id,
-                topic_id=topic.topic_id,
-                status=status,
-                score=max(0.0, min(1.0, model_score)),
-                explanation=response.payload.explanation,
-                language=affair.language,
-                evidence=evidence,
-                needs_review=status
-                in {ClassificationStatus.UNCERTAIN, ClassificationStatus.NOT_EVALUABLE},
-                model=self.settings.llm_name,
-                prompt_version=prompt_version,
-                classifier_version=self.settings.classifier_policy_version,
-                input_tokens=response.input_tokens,
-                output_tokens=response.output_tokens,
-                latency_ms=response.latency_ms,
-            )
-        except Exception as error:
-            return self._result(affair, topic, ClassificationStatus.FAILED, str(error))
+        return PreparedAffair(affair, topic, selected, score_by_id)
+
+    def finish(self, prepared: PreparedAffair, response: ApertusResponse) -> ClassificationResult:
+        affair, topic = prepared.affair, prepared.topic
+        status = response.payload.status
+        selected_by_id = {segment.segment_id: segment for segment in prepared.selected}
+        evidence_ids = self._resolve_evidence_ids(response.payload.evidence_ids, selected_by_id)
+        evidence = [
+            Evidence(
+                segment_id=segment_id,
+                text=selected_by_id[segment_id].text,
+                document_id=selected_by_id[segment_id].document_id,
+                source_url=selected_by_id[segment_id].source_url,
+                retrieval_score=prepared.score_by_id[segment_id],
+            ) for segment_id in evidence_ids
+        ]
+        return ClassificationResult(
+            affair_id=affair.affair_id, topic_id=topic.topic_id, status=status,
+            score=max(0.0, min(1.0, response.payload.score)),
+            explanation=response.payload.explanation, language=affair.language,
+            evidence=evidence,
+            needs_review=status in {
+                ClassificationStatus.UNCERTAIN, ClassificationStatus.NOT_EVALUABLE
+            },
+            model=self.settings.llm_name, prompt_version=self.settings.classifier_prompt_version,
+            classifier_version=self.settings.classifier_policy_version,
+            input_tokens=response.input_tokens, output_tokens=response.output_tokens,
+            latency_ms=response.latency_ms,
+        )
 
     @staticmethod
     def _resolve_evidence_ids(

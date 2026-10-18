@@ -190,3 +190,59 @@ def build_eval_sets(
 
     (out / "meta.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
     return meta
+
+
+def export_aps_scheme(raw_dir: str | Path, out_path: str | Path) -> list[dict[str, Any]]:
+    """APS scheme (domain > chapter > topic, DE/FR) from aps_topics.xlsx as JSON."""
+    from openpyxl import load_workbook
+
+    sheet = load_workbook(Path(raw_dir) / "aps_topics.xlsx", read_only=True)["Topics"]
+    header, *rows = list(sheet.iter_rows(values_only=True))
+    topics = [dict(zip(header, row, strict=True)) for row in rows if row and row[0]]
+    for topic in topics:
+        topic["chapter_code"] = ".".join(str(topic["code"]).split(".")[:2])
+    path = Path(out_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(topics, indent=1, ensure_ascii=False), encoding="utf-8")
+    return topics
+
+
+def build_aps_sample(
+    raw_dir: str | Path,
+    eval_dir: str | Path,
+    seed: int = 7,
+    federal: int = 25,
+    cantonal: dict[str, int] | None = None,
+) -> list[dict[str, Any]]:
+    """E3: 50 affairs from 2024-2026 for hand labelling with APS chapter > topic.
+
+    Federal affairs come from the E2 Curia sample (DE/FR/IT mixed, Curia areas kept for a
+    later cross-check, not shown to labellers); cantonal ones are drawn per language.
+    """
+    raw, out = Path(raw_dir), Path(eval_dir)
+    rng = random.Random(seed)
+    cantonal = cantonal or {"de": 13, "fr": 8, "it": 4}
+    curia_rows = [row for row in _read_jsonl(out / "e2_curia_test.jsonl") if row["title"]]
+    rows = [{**r, "split": "aps"} for r in rng.sample(curia_rows, federal)]
+    bodies = load_bodies(raw)
+    seen = {r["affair_id"] for r in rows}
+    pools: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for record in read_ndjson(raw / "affairs.ndjson.gz"):
+        body = bodies.get(record["body_key"], {})
+        if body.get("type") != "canton" or not _in_split(record.get("begin_date"), "test"):
+            continue
+        if record.get("type_harmonized_en") not in {"Motion", "Postulate", "Interpellation"}:
+            continue
+        affair = to_affair(record, body)
+        if affair and len(affair.title) >= 25 and affair.affair_id not in seen:
+            pools[affair.language].append(affair.model_dump(mode="json"))
+    for language, count in cantonal.items():
+        rows.extend({**r, "split": "aps"} for r in rng.sample(pools[language], count))
+    rng.shuffle(rows)
+    _write(out / "e3_aps_sample.jsonl", rows)
+    return rows
+
+
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    with path.open(encoding="utf-8") as file:
+        return [json.loads(line) for line in file if line.strip()]

@@ -86,6 +86,31 @@ Apertus 70B (USD 0.82 / 2.92 per million tokens) that is about USD 0.92 per 1,00
 8 of 338 re-checks returned no parseable answer (reasoning ran into the 4,000-token limit); these
 keep the fast-pass label, so a failed re-check can never add a false positive.
 
+## E1 — test split (1,200 affairs, 2024–2026, run once)
+
+| Run | P | R | F1 | F1 lang=de | F1 lang=fr | F1 lang=it | F1 level=federal | F1 level=cantonal | tokens in/out per affair |
+|---|---|---|---|---|---|---|---|---|---|
+| B0 keyword search (DE/FR/IT synonyms) | 0.864 | 0.510 | **0.642** | 0.595 | 0.677 | 0.719 | 0.690 | 0.581 | 0 / 0 |
+| E1.6 70B, topic v3 | 0.908 | 0.785 | **0.842** | 0.850 | 0.817 | 0.857 | 0.848 | 0.836 | 855 / 87 |
+| **E1.7 70B v3 + thinking for `not_assigned`** | 0.859 | 0.868 | **0.863** | 0.868 | 0.861 | 0.851 | 0.856 | 0.871 | 1,434 / 635 |
+
+All three predeclared expectations hold: E1.7 beats B0 by +0.221 F1 (bar ≥ 0.15) and E1.6 by
++0.021 (bar ≥ 0.02, met narrowly); FR (0.861) and IT (0.851) are within 0.02 of DE (0.868).
+
+- **Apertus finds 87 % of the editorially tagged affairs; keyword search finds 51 %.** The gap is
+  largest on cantonal affairs (F1 0.581 → 0.871), which usually have only a title.
+- The fast pass alone is already strong on the test split (0.842, vs. 0.808 on dev); thinking adds
+  less here than on dev (+0.021 vs. +0.043) and trades precision for recall (P 0.908 → 0.859,
+  R 0.785 → 0.868). For DVS, whose editors review the list anyway, recall is the scarcer quantity.
+- Thinking re-checked 846 rejections (p50 11.6 s): 58 flipped to `assigned`, 33 of them tagged by
+  PolitMonitor. Of the other 25, at least 8 have a clear digital aspect in our reading (propaganda
+  on the Swisscom network, websites run from Switzerland, driverless vehicles, the agricultural
+  data system, police data collection, the RUAG ransom payment, the telecom-surveillance ordinance
+  VÜPF, the SIPAC IT system), so the reported precision is a lower bound. 16 re-checks gave no
+  parseable answer and kept the fast-pass label.
+- 400 of 404 `assigned` results carry at least one evidence passage.
+- Municipal affairs are too few to report (6 in the test split).
+
 **Predeclared before the single test run (2026-10-18, ~13:30):** the test split (1,200 affairs,
 2024–2026) is run once with B0, E1.6 and E1.7, nothing is tuned afterwards. Expected: E1.7 beats B0
 by ≥ 0.15 F1 and E1.6 by ≥ 0.02 F1; per-language F1 of FR and IT within 0.10 of DE.

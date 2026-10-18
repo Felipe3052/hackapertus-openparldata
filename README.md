@@ -74,6 +74,10 @@ OpenParlData export / API ─► normalise affair (title, text, documents, langu
 
 ## Quick start
 
+Jury walkthrough with real DE/FR/IT affairs, historical replay, custom topics and JSON export:
+[docs/jury_demo.md](docs/jury_demo.md). It includes independently recalculated local results,
+subgroup coverage, missing APS references and the limits of the 300k projection.
+
 Requires Python 3.11 or newer.
 
 ```bash

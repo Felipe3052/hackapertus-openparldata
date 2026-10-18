@@ -37,7 +37,7 @@ def _run_manifest(eval_path: str | Path, topic: TopicDefinition, settings: Setti
         "schema_version": 1,
         "dataset_sha256": hashlib.sha256(Path(eval_path).read_bytes()).hexdigest(),
         "topic": topic.model_dump(mode="json"),
-        "system_prompt": system_prompt(settings.classifier_prompt_version),
+        "system_prompt": system_prompt(topic.prompt_version or settings.classifier_prompt_version),
         "settings": {
             key: getattr(settings, key)
             for key in (

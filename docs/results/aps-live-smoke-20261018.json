@@ -2,10 +2,13 @@
   "mode": "controlled_live_smoke",
   "model": "swiss-ai/Apertus-v1.5-70B",
   "endpoint": "https://api.inference.cscs.ch/v1",
-  "affair_id": "297761",
-  "language": "de",
   "topic": "digitalisation",
-  "calls": 2,
+  "affairs": [
+    {"affair_id": "297761", "language": "de"},
+    {"affair_id": "326319", "language": "fr"},
+    {"affair_id": "235556", "language": "it"}
+  ],
+  "calls": 6,
   "keyword_rescue_enabled": false,
   "aps_context_max_segments": 2,
   "results": [
@@ -28,12 +31,65 @@
       "context_policy": "aps-shadow-context",
       "segments_before": 4,
       "segments_after": 2
+    },
+    {
+      "variant": "baseline",
+      "affair_id": "326319",
+      "language": "fr",
+      "status": "not_assigned",
+      "latency_ms": 5762.47,
+      "input_tokens": 2374,
+      "output_tokens": 165,
+      "context_policy": "full",
+      "segments_before": 5,
+      "segments_after": 5
+    },
+    {
+      "variant": "aps_context",
+      "affair_id": "326319",
+      "language": "fr",
+      "status": "not_assigned",
+      "latency_ms": 3397.94,
+      "input_tokens": 1584,
+      "output_tokens": 90,
+      "context_policy": "aps-shadow-context",
+      "segments_before": 5,
+      "segments_after": 2
+    },
+    {
+      "variant": "baseline",
+      "affair_id": "235556",
+      "language": "it",
+      "status": "not_assigned",
+      "latency_ms": 1950.74,
+      "input_tokens": 2437,
+      "output_tokens": 62,
+      "context_policy": "full",
+      "segments_before": 5,
+      "segments_after": 5
+    },
+    {
+      "variant": "aps_context",
+      "affair_id": "235556",
+      "language": "it",
+      "status": "not_assigned",
+      "latency_ms": 3551.01,
+      "input_tokens": 1592,
+      "output_tokens": 118,
+      "context_policy": "aps-shadow-context",
+      "segments_before": 5,
+      "segments_after": 2
     }
   ],
-  "observed": {
-    "latency_reduction_ratio": 0.3787,
-    "input_token_reduction_ratio": 0.3087,
-    "same_status": true
+  "paired_by_language": {
+    "de": {"latency_reduction_ratio": 0.3787, "input_token_reduction_ratio": 0.3087, "same_status": true},
+    "fr": {"latency_reduction_ratio": 0.4103, "input_token_reduction_ratio": 0.3336, "same_status": true},
+    "it": {"latency_reduction_ratio": -0.8205, "input_token_reduction_ratio": 0.3467, "same_status": true}
   },
-  "warning": "Two calls on one German affair; not a quality or general latency benchmark."
+  "observed": {
+    "latency_reduction_ratio": 0.2103,
+    "input_token_reduction_ratio": 0.3297,
+    "same_status_all_three": true
+  },
+  "warning": "Six calls on three affairs; not a quality or general latency benchmark."
 }

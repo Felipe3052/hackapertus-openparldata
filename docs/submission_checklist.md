@@ -36,12 +36,34 @@ PDF-Seitenbegrenzung konnte aus der Challenge-Seite nicht bestätigt werden.
 | Quellen und unveränderte historische Beispiele | `data/demo/jury/manifest.json`: Originaldatei-Hashes, Auswahlverfahren, Snapshot-Hashes |
 | Live-API-Prototyp | `classify-affair`, Streamlit Live-ID, FastAPI; keine neue kostenpflichtige Messung autorisiert |
 | Suchgrenzen | UI kennzeichnet begrenzte Vorauswahl; gemessene Compiler-Grenzen bleiben sichtbar |
-| Integration | Versionsschema, Manifestprüfung, vollständige Evidenzen und Review-IDs ergänzt; DB-Importtest noch offen |
-| Evaluation und CI | Bestehende Claims/Audit; Offline-CI ergänzt, gemeinsamer Scorer und Remote-CI-Lauf noch offen |
-| Verarbeitung | Kurze Funktions-/Resume-Prüfung; 300k ausschliesslich als Hochrechnung |
+| Integration | PostgreSQL-16-Test bestanden: zwei Versionen, vollständige Evidenzen, idempotenter Import und Fremdschlüssel |
+| Evaluation und CI | Gemeinsame strikte Validierung; 41/41 Claims nachgerechnet; Offline-CI ergänzt, Remote-Lauf noch offen |
+| Verarbeitung | Acht synthetische Affairs: Resume, Lock, gespeicherte Arbeit nach echter Prozessbeendigung; kein 300k-Lauf |
 | APS | Kein adjudizierter Konsensgoldstandard, kein belegter APS-Modellscore |
 | Quota / Preise | Verbindliche CSCS-Quota und monetärer Vertragstarif nicht bestätigt |
-| Abgabeartefakte | README, technischer Bericht und Pitch vorhanden; Schlussabgleich noch offen |
+| Abgabeartefakte | README/Pitch aktualisiert, fünfseitiges PDF visuell geprüft; Schlussprüfung läuft |
+| Öffentlicher Code | GitHub meldet `PRIVATE`; Veröffentlichung ist nicht automatisch autorisiert |
+
+## Kurze Prüfungen
+
+```bash
+python -m pytest tests/test_checkpoint_execution.py tests/test_submission_demo.py -q
+python scripts/check_postgres.py
+parltopic fetch-results && parltopic claims
+```
+
+Die Funktionsdaten des Checkpoint- und Datenbanktests sind synthetische Fixtures, keine
+erfundenen Evaluationsergebnisse. Die Qualitätszahlen stammen ausschliesslich aus historischen,
+gelabelten Affairs. Der neue [Validierungsbericht](results/submission-validation-20261018.json)
+enthält TP=349, FP=50, FN=49, TN=745 bei 1’193/1’200 entschiedenen Fällen.
+
+`run-eval` legt ein `.checkpoint.sqlite` und einen `.lock` neben dem JSONL an. Diese Dateien sind
+lokale Laufartefakte. Nach Abbruch denselben Befehl und Pfad verwenden; erfolgreiche gespeicherte
+Ergebnisse werden übersprungen, technische Fehler standardmässig erneut versucht.
+Der JSONL-Snapshot wird atomar ersetzt. Während des Jobs steht der jeweils aktuelle Stand im
+Journal; die Live-Datei wird nicht mehr bei jedem Ergebnis neu angehängt.
+Bei einem Abbruch zwischen Provider-Antwort und lokaler Speicherung kann ein In-flight-Aufruf
+erneut nötig sein. Mehrere Prozesse teilen weiterhin keine globale Provider-Quota.
 
 ## Demo starten
 

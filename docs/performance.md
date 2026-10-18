@@ -1,5 +1,11 @@
 # Apertus performance: API time and request admission dominate
 
+Submission-branch note: the regular classifier, compiler and optional thinking path now use
+the shared Apertus transport and process-local limiter. This is checked offline; the historical
+measurements below predate that integration and are not new runtime/quality measurements.
+The runner now bounds pending futures and journals completed results. Only short synthetic
+resume checks were run, including process termination; no full 300k run is claimed.
+
 Integration note: this report records the measured snapshots before the team's later topic
 configuration/experiment merge. The PR is now based on main commit `f55c5ab`; its topic
 configuration, few-shot support and optional thinking experiments are preserved. The numbers

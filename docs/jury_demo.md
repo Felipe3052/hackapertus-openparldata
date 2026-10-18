@@ -1,6 +1,6 @@
 # Jury-Demo und überprüfbare Ergebnisse
 
-Stand: 18. Oktober 2026. Feature-Branch `feat/jury-demo-evaluation`.
+Stand: 18. Oktober 2026. Abgabe-Branch `feat/hackathon-submission-ready`.
 Es wurden für diese Ergänzung **keine neuen API-Aufrufe** ausgeführt, keine Labels verändert
 und keine Parameter auf dem Testsplit optimiert. Die Klassifikationslogik bleibt bestehen.
 
@@ -46,7 +46,8 @@ Die frühere lokale Datei `hybrid_v3_validation1200.jsonl` war ein abgebrochener
 Aggregate mit Hashes, Gruppenmetriken, Konfusion, Coverage, Token und Originalmanifest:
 
 - [Dev-Auswertung](results/jury-dev-evaluation-20261018.json)
-- [Prüfung des unvollständigen Validierungslaufs](results/jury-evaluation-20261018.json)
+- [Vollständiger eingefrorener Validierungslauf](results/submission-validation-20261018.json)
+- [Historische Prüfung des abgebrochenen Teillaufs](results/jury-evaluation-20261018.json)
 
 Reproduktion im Projektordner (neue Ausgabepfade verwenden; vorhandene Dateien werden abgelehnt):
 
@@ -58,11 +59,13 @@ Reproduktion im Projektordner (neue Ausgabepfade verwenden; vorhandene Dateien w
 
 .venv/bin/python -m parltopic.evaluation.jury \
   --eval-set data/eval/e1_digitalisation_test.jsonl \
-  --results results/hybrid_v3_validation1200.jsonl \
+  --results results/ma_test.jsonl \
   --output results/jury-validation-reproduced.json
 ```
 
-Ein frischer Clone holt die Vorhersagedateien mit `parltopic fetch-results` aus dem Release.
+Ein frischer Clone holt die Vorhersagedateien mit `parltopic fetch-results` aus dem Release
+(fest gepinnter SHA256, keine abweichenden lokalen Ergebnisse überschreiben).
+Solange das Repository privat ist, braucht dies eine berechtigte `gh`-Anmeldung.
 Das CLI führt ausschliesslich Offline-Berechnungen aus.
 
 ## DVS und APS
@@ -99,8 +102,9 @@ cd /Users/josipjukic/hackapertus-openparldata
    konfiguriertem Modell/Rate-Limit. Ergebnis bleibt beim JSON-Download erhalten.
    Pro Klick kann ein logischer Modellaufruf mit konfigurierten Retries entstehen.
 
-Die Demo ist interaktiv und wurde per Streamlit AppTest ohne API geprüft. Der historische
-Modus benötigt lokale Vorhersagen; ohne diese bleibt der Live-Modus verfügbar.
+Die Demo ist interaktiv und wurde per Streamlit AppTest ohne API geprüft. Sechs echte Beispiele
+und historische Ergebnisse sind mitgeliefert; Docker benötigt dafür keine lokale Eval-Datei,
+kein Ergebnisarchiv und keinen API-Key. `make run` startet diesen Modus auf Port 8501.
 Ein angezeigter Entscheidungswert ist keine kalibrierte Wahrscheinlichkeit.
 
 ## Integration
@@ -131,25 +135,29 @@ Verifizierter CSCS-Tarif fehlt; Geldkosten bleiben unbekannt. Tokenzählung bewe
 die tatsächliche Anzahl HTTP-Versuche noch Retries. Ohne Start-/End-Ledger wird keine
 Wandzeit aus summierten parallelen Client-Latenzen erfunden.
 
-Connection Reuse und wiederaufnehmbare Jobs sind vorhanden; der bestehende Eval-Runner lädt
-jedoch alle Affairs und Futures in den Speicher. **Ein ressourcenbegrenzter 300k-Lauf ist
-noch nicht verifiziert.** Für ihn braucht es Streaming, begrenzte Warteschlange, persistente
-Checkpoints, einen gemeinsamen Quota-Koordinator über Prozesse und ein Ledger aller Versuche.
-Der optionale Thinking-Pfad verwendet weiterhin einen eigenen HTTP-/Quota-Pfad.
+Der Runner liest jetzt Zeilen nacheinander, hält höchstens `2 × workers` Futures und persistiert
+fertige Ergebnisse in einem SQLite-Journal. Ein Lock verhindert gleichzeitige Schreiber;
+JSONL-Snapshots werden atomar ersetzt. Acht synthetische Affairs prüfen Resume, eine echte
+Prozessbeendigung und übersprungene bereits gespeicherte Arbeit. Es wurden keine 300’000 Affairs
+verarbeitet. Die ID-Vorprüfung hält weiterhin alle IDs im Speicher; ein noch nicht gespeicherter
+In-flight-Aufruf kann nach einem Abbruch erneut nötig sein.
+Compiler, Klassifikator und Thinking verwenden nun denselben Transport und Prozess-Limiter.
+Ein globaler Koordinator über Prozesse, verbindliche Providerquoten und ein komplettes Ledger
+aller kostenpflichtigen Versuche bleiben offen.
 
 ## Die drei grössten Schwächen und Prioritäten
 
-1. **Referenzqualität und Reproduzierbarkeit (P0):** Vollständige PR-#4-Outputs samt Manifest,
-   Hashes und Laufledger vom Team sichern. DVS-Negative manuell adjudizieren; APS auf
+1. **Referenzqualität (P0):** Veröffentlichte PR-#4-Outputs sind nachgerechnet; Laufledger
+   und echte monetäre Tarife fehlen weiterhin. DVS-Negative manuell adjudizieren; APS auf
    Kapitel-/Multilabel-Ebene mit Konsenslabeln vervollständigen. Keine neuen Schwellen auf
    dem bereits geöffneten Testsplit einstellen; nächste Abnahme auf neuem Holdout.
 2. **Generalisierung (P1):** Schwächere FR-/IT-/Bund-Abdeckung und nur drei kommunale Dev-
    Beispiele; APS-Modellqualität fehlt. Nach Labelklärung ein festes mehrsprachiges Panel mit
    negativen und positiven Fällen je Thema/Ebene einfrieren. Neue Themen gegen ihren eigenen
    Scope messen, vollständige Coverage und Evidenzfehler neben allen Metriken melden.
-3. **Betrieb bei 300k (P1):** Verbindliche CSCS-RPM/TPM-Quoten bestätigen; Streaming/Checkpoints,
-   Retry-After und globales Rate-Limit ergänzen. Zuerst offline Lasttest mit Mock-Transport,
-   danach separat budgetierter API-Test. Batchgrösse 1 beibehalten: 3/5 verloren Coverage.
+3. **Betrieb (P1):** Verbindliche CSCS-RPM/TPM-Quoten bestätigen; globales Rate-Limit und
+   vollständiges Ledger ergänzen. Gemäss Nutzerpriorität nur kurze Funktionsprüfungen, keine
+   grossen Corpus-Läufe. Batchgrösse 1 beibehalten: 3/5 verloren Coverage.
 
 Keine dieser Arbeiten ist ein bereits gemessener Qualitätsgewinn. Die Ergänzung verbessert
 Demo, Transparenz, Auswertbarkeit und Integrationsprüfung.

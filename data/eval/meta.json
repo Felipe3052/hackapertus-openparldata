@@ -1,5 +1,8 @@
 {
   "seed": 42,
+  "eligibility_source": "historical file; rebuild uses dev positives only",
+  "label_semantics": "positive_unlabeled_proxy",
+  "benchmark_status": "opened_validation_not_sealed",
   "positive_types": [
     "Consultation",
     "Government affairs",

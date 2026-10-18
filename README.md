@@ -6,7 +6,8 @@ ParlTopic is an open, multilingual topic-classification service for Swiss parlia
 
 **Team:** Token Tell
 
-**Status:** Hackathon foundation — ingestion adapter and labelled evaluation data are the next implementation steps.
+**Status:** Working hackathon MVP with OpenParlData ingestion, frozen validation data, a
+hybrid classifier, and reproducible evaluation commands.
 
 ## What the MVP does
 
@@ -14,7 +15,8 @@ ParlTopic is an open, multilingual topic-classification service for Swiss parlia
 - defines standard or ad-hoc topics as YAML, without retraining;
 - splits long affairs into stable text segments;
 - retrieves the most relevant passages before inference;
-- uses Apertus v1.5 for neutral topic classification;
+- assigns explicit multilingual topic terms with a deterministic evidence-backed rule;
+- sends the remaining semantic cases to Apertus v1.5 for neutral topic classification;
 - returns evidence IDs that are resolved to original source text;
 - distinguishes `uncertain`, `not_evaluable`, and technical `failed` results;
 - exposes the same core through a CLI, FastAPI endpoint, and Streamlit demo.
@@ -33,10 +35,12 @@ OpenParlData API / export
  stable affairs and text segments
           │
           ▼
- BM25 baseline retrieval
-          │
-          ▼
- Apertus v1.5 topic classifier
+ deterministic keyword gate ── clear match ──┐
+          │ no match                         │
+          ▼                                  │
+ BM25 retrieval → Apertus classifier         │
+          │                                  │
+          └──────────────────────────────────┘
           │
           ▼
  validated result + original evidence
@@ -47,6 +51,8 @@ OpenParlData API / export
 ```
 
 See [docs/architecture.md](docs/architecture.md) and [technical_report.md](technical_report.md) for boundaries, decisions, and the production-oriented target design.
+Current development metrics and their limitations are recorded in
+[docs/benchmark.md](docs/benchmark.md).
 
 ## Quick start
 
@@ -123,6 +129,9 @@ technical_report.md     Hackathon technical report
 | `OPENPARLDATA_BASE_URL` | OpenParlData API root |
 | `RETRIEVAL_TOP_K` | Maximum passages sent to Apertus |
 | `CHUNK_SIZE` | Approximate passage size in characters |
+| `CLASSIFIER_PROMPT_VERSION` | Versioned Apertus decision prompt |
+| `CLASSIFIER_POLICY_VERSION` | Versioned end-to-end classifier policy |
+| `KEYWORD_RESCUE_ENABLED` | Enable the deterministic high-precision gate |
 
 All settings and safe defaults are documented in [.env.example](.env.example).
 
@@ -134,9 +143,12 @@ All settings and safe defaults are documented in [.env.example](.env.example).
 - **Reproducibility:** model, prompt version, token usage, and latency belong to every result.
 - **Sovereign deployment:** application code and data processing can run on-premise or in a Swiss cloud with Apertus.
 
-## Evaluation plan
+## Evaluation
 
-The first report will include precision, recall, F1, throughput, and review rate for the labelled DVS digitalisation sample. Results will be split by language and parliamentary level. Model scores are displayed as model assessments, not calibrated probabilities.
+Evaluation reports positive-class precision/recall/F1, macro-F1, confusion counts, coverage,
+language and parliamentary-level slices, latency, and token use. Paired prompt/policy comparisons
+include a bootstrap confidence interval. See [docs/evaluation_protocol.md](docs/evaluation_protocol.md)
+for the important positive-unlabeled label limitation.
 
 ## Current limitations
 

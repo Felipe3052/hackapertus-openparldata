@@ -83,11 +83,20 @@ def build_eval_sets(
 
     affairs = {record["id"]: record for record in read_ndjson(raw / "affairs.ndjson.gz")}
     positives = [affairs[i] for i in positive_ids if i in affairs]
-    positive_bodies = Counter(record["body_key"] for record in positives)
-    type_counts = Counter(record["type_harmonized_en"] for record in positives)
+    # Eligibility rules are learned from the development period only. Looking at later
+    # positives here would leak information from the nominal test period into the sampler.
+    dev_positives = [r for r in positives if _in_split(r.get("begin_date"), "dev")]
+    positive_bodies = Counter(record["body_key"] for record in dev_positives)
+    type_counts = Counter(record["type_harmonized_en"] for record in dev_positives)
     positive_types = {t for t, n in type_counts.items() if n >= MIN_TYPE_POSITIVES}
 
-    meta: dict[str, Any] = {"seed": seed, "positive_types": sorted(map(str, positive_types))}
+    meta: dict[str, Any] = {
+        "seed": seed,
+        "positive_types": sorted(map(str, positive_types)),
+        "eligibility_source": "dev positives only",
+        "label_semantics": "positive_unlabeled_proxy",
+        "benchmark_status": "opened_validation_not_sealed",
+    }
     chosen: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for split in SPLITS:
         eligible = [

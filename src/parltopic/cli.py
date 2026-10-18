@@ -103,6 +103,23 @@ def score(
     typer.echo(json.dumps(score_results(eval_set, results), indent=2))
 
 
+@app.command("compare-runs")
+def compare_run_outputs(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    baseline_results: Annotated[Path, typer.Option(exists=True, readable=True)],
+    candidate_results: Annotated[Path, typer.Option(exists=True, readable=True)],
+    samples: Annotated[int, typer.Option(min=1)] = 2_000,
+    seed: int = 42,
+) -> None:
+    """Paired bootstrap comparison of macro-F1 for two runs on the same examples."""
+    from parltopic.evaluation.compare import compare_runs
+
+    report = compare_runs(
+        eval_set, baseline_results, candidate_results, samples=samples, seed=seed
+    )
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command()
 def baseline(
     eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],

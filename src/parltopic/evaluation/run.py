@@ -1,15 +1,17 @@
 """Run classifiers over a frozen eval set and score the results per language and level."""
 
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+from parltopic.classification.keyword import first_keyword_hit
 from parltopic.classification.service import ClassificationService
 from parltopic.config import Settings
-from parltopic.evaluation.metrics import binary_metrics
+from parltopic.evaluation.metrics import binary_metrics, precision_at_prevalence
 from parltopic.models import Affair, ClassificationStatus, TopicDefinition
+from parltopic.retrieval.chunker import chunk_affair
 
 POSITIVE = {ClassificationStatus.ASSIGNED.value}
 POSITIVE_OR_UNCERTAIN = POSITIVE | {ClassificationStatus.UNCERTAIN.value}
@@ -27,14 +29,25 @@ def run_classifier(
     settings: Settings,
     workers: int = 8,
     limit: int | None = None,
+    retry_failed: bool = True,
 ) -> Path:
     """Classify every affair of the eval set; resumes by skipping affairs already in out_path."""
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
-    done = {row["affair_id"] for row in read_rows(out)} if out.exists() else set()
-    todo = [row for row in read_rows(eval_path) if row["affair_id"] not in done][:limit]
+    existing = read_rows(out) if out.exists() else []
+    if retry_failed:
+        existing = [
+            row for row in existing if row.get("status") != ClassificationStatus.FAILED.value
+        ]
+    done = {row["affair_id"] for row in existing}
+    candidates = read_rows(eval_path)
+    if limit is not None:
+        candidates = candidates[:limit]
+    todo = [row for row in candidates if row["affair_id"] not in done]
     service = ClassificationService(settings)
-    with out.open("a", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
+    with out.open("w", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
+        for row in existing:
+            file.write(json.dumps(row, ensure_ascii=False) + "\n")
         futures = [pool.submit(service.classify, Affair.model_validate(row), topic) for row in todo]
         for future in as_completed(futures):
             file.write(future.result().model_dump_json() + "\n")
@@ -44,31 +57,74 @@ def run_classifier(
 
 def keyword_predictions(eval_path: str | Path, topic: TopicDefinition) -> dict[str, bool]:
     """Baseline B0, today's full-text search: any topic name or synonym occurs in the affair."""
-    terms = [term.casefold() for term in [topic.name, *topic.synonyms]]
-    return {
-        row["affair_id"]: any(
-            term in Affair.model_validate(row).combined_text().casefold() for term in terms
-        )
-        for row in read_rows(eval_path)
-    }
+    predictions = {}
+    for row in read_rows(eval_path):
+        affair = Affair.model_validate(row)
+        segments = chunk_affair(affair, 10_000_000, 0)
+        predictions[row["affair_id"]] = first_keyword_hit(segments, topic) is not None
+    return predictions
 
 
-def _metrics_row(pairs: list[tuple[bool, bool]]) -> dict[str, Any]:
+def _metrics_row(
+    pairs: list[tuple[bool, bool]], deployment_prevalence: float | None = None
+) -> dict[str, Any]:
     expected, predicted = zip(*pairs, strict=True) if pairs else ((), ())
     m = binary_metrics(list(expected), list(predicted))
-    return {
+    row = {
         "n": m.count,
         "positives": sum(expected),
         "precision": round(m.precision, 3),
         "recall": round(m.recall, 3),
         "f1": round(m.f1, 3),
+        "negative_f1": round(m.negative_f1, 3),
+        "macro_precision": round(m.macro_precision, 3),
+        "macro_recall": round(m.macro_recall, 3),
+        "macro_f1": round(m.macro_f1, 3),
+        "accuracy": round(m.accuracy, 3),
+        "confusion": {
+            "tp": m.true_positive,
+            "fp": m.false_positive,
+            "fn": m.false_negative,
+            "tn": m.true_negative,
+        },
     }
+    if deployment_prevalence is not None:
+        row["precision_at_deployment_prevalence"] = round(
+            precision_at_prevalence(m, deployment_prevalence), 3
+        )
+        row["deployment_prevalence"] = deployment_prevalence
+    return row
+
+
+def _validated_results(
+    eval_rows: list[dict[str, Any]], result_rows: list[dict[str, Any]]
+) -> tuple[dict[str, dict[str, Any]], set[str]]:
+    eval_ids = {row["affair_id"] for row in eval_rows}
+    result_ids = [row["affair_id"] for row in result_rows]
+    duplicates = sorted(
+        affair_id for affair_id, count in Counter(result_ids).items() if count > 1
+    )
+    if duplicates:
+        raise ValueError(f"Duplicate result IDs: {duplicates[:10]}")
+    unknown = sorted(set(result_ids) - eval_ids)
+    if unknown:
+        raise ValueError(f"Result IDs not present in evaluation set: {unknown[:10]}")
+    models = {row.get("model") for row in result_rows}
+    prompts = {row.get("prompt_version") for row in result_rows}
+    classifiers = {row.get("classifier_version") for row in result_rows}
+    if len(models) > 1 or len(prompts) > 1 or len(classifiers) > 1:
+        raise ValueError(
+            "A scored run must contain exactly one model, prompt, and classifier version"
+        )
+    results = {row["affair_id"]: row for row in result_rows}
+    return results, eval_ids - set(results)
 
 
 def score_binary(
     eval_path: str | Path,
     predictions: dict[str, bool],
     statuses: dict[str, str] | None = None,
+    deployment_prevalence: float | None = None,
 ) -> dict[str, Any]:
     """Overall and per-language / per-level precision, recall and F1."""
     rows = read_rows(eval_path)
@@ -80,7 +136,12 @@ def score_binary(
         groups["all"].append(pair)
         groups[f"lang={row['language']}"].append(pair)
         groups[f"level={row['level']}"].append(pair)
-    report: dict[str, Any] = {key: _metrics_row(pairs) for key, pairs in sorted(groups.items())}
+    report: dict[str, Any] = {
+        key: _metrics_row(
+            pairs, deployment_prevalence if key == "all" else None
+        )
+        for key, pairs in sorted(groups.items())
+    }
     report["coverage"] = f"{len(groups['all'])}/{len(rows)}"
     if statuses:
         counts: dict[str, int] = defaultdict(int)
@@ -90,24 +151,63 @@ def score_binary(
     return report
 
 
+def _deployment_prevalence(eval_path: str | Path) -> float | None:
+    path = Path(eval_path)
+    meta_path = path.parent / "meta.json"
+    if not meta_path.exists():
+        return None
+    name = path.stem
+    split = "test" if name.endswith("_test") else "dev" if name.endswith("_dev") else None
+    if split is None or not name.startswith("e1_digitalisation_"):
+        return None
+    metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+    prevalence = metadata.get(f"e1_{split}", {}).get("prevalence")
+    return float(prevalence) if prevalence is not None else None
+
+
 def score_results(eval_path: str | Path, results_path: str | Path) -> dict[str, Any]:
-    results = {row["affair_id"]: row for row in read_rows(results_path)}
+    eval_rows = read_rows(eval_path)
+    result_rows = read_rows(results_path)
+    results, missing = _validated_results(eval_rows, result_rows)
     statuses = {i: r["status"] for i, r in results.items()}
-    evaluated = {i: s for i, s in statuses.items() if s != ClassificationStatus.FAILED.value}
+    covered = {
+        i: s
+        for i, s in statuses.items()
+        if s
+        in {
+            ClassificationStatus.ASSIGNED.value,
+            ClassificationStatus.NOT_ASSIGNED.value,
+        }
+    }
+    deployment_prevalence = _deployment_prevalence(eval_path)
     tokens_in = sum(r.get("input_tokens") or 0 for r in results.values())
     tokens_out = sum(r.get("output_tokens") or 0 for r in results.values())
     latencies = sorted(r["latency_ms"] for r in results.values() if r.get("latency_ms"))
     return {
         "model": next(iter(results.values()), {}).get("model"),
+        "prompt_version": next(iter(results.values()), {}).get("prompt_version"),
+        "classifier_version": next(iter(results.values()), {}).get("classifier_version"),
+        "result_integrity": {
+            "expected": len(eval_rows),
+            "received": len(results),
+            "missing": len(missing),
+            "coverage": round(len(covered) / len(eval_rows), 4) if eval_rows else 0.0,
+        },
         "assigned": score_binary(
-            eval_path, {i: s in POSITIVE for i, s in evaluated.items()}, statuses
+            eval_path,
+            {i: s in POSITIVE for i, s in covered.items()},
+            statuses,
+            deployment_prevalence,
         ),
         "assigned_or_uncertain": score_binary(
-            eval_path, {i: s in POSITIVE_OR_UNCERTAIN for i, s in evaluated.items()}
+            eval_path, {i: s in POSITIVE_OR_UNCERTAIN for i, s in statuses.items()}
         ),
         "usage_per_1000_affairs": {
             "input_tokens": round(tokens_in / len(results) * 1000) if results else 0,
             "output_tokens": round(tokens_out / len(results) * 1000) if results else 0,
         },
         "latency_ms_p50": latencies[len(latencies) // 2] if latencies else None,
+        "label_warning": (
+            "E1 untagged affairs are positive-unlabeled proxies, not adjudicated negatives."
+        ),
     }

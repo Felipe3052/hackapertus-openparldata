@@ -8,15 +8,15 @@
 
 ## 1. Summary
 
-ParlTopic is a multilingual annotation service that assigns standard or user-defined topics to Swiss parliamentary affairs. It retrieves a small set of relevant source passages, asks Apertus v1.5 for a structured and politically neutral classification, and resolves the model's evidence IDs back to original text. The first validation target is the manually curated Digital Administration Switzerland digitalisation use case. The initial repository establishes the application boundaries, offline tests, CLI/API/UI entry points, and a reproducible evaluation contract; final measurements will be added after the labelled sample is available.
+ParlTopic is a multilingual annotation service that assigns standard or user-defined topics to Swiss parliamentary affairs. A deterministic multilingual term gate handles explicit cases; the remaining affairs use field-aware segmentation, BM25 retrieval, and Apertus v1.5. Every decision is tied back to original evidence. The first development benchmark covers 450 German, French, and Italian digitalisation affairs from OpenParlData.
 
 ## 2. Architecture
 
 The application is split into adapters, a reusable classification core, and delivery surfaces:
 
 1. **Ingestion** reads OpenParlData API responses or export files and normalises them into stable `Affair`, `Document`, and `TextSegment` records.
-2. **Retrieval** segments long texts and ranks passages against a versioned topic definition. BM25 is the baseline. A multilingual embedding reranker is an experiment, not an assumed dependency.
-3. **Classification** sends only the selected passages and the topic definition to Apertus. The model returns a constrained JSON decision and passage IDs.
+2. **Deterministic gate** assigns explicit configured multilingual terms and cites the matching segment without an LLM call.
+3. **Retrieval and classification** use field-aware segments and BM25 for all remaining affairs, then ask Apertus for a constrained JSON decision and passage IDs.
 4. **Validation and evidence** reject unknown IDs, clamp invalid scores, preserve technical failures separately, and return original source text.
 5. **Delivery** exposes one service through JSONL CLI, FastAPI, and Streamlit.
 6. **Evaluation** measures precision, recall, F1, latency, tokens, review rate, language, and parliamentary level.
@@ -48,11 +48,14 @@ Temperature is zero. Complete documents are not sent blindly: the earlier Fact A
 
 Primary data comes from the public OpenParlData REST API or data export. The internal schema preserves upstream identifiers, language, parliamentary level, dates, document identifiers, and source URLs. Source hashes and retrieval timestamps will be added when the first real API fixture is pinned.
 
-The checked-in `data/demo/affairs.jsonl` contains synthetic examples only. It validates the application contract but is not used to claim model performance. Labelled DVS digitalisation examples will be split before prompt optimisation and reported with their provenance and licence.
+The repository includes frozen E1 development and opened-validation data derived from PolitMonitor tags, plus Curia and DVS evaluation resources. Untagged E1 affairs are positive-unlabeled proxies rather than adjudicated negatives. Results therefore measure agreement with available tags and are not a final production-quality claim.
 
 ## 5. Evaluation
 
-The evaluation plan is:
+The current development result for hybrid-v3 with Apertus 70B is precision `0.931`, recall
+`0.813`, positive F1 `0.868`, and macro-F1 `0.904` on 450 examples. The keyword-only baseline
+has macro-F1 `0.733`. These are development figures; `docs/benchmark.md` records paired
+comparisons and uncertainty. Evaluation includes:
 
 - binary digitalisation precision, recall, F1, and accuracy;
 - review/abstention rate for `uncertain` and `not_evaluable`;
@@ -62,7 +65,8 @@ The evaluation plan is:
 - evidence validity: every returned ID exists in the supplied context;
 - comparison against keyword-only and BM25-only baselines.
 
-The final report must distinguish development data, frozen holdout data, synthetic demo data, and any manually reviewed examples.
+The next defensible quality milestone is a newly sealed, manually adjudicated holdout because
+the existing nominal test labels have already been inspected.
 
 ## 6. Limitations
 

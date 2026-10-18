@@ -33,6 +33,9 @@ so the same pipeline is measured per language on official translations.
 | E1.2 70B, topic v2 (inclusion rule) | 0.952 | 0.667 | **0.784** | 0.840 | 0.711 | 0.667 | 0.680 | 0.852 | 815 / 86 |
 | E1.2 repeated | 0.952 | 0.667 | **0.784** | 0.840 | 0.711 | 0.667 | 0.680 | 0.852 | 815 / 87 |
 | E1.3 8B, topic v2 | 0.951 | 0.260 | **0.408** | 0.404 | 0.389 | 0.439 | 0.463 | 0.355 | 815 / 82 |
+| E1.4 70B v2 + thinking for `not_assigned` | 0.935 | 0.773 | **0.847** | 0.861 | 0.846 | 0.807 | 0.814 | 0.873 | 1,430 / 644 |
+| E1.5 70B v2 + 3+3 retrieved few-shot examples | 0.952 | 0.660 | **0.780** | 0.810 | 0.739 | 0.720 | 0.701 | 0.831 | 953 / 88 |
+| E1.6 70B, topic v3 (side aspects count) | 0.955 | 0.700 | **0.808** | 0.847 | 0.766 | 0.720 | 0.733 | 0.859 | 849 / 84 |
 
 Findings:
 
@@ -55,13 +58,34 @@ Findings:
   aspects. A smaller part of the misses looks like label noise (pension, rail, CO₂ affairs).
 - Federal and Italian affairs are the weak spots (F1 0.68 / 0.67 vs. cantonal 0.85).
 
+- **Thinking for the rejections is the largest gain so far (E1.4, +0.063 F1).** Apertus only reasons
+  when the assistant turn is prefilled with `<|inner_prefix|>` (a prompt instruction or the
+  `-thinking` model alone does not trigger it); the answer is parsed after `<|inner_suffix|>`. Of
+  340 re-checked rejections, 19 flip to `assigned`, 16 of them correctly; the 3 others
+  (*Frais de surveillance téléphonique*, *Punir enfin le pédopiégeage en ligne*, *analfabetismo
+  visivo*) are arguably digital, i.e. label gaps. It lifts exactly the weak spots: FR 0.71 → 0.85,
+  IT 0.67 → 0.81, federal 0.68 → 0.81. Cost: median 669 output tokens and 11.6 s per re-check,
+  on 76 % of the affairs; 2 of 340 answers had no parseable JSON (parser hardened since).
+- **Retrieved few-shot examples do not help (E1.5, rejected):** 6 fixed, 7 broken, +17 % input
+  tokens. The BM25 neighbours are lexically, not topically similar.
+- **Counting side aspects helps (E1.6, adopted as topic v3):** 6 fixed, 1 broken, precision
+  unchanged, no new false positives.
+
 Cost reference: E1.2 needs 815 input and 86 output tokens per affair. At the Public AI list price for
 Apertus 70B (USD 0.82 / 2.92 per million tokens) that is about USD 0.92 per 1,000 affairs, i.e.
 ~USD 300 for all 325,000 affairs and one topic without a pre-filter. Throughput: 450 affairs in
 168 s with 8 parallel requests (p50 latency 2.9 s).
 
-## Open experiments
+### E1.7 — final configuration (dev)
 
-- E1.4 thinking only for `not_assigned` answers (reasoning prefill `<|inner_prefix|>`)
-- E1.5 retrieved few-shot examples (3 most similar tagged + 3 untagged affairs from the pool)
-- E1.6 topic v3: side aspects count
+| Run | P | R | F1 | F1 lang=de | F1 lang=fr | F1 lang=it | F1 level=federal | F1 level=cantonal | tokens in/out per affair |
+|---|---|---|---|---|---|---|---|---|---|
+| E1.6 70B, topic v3 | 0.955 | 0.700 | **0.808** | 0.847 | 0.766 | 0.720 | 0.733 | 0.859 | 849 / 84 |
+| **E1.7 70B v3 + thinking for `not_assigned`** | 0.909 | 0.800 | **0.851** | 0.852 | 0.889 | 0.814 | 0.810 | 0.883 | 1,462 / 658 |
+
+8 of 338 re-checks returned no parseable answer (reasoning ran into the 4,000-token limit); these
+keep the fast-pass label, so a failed re-check can never add a false positive.
+
+**Predeclared before the single test run (2026-10-18, ~13:30):** the test split (1,200 affairs,
+2024–2026) is run once with B0, E1.6 and E1.7, nothing is tuned afterwards. Expected: E1.7 beats B0
+by ≥ 0.15 F1 and E1.6 by ≥ 0.02 F1; per-language F1 of FR and IT within 0.10 of DE.

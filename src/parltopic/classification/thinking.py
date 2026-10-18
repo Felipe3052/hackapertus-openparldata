@@ -6,7 +6,6 @@ marker; the answer follows `<|inner_suffix|>`. Prompt instructions alone do not 
 """
 
 import json
-import re
 import time
 
 import httpx
@@ -25,16 +24,21 @@ from parltopic.retrieval.chunker import chunk_affair
 
 THINKING_MODEL = "swiss-ai/Apertus-v1.5-70B-thinking"
 PREFIX, SUFFIX = "<|inner_prefix|>", "<|inner_suffix|>"
-JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 
 def parse_answer(content: str) -> dict:
     """JSON answer after the reasoning; falls back to the last JSON object in the text."""
     answer = content.split(SUFFIX, 1)[1] if SUFFIX in content else content
-    match = JSON_RE.search(answer)
-    if not match:
-        raise ValueError("no JSON answer after reasoning")
-    return json.loads(match.group(0))
+    decoder = json.JSONDecoder()
+    # First JSON object that decodes; text after it (a repeated answer, a note) is ignored.
+    for start in (i for i, char in enumerate(answer) if char == "{"):
+        try:
+            payload, _ = decoder.raw_decode(answer, start)
+        except ValueError:
+            continue
+        if isinstance(payload, dict) and "status" in payload:
+            return payload
+    raise ValueError("no JSON answer after reasoning")
 
 
 def rethink(

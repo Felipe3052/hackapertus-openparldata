@@ -2,7 +2,7 @@ topic_id: digitalisation
 name: Digitalisierung
 # Scope follows the PolitMonitor editorial tag behind the DVS list (see data/raw/README.md):
 # e-government, cybersecurity, AI, data protection, digital media and broadband.
-# v3 (experiment): v2 plus side aspects count, after dev error analysis only.
+# v2: inclusion rule added after error analysis on the dev split (2018-2023) only.
 description: >-
   Parlamentarische Geschäfte zur digitalen Transformation von Staat, Wirtschaft und
   Gesellschaft: digitale Verwaltung und E-Government, elektronische Identität,
@@ -10,12 +10,11 @@ description: >-
   künstliche Intelligenz und Automatisierung, Datenschutz und Datennutzung, Geodaten,
   digitale Medien, Plattformen und Desinformation, Breitband, Mobilfunk und 5G,
   Digitalisierung in Bildung, Gesundheit und Wirtschaft.
-  Regel: Ordne das Thema zu, sobald digitale Technologie, Informatik, Daten, Online-Dienste,
-  Online-Plattformen, Überwachungstechnologie oder Telekommunikation im Geschäft eine Rolle
-  spielt, auch als Nebenaspekt einer Vorlage aus einem anderen Politikfeld (z. B. eine
-  Konsumentenschutz- oder Arbeitsrechtsvorlage, die Online-Buchungen oder Homeoffice regelt),
-  und auch wenn nur der Titel vorliegt. Verwende not_assigned nur, wenn kein digitaler Bezug
-  erkennbar ist; bei einem möglichen, aber unklaren Bezug verwende uncertain.
+  Regel: Ordne das Thema zu, sobald digitale Technologie, Informatik, Daten, Online-Dienste
+  oder Telekommunikation ein wesentlicher Aspekt des Geschäfts ist, auch wenn nur der Titel
+  vorliegt. Ein Titel wie "Digital first" oder "Projekt Digital+" genügt. Verwende
+  not_assigned nur, wenn kein digitaler Bezug erkennbar ist; bei einem möglichen, aber
+  unklaren Bezug verwende uncertain.
 synonyms:
   - Digitalisierung
   - digital

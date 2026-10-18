@@ -39,6 +39,9 @@ parltopic aps-coverage \
   --taxonomy configs/taxonomies/aps_topics.json
 ```
 
+Use `--require-language it` in a deployment preflight to fail closed until Italian coverage is
+complete.
+
 The current base taxonomy reports 165 topics, 22 chapters and 8 domains for German and French;
 the report explicitly shows zero coverage for Italian and Romansh until a version-matched alias
 file supplies reviewed labels.

@@ -108,21 +108,37 @@ def aps_coverage(
         "configs/taxonomies/aps_topics.json"
     ),
     aliases: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
+    require_language: Annotated[
+        list[str] | None,
+        typer.Option("--require-language", help="Require complete coverage; repeatable."),
+    ] = None,
 ) -> None:
     """Report APS label coverage by language and hierarchy level without model calls."""
     from parltopic.aps import ApsTaxonomy
 
+    require_language = require_language or []
     loaded = ApsTaxonomy.load(taxonomy, aliases_path=aliases)
-    typer.echo(
-        json.dumps(
-            {
-                "taxonomy_version": loaded.version,
-                "nodes": len(loaded.nodes),
-                "coverage": loaded.language_coverage(),
-            },
-            indent=2,
-        )
-    )
+    coverage = loaded.language_coverage()
+    report = {
+        "taxonomy_version": loaded.version,
+        "nodes": len(loaded.nodes),
+        "coverage": coverage,
+        "required_languages": require_language,
+    }
+    typer.echo(json.dumps(report, indent=2))
+    expected = {
+        "domain": len(loaded.domains()),
+        "chapter": len(loaded.chapters()),
+        "topic": len(loaded.topics()),
+    }
+    incomplete = [
+        language
+        for language in require_language
+        if coverage.get(language, {}) != expected
+    ]
+    if incomplete:
+        typer.echo(f"Incomplete APS language coverage: {', '.join(incomplete)}", err=True)
+        raise typer.Exit(1)
 
 
 @app.command("aps-evaluate")

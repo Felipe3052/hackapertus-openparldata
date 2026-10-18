@@ -1,104 +1,150 @@
-# Hack Apertus Liebefeld — OpenParlData: Topic classification for Swiss parliaments with Apertus, Token Tell
+# ParlTopic — OpenParlData topic classification with Apertus
 
-Template repository for [Hack Apertus](https://hackapertus.ch/) submissions.
-Every project keeps the same layout, so organizers and judges find the same
-things in the same place.
+ParlTopic is an open, multilingual topic-classification service for Swiss parliamentary affairs. It combines retrieval over OpenParlData texts with Apertus v1.5 and returns a topic decision together with verifiable source passages.
 
-There are 3 challenges to pick from:
-1. Bern Economic Development Agency: Research & Expertise Navigator
-2. OpenParlData: Topic classification for Swiss parliaments with Apertus
-3. University of Bern: Deciphering Archives with Apertus
+**Challenge:** [Topic classification for Swiss parliaments with Apertus](https://app.sprintd.org/events/hack-apertus-liebefeld/cases/topic-classification-for-swiss-parliaments-with-apertus)
 
-`One paragraph describing the challenge.`
+**Team:** Token Tell
 
-Submissions must use the v1.5 Apertus model family.
-The submission must comply with the [HackApertus T&C](https://hackapertus.ch/terms-and-conditions).
+**Status:** Hackathon foundation — ingestion adapter and labelled evaluation data are the next implementation steps.
 
-## 🎯 The Challenge
+## What the MVP does
 
-`Fill in the title of the challenge you picked and link the Notion challenge page (URL)`
+- accepts parliamentary affairs in a small, versioned JSONL contract;
+- defines standard or ad-hoc topics as YAML, without retraining;
+- splits long affairs into stable text segments;
+- retrieves the most relevant passages before inference;
+- uses Apertus v1.5 for neutral topic classification;
+- returns evidence IDs that are resolved to original source text;
+- distinguishes `uncertain`, `not_evaluable`, and technical `failed` results;
+- exposes the same core through a CLI, FastAPI endpoint, and Streamlit demo.
 
-## 🔧 Resources & Tools
+The first validation use case is **digitalisation**. The architecture is designed for German, French, Italian, and Romansh; the initial quality report must publish results separately by language.
 
-Check our resources & tools page for detailed information:
-[https://hackapertus.notion.site/liebefeld-resources-tools](https://hackapertus.notion.site/liebefeld-resources-tools)
+## Architecture
 
-| Models           | URL                                      |
-|------------------|------------------------------------------|
-| Apertus v1.5 8B  | [huggingface.co/swiss-ai/Apertus-v1.5-8B](https://huggingface.co/swiss-ai/Apertus-v1.5-8B)  |
-| Apertus v1.5 70B | [huggingface.co/swiss-ai/Apertus-v1.5-70B](https://huggingface.co/swiss-ai/Apertus-v1.5-70B) |
+```text
+OpenParlData API / export
+          │
+          ▼
+ ingestion + normalisation
+          │
+          ▼
+ stable affairs and text segments
+          │
+          ▼
+ BM25 baseline retrieval
+          │
+          ▼
+ Apertus v1.5 topic classifier
+          │
+          ▼
+ validated result + original evidence
+          │
+     ┌────┼────┐
+     ▼    ▼    ▼
+    CLI  API   Streamlit
+```
 
-## The structure
+See [docs/architecture.md](docs/architecture.md) and [technical_report.md](technical_report.md) for boundaries, decisions, and the production-oriented target design.
 
-Keep the files and directories as shown below — don't rename or move them.
+## Quick start
 
-| Path | What it is |
+Requires Python 3.11 or newer.
+
+```bash
+cp .env.example .env
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+make test
+make demo
+```
+
+Add the CSCS API key to `.env`, then start the user interface:
+
+```bash
+make web
+```
+
+Or run the API:
+
+```bash
+make api
+curl http://localhost:8000/health
+```
+
+Docker:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+## CLI contract
+
+Offline validation, without an Apertus request:
+
+```bash
+parltopic classify \
+  --input data/demo/affairs.jsonl \
+  --topic configs/topics/digitalisation.yaml \
+  --offline
+```
+
+Live classification:
+
+```bash
+parltopic classify \
+  --input data/demo/affairs.jsonl \
+  --topic configs/topics/digitalisation.yaml \
+  --output results/digitalisation.jsonl
+```
+
+## Repository structure
+
+```text
+app/                    Streamlit demo
+configs/topics/         Ad-hoc and standard topic definitions
+data/demo/              Small redistributable demo inputs
+docs/                   Architecture and implementation decisions
+src/parltopic/          Reusable application core
+tests/                  Offline unit tests
+technical_report.md     Hackathon technical report
+```
+
+## Environment variables
+
+| Variable | Purpose |
 | --- | --- |
-| `README.md` | The challenge description and submission requirements |
-| `technical_report.md` | The deeper write-up: architecture, evaluation, limitations |
-| `LICENSE` | Apache-2.0 |
-| `src/` | Your code |
+| `LLM_NAME` | Apertus model identifier |
+| `LLM_BASE_URL` | OpenAI-compatible inference endpoint |
+| `LLM_API_KEY` | Runtime API credential; never committed |
+| `OPENPARLDATA_BASE_URL` | OpenParlData API root |
+| `RETRIEVAL_TOP_K` | Maximum passages sent to Apertus |
+| `CHUNK_SIZE` | Approximate passage size in characters |
 
-## Environment
+All settings and safe defaults are documented in [.env.example](.env.example).
 
-- Include instructions for running the project in your technical report.
-- Use the following environment variables:
-```
-LLM_NAME — name and version of the model
-LLM_BASE_URL — endpoint base URL
-LLM_API_KEY — your API key
-```
+## Design principles
 
-## 📦 Submission Requirements & Deliverables
+- **Evidence first:** the model selects passage IDs; the application returns the original text.
+- **Neutrality:** the service classifies subject matter, not political merit or truth.
+- **Explicit failure states:** infrastructure failures never become negative topic labels.
+- **Reproducibility:** model, prompt version, token usage, and latency belong to every result.
+- **Sovereign deployment:** application code and data processing can run on-premise or in a Swiss cloud with Apertus.
 
-The submission must:
-1. follow the template repo and include all prerequisite files and definitions
-2. run end-to-end when judges try to run it
+## Evaluation plan
 
-### Git repo (URL)
-- Create your repo from this template (**Use this template**).
-- Keep the layout as it is: don't rename or move its files.
-- Set the repo to PUBLIC (Settings --> Collaborators --> Manage Visibility)
-- Submit the URL of YOUR Git repo.
+The first report will include precision, recall, F1, throughput, and review rate for the labelled DVS digitalisation sample. Results will be split by language and parliamentary level. Model scores are displayed as model assessments, not calibrated probabilities.
 
-### Technical Report (pdf)
-- Update [technical_report.md](technical_report.md) in this repository with all the details for your submission.
-- Upload a pdf of your technical report to the root of the repo, named as `TeamName_Report.pdf`.
-- Format: pdf, max. 6 pages w/o references
-- Submit the pdf of the technical report.
+## Current limitations
 
-### Demo video (URL)
-- Max. 2 min demo video of your prototype
-- Add the link to the **Demo** field at the top of [technical_report.md](technical_report.md)
-- Submit the URL of the video.
+- The checked-in OpenParlData client is deliberately thin until the exact API response contract is pinned with fixtures.
+- BM25 is the reproducible baseline; multilingual embeddings remain a measured follow-up experiment.
+- The included demo data is synthetic and cannot be used as evidence of classification quality.
+- Romansh support is part of the schema but requires a dedicated labelled evaluation sample.
 
-## ⚖️ Judging Criteria
+## Licence
 
-Each challenge has its own criteria, listed in its challenge description.
-
-The main jury scores every submission on 6 dimensions (relevant for Top 6 teams):
-1. **Purposeful use of AI**
-2. **Technical rigour**
-3. **Value, cost & scalability**
-4. **Sovereign deployability**
-5. **Implementation feasibility**
-6. **Pitch & presentation**
-
-Each dimension is scored from 0 to 5.
-
-## Getting started
-
-1. Click **Use this template** to create your own repository.
-
-## License
-
-All Hack Apertus projects are open-sourced. Please check our Terms & Conditions for specific licensing details (6. What you build is open source): https://hackapertus.ch/terms-and-conditions
-
-## Support
-
-### FAQ
-💡 https://hackapertus.ch/faq
-
-### Contact
-
-💬 In case you have questions, join the conversation on Discord. Alternatively, send an email to “hello@hackapertus.ch”.
+Code is released under the [Apache License 2.0](LICENSE). Documentation is intended for CC-BY-4.0 as required by the event template.

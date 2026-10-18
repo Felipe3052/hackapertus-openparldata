@@ -24,4 +24,12 @@ build/
 # OS and editor
 .DS_Store
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# Runtime outputs and local datasets
+data/*.db
+data/cache/
+results/*
+!results/.gitkeep

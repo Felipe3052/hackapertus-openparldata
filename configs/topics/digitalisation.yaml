@@ -1,0 +1,20 @@
+topic_id: digitalisation
+name: Digitalisierung
+description: >-
+  Parlamentarische Geschäfte zu digitaler Verwaltung, E-Government,
+  elektronischer Identität, Cloud-Infrastruktur, künstlicher Intelligenz,
+  Automatisierung und digitalen öffentlichen Dienstleistungen.
+synonyms:
+  - E-Government
+  - digitale Verwaltung
+  - elektronische Identität
+  - E-ID
+  - Cloud-Infrastruktur
+  - Automatisierung
+positive_examples:
+  - Einführung einer elektronischen Identität für kantonale Dienstleistungen.
+  - Digitale Einreichung und Verarbeitung von Behördengesuchen.
+negative_examples:
+  - Sanierung einer Kantonsstrasse ohne digitalen Bezug.
+  - Finanzierung eines konventionellen Schulgebäudes.
+

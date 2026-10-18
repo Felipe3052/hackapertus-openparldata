@@ -1,0 +1,10 @@
+services:
+  parltopic:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+

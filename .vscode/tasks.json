@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ParlTopic: tests",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python -m pytest",
+      "group": {"kind": "test", "isDefault": true},
+      "problemMatcher": []
+    },
+    {
+      "label": "ParlTopic: web",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python -m streamlit run app/streamlit_app.py",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "ParlTopic: API",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python -m uvicorn parltopic.api:app --reload --port 8000",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}
+

@@ -1,0 +1,2 @@
+"""OpenParlData ingestion adapters."""
+

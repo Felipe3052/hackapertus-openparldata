@@ -101,6 +101,12 @@ whitespace token approximations offline. On the checked-in E1 file with `max-seg
 baseline context is approximately 152,141 tokens and the APS context approximately 111,197
 tokens, a 26.9 % reduction. This does not claim an Apertus latency or quality gain.
 
+A controlled live smoke test on one German affair used two calls to the same Apertus endpoint.
+The status remained `assigned`; measured latency changed from 5.10 s to 3.17 s and input tokens
+from 2,245 to 1,552. The full record is
+[`docs/results/aps-live-smoke-20261018.json`](results/aps-live-smoke-20261018.json). This is
+one paired example and must not be generalized to all languages, topics or parliament levels.
+
 After producing a candidate result file with the same evaluation IDs, run the regression gate:
 
 ```bash

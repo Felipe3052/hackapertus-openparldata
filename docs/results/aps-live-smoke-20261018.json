@@ -1,0 +1,39 @@
+{
+  "mode": "controlled_live_smoke",
+  "model": "swiss-ai/Apertus-v1.5-70B",
+  "endpoint": "https://api.inference.cscs.ch/v1",
+  "affair_id": "297761",
+  "language": "de",
+  "topic": "digitalisation",
+  "calls": 2,
+  "keyword_rescue_enabled": false,
+  "aps_context_max_segments": 2,
+  "results": [
+    {
+      "variant": "baseline",
+      "status": "assigned",
+      "latency_ms": 5099.65,
+      "input_tokens": 2245,
+      "output_tokens": 147,
+      "context_policy": "full",
+      "segments_before": 4,
+      "segments_after": 4
+    },
+    {
+      "variant": "aps_context",
+      "status": "assigned",
+      "latency_ms": 3168.64,
+      "input_tokens": 1552,
+      "output_tokens": 99,
+      "context_policy": "aps-shadow-context",
+      "segments_before": 4,
+      "segments_after": 2
+    }
+  ],
+  "observed": {
+    "latency_reduction_ratio": 0.3787,
+    "input_token_reduction_ratio": 0.3087,
+    "same_status": true
+  },
+  "warning": "Two calls on one German affair; not a quality or general latency benchmark."
+}

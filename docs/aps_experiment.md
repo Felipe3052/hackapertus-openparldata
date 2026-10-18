@@ -71,6 +71,22 @@ The command exits with status 1 for duplicate IDs within a split or overlaps bet
 As a current audit example, E1 digitalisation validation and E2 Curia Vista share 24 affair IDs;
 they must therefore not be presented as independent APS holdout evidence.
 
+Create a leakage-safe annotation template from a larger source export:
+
+```bash
+parltopic aps-annotation-template \
+  --input data/raw/affairs.jsonl \
+  --output data/eval/aps_holdout_annotations.jsonl \
+  --exclude data/eval/e1_digitalisation_test.jsonl \
+  --exclude data/eval/e2_curia_test.jsonl \
+  --sample-size 100 \
+  --seed 42
+```
+
+The command stratifies by language and parliament level, leaves APS labels blank, records the
+source hash and refuses duplicate source IDs. Two independent annotations and a documented
+consensus step are required before the file can be used as a quality benchmark.
+
 Compare the actual retrieval context sent to a future prompt:
 
 ```bash

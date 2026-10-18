@@ -8,6 +8,7 @@ from parltopic.evaluation.aps import (
     benchmark_context,
     check_disjoint_ids,
     evaluate_shadow,
+    make_annotation_template,
     regression_gate,
 )
 from parltopic.models import Affair
@@ -138,3 +139,24 @@ def test_aps_regression_gate_accepts_identical_runs(tmp_path: Path) -> None:
     report = regression_gate(gold, baseline, candidate)
     assert report["passed"] is True
     assert all(report["checks"].values())
+
+
+def test_aps_annotation_template_is_stratified_and_excludes_ids(tmp_path: Path) -> None:
+    source = tmp_path / "source.jsonl"
+    excluded = tmp_path / "excluded.jsonl"
+    output = tmp_path / "annotation.jsonl"
+    rows = [
+        {"affair_id": str(i), "language": language, "level": level, "title": f"Case {i}"}
+        for i, (language, level) in enumerate(
+            [("de", "federal"), ("fr", "federal"), ("it", "cantonal"), ("de", "cantonal")]
+            * 3
+        )
+    ]
+    source.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    excluded.write_text('{"affair_id":"0"}\n')
+    report = make_annotation_template(source, output, (excluded,), sample_size=6, seed=7)
+    selected = [json.loads(line) for line in output.read_text().splitlines()]
+    assert report["selected"] == 6
+    assert "0" not in {row["affair_id"] for row in selected}
+    assert all(row["aps_annotation"]["topic_codes"] == [] for row in selected)
+    assert {row["language"] for row in selected} == {"de", "fr", "it"}

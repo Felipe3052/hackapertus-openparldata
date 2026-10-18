@@ -4,7 +4,10 @@ This reports candidate recall against one annotator and disagreement with the se
 It is an exploratory diagnostic, not a model-quality score or a consensus gold standard.
 """
 
+import hashlib
 import json
+import random
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -53,6 +56,84 @@ def check_disjoint_ids(paths: dict[str, Path]) -> dict[str, Any]:
         "duplicates": {name: values for name, values in duplicates.items() if values},
         "overlaps": overlaps,
         "disjoint": not any(duplicates.values()) and not overlaps,
+    }
+
+
+def make_annotation_template(
+    input_path: Path,
+    output_path: Path,
+    exclude_paths: tuple[Path, ...] = (),
+    sample_size: int = 100,
+    seed: int = 42,
+) -> dict[str, Any]:
+    """Create a deterministic, stratified APS annotation file without labels."""
+    if sample_size < 1:
+        raise ValueError("sample_size must be positive")
+    source = _load_jsonl(input_path)
+    source_ids = {str(row.get("affair_id")) for row in source}
+    excluded_ids = set()
+    for path in exclude_paths:
+        excluded_ids.update(
+            str(row.get("affair_id", row.get("id"))) for row in _load_jsonl(path)
+        )
+    eligible = [row for row in source if str(row.get("affair_id")) not in excluded_ids]
+    if len({str(row.get("affair_id")) for row in source}) != len(source):
+        raise ValueError("Annotation source contains duplicate affair IDs")
+    if sample_size > len(eligible):
+        raise ValueError(f"Requested {sample_size} affairs, only {len(eligible)} are eligible")
+
+    buckets: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in eligible:
+        buckets[f"{row.get('language', 'unknown')}|{row.get('level', 'unknown')}"].append(row)
+    rng = random.Random(seed)
+    for rows in buckets.values():
+        rng.shuffle(rows)
+    selected: list[dict[str, Any]] = []
+    bucket_names = sorted(buckets)
+    while len(selected) < sample_size:
+        added = False
+        for bucket in bucket_names:
+            if len(selected) >= sample_size:
+                break
+            rows = buckets[bucket]
+            if rows:
+                selected.append(rows.pop())
+                added = True
+        if not added:
+            break
+    selected.sort(key=lambda row: str(row["affair_id"]))
+    output_rows = []
+    for row in selected:
+        output_rows.append({
+            **row,
+            "aps_annotation": {
+                "chapter_code": None,
+                "topic_codes": [],
+                "not_classifiable": None,
+                "annotator": "",
+                "notes": "",
+            },
+        })
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        "\n".join(json.dumps(row, ensure_ascii=False) for row in output_rows) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "source": str(input_path),
+        "source_sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
+        "excluded_ids": len(excluded_ids & source_ids),
+        "eligible": len(eligible),
+        "selected": len(selected),
+        "strata": {bucket: sum(
+            f"{row.get('language', 'unknown')}|{row.get('level', 'unknown')}" == bucket
+            for row in selected
+        ) for bucket in bucket_names},
+        "seed": seed,
+        "output": str(output_path),
+        "labels": (
+            "blank APS annotation template; requires two independent annotators and consensus"
+        ),
     }
 
 

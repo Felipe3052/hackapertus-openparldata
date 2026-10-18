@@ -129,6 +129,21 @@ def aps_check_leakage(
         raise typer.Exit(1)
 
 
+@app.command("aps-annotation-template")
+def aps_annotation_template(
+    input: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+    exclude: Annotated[list[Path] | None, typer.Option(exists=True, readable=True)] = None,
+    sample_size: int = 100,
+    seed: int = 42,
+) -> None:
+    """Create a stratified, blank APS annotation template without model calls."""
+    from parltopic.evaluation.aps import make_annotation_template
+
+    report = make_annotation_template(input, output, tuple(exclude or ()), sample_size, seed)
+    typer.echo(json.dumps(report, indent=2, ensure_ascii=False))
+
+
 @app.command("aps-benchmark")
 def aps_benchmark(
     input: Annotated[Path, typer.Option(exists=True, readable=True)],

@@ -16,12 +16,12 @@ def _contains_term(text: str, term: str) -> bool:
 
 
 def first_keyword_hit(
-    segments: list[TextSegment], topic: TopicDefinition
+    segments: list[TextSegment], topic: TopicDefinition, terms: list[str] | None = None
 ) -> tuple[TextSegment, str] | None:
     """Return the first segment and configured term with a case-insensitive match."""
-    terms = [topic.name, *topic.synonyms]
+    terms = [topic.name, *topic.synonyms] if terms is None else terms
     for segment in segments:
         for term in terms:
-            if _contains_term(segment.text, term):
+            if term.strip() and _contains_term(segment.text, term):
                 return segment, term
     return None

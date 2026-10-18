@@ -77,3 +77,16 @@ def test_document_keyword_requires_semantic_verification_and_title_is_pinned() -
     assert client.user_prompt.index("Road construction budget") < client.user_prompt.index(
         "Digitalisierung in a footnote"
     )
+
+
+def test_title_synonyms_do_not_trigger_on_body_mentions() -> None:
+    topic = TopicDefinition(topic_id="digital", name="Digitalisierung", description="Digital",
+                            title_synonyms=["fake news"])
+    client = RecordingClient()
+    service = ClassificationService(Settings(_env_file=None), client=client)
+    assert service.classify(
+        Affair(affair_id="a", title="CO2 emissions", text="A passing mention of fake news"), topic
+    ).status == ClassificationStatus.NOT_ASSIGNED
+    assert service.classify(
+        Affair(affair_id="b", title="Fake news and media literacy"), topic
+    ).status == ClassificationStatus.ASSIGNED

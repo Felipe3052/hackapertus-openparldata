@@ -121,6 +121,7 @@ def _metrics_row(
         "macro_precision": round(m.macro_precision, 3),
         "macro_recall": round(m.macro_recall, 3),
         "macro_f1": round(m.macro_f1, 3),
+        "micro_f1": round(m.micro_f1, 3),
         "accuracy": round(m.accuracy, 3),
         "confusion": {
             "tp": m.true_positive,

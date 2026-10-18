@@ -53,6 +53,8 @@ OpenParlData API / export
 See [docs/architecture.md](docs/architecture.md) and [technical_report.md](technical_report.md) for boundaries, decisions, and the production-oriented target design.
 Current development metrics and their limitations are recorded in
 [docs/benchmark.md](docs/benchmark.md).
+Comparisons against the pinned current main baseline, acceptance rules and measured usage are
+recorded in [docs/experiments.md](docs/experiments.md).
 An optional chronological, title-only TF-IDF baseline is available with
 `pip install -e '.[experiments]'` and
 `python -m parltopic.evaluation.linear_baseline --help`.

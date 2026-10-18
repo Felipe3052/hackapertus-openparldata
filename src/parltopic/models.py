@@ -72,6 +72,7 @@ class TopicDefinition(BaseModel):
     name: str
     description: str
     synonyms: list[str] = Field(default_factory=list)
+    title_synonyms: list[str] = Field(default_factory=list)
     positive_examples: list[str] = Field(default_factory=list)
     negative_examples: list[str] = Field(default_factory=list)
 

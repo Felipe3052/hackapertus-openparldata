@@ -20,3 +20,9 @@ def test_precision_at_prevalence() -> None:
     assert precision_at_prevalence(result, 0.5) == result.precision
     assert precision_at_prevalence(result, 0.01) < result.precision
 
+
+def test_micro_f1_counts_both_exclusive_binary_classes() -> None:
+    result = binary_metrics([True, True, False, False], [True, False, False, False])
+    assert result.micro_f1 == 0.75
+    assert result.micro_f1 != result.macro_f1
+

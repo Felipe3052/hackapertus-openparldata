@@ -22,12 +22,15 @@ def classify(
     input: Annotated[Path, typer.Option(exists=True, readable=True)],
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],
     output: Annotated[Path | None, typer.Option()] = None,
+    title_rules: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
     offline: Annotated[
         bool, typer.Option(help="Validate and retrieve without calling Apertus.")
     ] = False,
 ) -> None:
     settings = get_settings()
-    definition = load_topic(topic)
+    definition = load_topic(topic, title_rules)
+    if title_rules:
+        settings = settings.model_copy(update={"classifier_policy_version": "hybrid-title-v1"})
     service = ClassificationService(settings)
     rows = []
     for affair in read_affairs(input):
@@ -96,6 +99,7 @@ def run_eval(
     model: Annotated[str | None, typer.Option(help="Override LLM_NAME.")] = None,
     workers: int = 8,
     limit: int | None = None,
+    title_rules: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
 ) -> None:
     """Classify an eval set with Apertus (resumable), then print the scores."""
     from parltopic.evaluation.run import run_classifier, score_results
@@ -103,7 +107,9 @@ def run_eval(
     settings = get_settings()
     if model:
         settings = settings.model_copy(update={"llm_name": model})
-    run_classifier(eval_set, load_topic(topic), output, settings, workers, limit)
+    if title_rules:
+        settings = settings.model_copy(update={"classifier_policy_version": "hybrid-title-v1"})
+    run_classifier(eval_set, load_topic(topic, title_rules), output, settings, workers, limit)
     typer.echo(json.dumps(score_results(eval_set, output), indent=2))
 
 

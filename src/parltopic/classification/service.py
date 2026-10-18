@@ -27,6 +27,8 @@ class ClassificationService:
                 segment for segment in segments if segment.document_id is None
             ]
             hit = first_keyword_hit(gate_segments, topic)
+            if hit is None and affair.title.strip():
+                hit = first_keyword_hit([segments[0]], topic, terms=topic.title_synonyms)
             if hit:
                 segment, term = hit
                 return ClassificationResult(

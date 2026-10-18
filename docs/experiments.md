@@ -1,5 +1,10 @@
 # Experiments against main
 
+Status: this experiment round is concluded. E02 is the best primary-validation candidate and
+remains explicitly selectable; main-compatible defaults and E01 are preserved. The secondary
+panel found identical predictions, so independent superiority is not established. Inspectable
+aggregate metrics, usage totals and artifact hashes are in [results/E02-summary.json](results/E02-summary.json).
+
 All experiment changes stay on `experiment/classifier-quality`. The pinned main commit is
 `1266c7ebfc1819c3c6c8d134699ebdfb138b204c`. No checkout, commit or merge changes main.
 
@@ -127,3 +132,49 @@ python -m parltopic.evaluation.title_experiment \
 The earlier uncontrolled local trial is superseded by this explicit opt-in configuration and
 is not an additional independent experiment. The E02 report and predictions live alongside the
 preserved main/E01 artifacts under `results/`; choose a fresh output filename to rerun.
+
+## Secondary validation and final selection
+
+A deterministic 2023 panel was frozen before running any inference: 90 distinct affairs,
+10 tagged positives and 20 untagged proxies per language (DE/FR/IT), seed 20261018. Dataset hash:
+`e6b039bba4dcb7c00adae91fc8c836db02e2913acf6d4a144b15975b36da6f7c`.
+All primary-validation IDs, supervised-baseline training/calibration IDs and their exact title
+duplicates were excluded. Near-duplicates can remain. Some 2023 labels were previously used
+only in a different model's aggregate validation report. This is secondary validation, not a
+sealed or manually adjudicated final test; it is not used to tune further rules.
+
+The baseline executed the actual `main` source from a temporary git archive, with package-path
+verification and all seven source hashes recorded. No branch checkout or main modification
+was performed. The fresh live baseline finished in 47.480 seconds with four workers and complete
+90/90 coverage. E02 then reused 78 exact validated model requests, requiring no new API calls;
+its replay took 0.104 seconds excluding bootstrap. Currency costs remain unknown without a tariff.
+
+| Panel | Baseline | Experiment | Macro-F1 | Macro-Precision | Macro-Recall | Micro-F1 | Delta to main |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Secondary 90 | main 1266c7e | Original | 0.9222 | 0.942 | 0.908 | 0.933 | 0 |
+| Secondary 90 | same main | Frozen E02 | 0.9222 | 0.942 | 0.908 | 0.933 | 0.0000 |
+
+Both confusion matrices are TP=25, FP=1, FN=5, TN=59. No decision changed; the panel neither
+shows a regression nor confirms the primary-panel improvement. E02 therefore remains optional
+and its primary score is not presented as a general production-quality guarantee. No new rule
+or prompt was selected from this secondary panel.
+
+Reproduce the completed sequence with fresh output names:
+
+```bash
+python -m parltopic.evaluation.confirmation build \
+  --dataset data/processed/confirmation/validation2023_90.jsonl
+python -m parltopic.evaluation.confirmation run-main \
+  --dataset data/processed/confirmation/validation2023_90.jsonl \
+  --output results/confirmation2023_main90.jsonl
+python -m parltopic.evaluation.title_experiment \
+  --eval-set data/processed/confirmation/validation2023_90.jsonl \
+  --baseline results/confirmation2023_main90.jsonl \
+  --overlay configs/experiments/digitalisation-title-online-candidate.yaml \
+  --experiment-id confirmation-hybrid-title-online-v2 \
+  --output results/confirmation2023_E02_90.jsonl
+```
+
+Panel creation refuses to overwrite an existing file. Its metadata captures exclusions and input
+hashes. Only the `run-main` step makes live inference requests. The API-free archive integration
+test uses a clearly synthetic keyword-only case and does not contribute to any reported metric.

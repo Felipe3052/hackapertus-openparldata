@@ -1,6 +1,8 @@
 # Abgabeprüfung — Apertus Liebefeld, OpenParlData
 
-Arbeitsstand auf `feat/hackathon-submission-ready`; noch kein Abschlussnachweis.
+Technischer Übergabestand auf `feat/hackathon-submission-ready`.
+Review-Paket: [PR #8](https://github.com/Felipe3052/hackapertus-openparldata/pull/8).
+Dies ist keine Bestätigung einer formellen Einreichung oder öffentlichen Veröffentlichung.
 
 ## Präzisierung des aktiven Goals durch den Nutzer
 
@@ -37,12 +39,12 @@ PDF-Seitenbegrenzung konnte aus der Challenge-Seite nicht bestätigt werden.
 | Live-API-Prototyp | `classify-affair`, Streamlit Live-ID, FastAPI; keine neue kostenpflichtige Messung autorisiert |
 | Suchgrenzen | UI kennzeichnet begrenzte Vorauswahl; gemessene Compiler-Grenzen bleiben sichtbar |
 | Integration | PostgreSQL-16-Test bestanden: zwei Versionen, vollständige Evidenzen, idempotenter Import und Fremdschlüssel |
-| Evaluation und CI | Gemeinsame strikte Validierung; 41/41 Claims nachgerechnet; Offline-CI ergänzt, Remote-Lauf noch offen |
+| Evaluation und CI | Gemeinsame strikte Validierung; 41/41 Claims lokal und in GitHub CI nachgerechnet; Python 3.11/3.12 und Container erfolgreich auf `4525d57`; neuesten Status unter PR #8 prüfen |
 | Verarbeitung | Acht synthetische Affairs: Resume, Lock, gespeicherte Arbeit nach echter Prozessbeendigung; kein 300k-Lauf |
 | APS | Kein adjudizierter Konsensgoldstandard, kein belegter APS-Modellscore |
 | Quota / Preise | Verbindliche CSCS-Quota und monetärer Vertragstarif nicht bestätigt |
-| Abgabeartefakte | README/Pitch aktualisiert, fünfseitiges PDF visuell geprüft; Schlussprüfung läuft |
-| Öffentlicher Code | GitHub meldet `PRIVATE`; Veröffentlichung ist nicht automatisch autorisiert |
+| Abgabeartefakte | README/Pitch aktualisiert; finales fünfseitiges PDF gerendert und visuell geprüft |
+| Öffentlicher Code | GitHub meldet `PRIVATE`; unser Zugriff hat WRITE, keine ADMIN-Rechte; Eigentümer muss Veröffentlichung/Jury-Zugang klären |
 
 ## Kurze Prüfungen
 
@@ -62,6 +64,8 @@ lokale Laufartefakte. Nach Abbruch denselben Befehl und Pfad verwenden; erfolgre
 Ergebnisse werden übersprungen, technische Fehler standardmässig erneut versucht.
 Der JSONL-Snapshot wird atomar ersetzt. Während des Jobs steht der jeweils aktuelle Stand im
 Journal; die Live-Datei wird nicht mehr bei jedem Ergebnis neu angehängt.
+Für Produktionsaffairs ohne Goldlabels steht `run-eval --no-score` zur Verfügung; ein kurzer
+CLI-Test mit zwei regelbasierten Fixtures prüft diesen Pfad und Resume ohne Inferenzaufruf.
 Bei einem Abbruch zwischen Provider-Antwort und lokaler Speicherung kann ein In-flight-Aufruf
 erneut nötig sein. Mehrere Prozesse teilen weiterhin keine globale Provider-Quota.
 
@@ -74,3 +78,15 @@ historischen Dev-Snapshot, nicht um neue Modellmessungen.
 
 Für bewusst gestartete Live-Aufrufe kann das Image separat mit `docker run --rm -p 8501:8501
 --env-file .env parltopic-jury` ausgeführt werden. Gebühren und Quota hängen vom Endpoint ab.
+
+## Schritte des Teams nach der technischen Übergabe
+
+1. PR #8 prüfen und bewusst mergen; es erfolgt kein automatisches Merge.
+2. Repository-Eigentümer: öffentliche Sichtbarkeit gemäss Challenge sicherstellen bzw. eine
+   abweichende Zugangsvereinbarung mit den Organisatoren klären. WRITE reicht dafür nicht.
+3. Finalen Commit und PDF in den offiziellen Abgabekanal übernehmen, sobald dieser bestätigt ist;
+   der Agent führt keine formelle Einreichung aus.
+4. Fünf-Minuten-Pitch nach `docs/pitch.md` einmal mit dem Offline-Fallback durchspielen.
+
+Für diese Vorbereitung wurden keine neuen kostenpflichtigen Inferenzläufe und kein
+300’000er-Lauf ausgeführt. Es wird kein neuer Qualitäts- oder Geschwindigkeitsgewinn behauptet.

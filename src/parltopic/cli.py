@@ -207,6 +207,9 @@ def run_eval(
     ] = None,
     fewshot_k: int = 3,
     title_rules: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
+    evaluate: Annotated[bool, typer.Option(
+        "--score/--no-score", help="Disable scoring for production affairs without gold labels."
+    )] = True,
 ) -> None:
     """Classify an eval set with Apertus (resumable), then print the scores."""
     from parltopic.evaluation.run import run_classifier, score_results
@@ -235,7 +238,10 @@ def run_eval(
         }
     run_classifier(eval_set, definition, output, settings, workers, limit, topic_for=topic_for,
                    topic_for_provenance=topic_for_provenance)
-    typer.echo(json.dumps(score_results(eval_set, output), indent=2))
+    if evaluate:
+        typer.echo(json.dumps(score_results(eval_set, output), indent=2))
+    else:
+        typer.echo(str(output))
 
 
 @app.command()

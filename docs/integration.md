@@ -33,6 +33,8 @@ parltopic classify-affair 303044 --topic configs/topics/digitalisation.yaml
 # batch over an eval set or any Affair JSONL, then rows for affair_topics
 parltopic run-eval --eval-set data/eval/e1_digitalisation_test.jsonl \
   --topic configs/topics/digitalisation.yaml --output results/run.jsonl
+# For unlabelled production Affairs JSONL, add --no-score; --limit bounds a short trial.
+# The checkpointed runner is the same; no gold labels are invented for production data.
 parltopic export-opd --results results/run.jsonl \
   --topic configs/topics/digitalisation.yaml --output out/affair_topics.ndjson
 # -> rows, .topic.json (topic_versions row), .run.json (manifest and exact source hash)

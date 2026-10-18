@@ -166,6 +166,7 @@ def test_aps_shadow_evaluation_reports_diagnostic_warning() -> None:
     assert report["labelled_size"] == 20
     assert report["chapter_recall_at_k"] is not None
     assert report["chapter_precision_at_k"] is not None
+    assert "de|federal" in report["groups"]
     assert "gold standard" in report["warning"]
 
 
@@ -189,6 +190,7 @@ def test_aps_shadow_evaluation_identifies_consensus_labels(tmp_path: Path) -> No
     )
     assert "unanimous double annotations" in report["warning"]
     assert report["topic_precision_at_k"] is not None
+    assert "de|cantonal" in report["groups"]
 
 
 def test_aps_leakage_checker_detects_overlap_and_duplicates(tmp_path: Path) -> None:

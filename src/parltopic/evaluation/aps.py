@@ -341,6 +341,7 @@ def evaluate_shadow(
     chapter_candidates_total = topic_candidates_total = 0
     routed = no_text = 0
     disagreements = {"chapter": 0, "topic": 0}
+    groups: dict[str, dict[str, int]] = {}
     compression_ratios: list[float] = []
     tokens_before = tokens_after = 0
     for affair_id, row in label_by_id.items():
@@ -368,6 +369,28 @@ def evaluate_shadow(
         topics = _codes(expected, "topic")
         predicted_chapters = {candidate.code for candidate in route.chapter_candidates}
         predicted_topics = {candidate.code for candidate in route.topic_candidates}
+        group_key = f"{affair.language}|{affair.level or 'unknown'}"
+        group = groups.setdefault(
+            group_key,
+            {
+                "affairs": 0,
+                "routed": 0,
+                "chapter_hits": 0,
+                "chapter_total": 0,
+                "topic_hits": 0,
+                "topic_total": 0,
+                "chapter_candidates": 0,
+                "topic_candidates": 0,
+            },
+        )
+        group["affairs"] += 1
+        group["routed"] += bool(route.chapter_candidates)
+        group["chapter_hits"] += len(chapters & predicted_chapters)
+        group["chapter_total"] += len(chapters)
+        group["topic_hits"] += len(topics & predicted_topics)
+        group["topic_total"] += len(topics)
+        group["chapter_candidates"] += len(predicted_chapters)
+        group["topic_candidates"] += len(predicted_topics)
         chapter_total += len(chapters)
         topic_total += len(topics)
         chapter_hits += len(chapters & predicted_chapters)
@@ -387,6 +410,19 @@ def evaluate_shadow(
         if annotator == "consensus"
         else "No consensus APS gold standard; diagnostic only."
     )
+    group_report = {
+        key: {
+            "affairs": values["affairs"],
+            "routed": values["routed"],
+            "chapter_recall_at_k": ratio(values["chapter_hits"], values["chapter_total"]),
+            "topic_recall_at_k": ratio(values["topic_hits"], values["topic_total"]),
+            "chapter_precision_at_k": ratio(
+                values["chapter_hits"], values["chapter_candidates"]
+            ),
+            "topic_precision_at_k": ratio(values["topic_hits"], values["topic_candidates"]),
+        }
+        for key, values in sorted(groups.items())
+    }
     return {
         "mode": "shadow_router_diagnostic",
         "annotator": annotator,
@@ -408,5 +444,6 @@ def evaluate_shadow(
             "chapter": ratio(disagreements["chapter"], len(labels)),
             "topic": ratio(disagreements["topic"], len(labels)),
         },
+        "groups": group_report,
         "warning": warning,
     }

@@ -115,6 +115,11 @@ language-sensitive matching, so the current candidate limit is intentionally not
 hard filter. Affairs without vetted labels for their language fall back instead of borrowing
 foreign-language matches.
 
+The same diagnostic is reported by `language|level`: in this tiny subset, DE/federal reached
+66.7 % chapter and topic recall, FR/cantonal reached 0 %, and IT had no routed topic candidates.
+These group values have only 1–3 affairs each and are diagnostic evidence, not language- or
+parliament-level quality claims.
+
 Compare the actual retrieval context sent to a future prompt:
 
 ```bash

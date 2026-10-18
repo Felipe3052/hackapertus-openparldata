@@ -76,6 +76,25 @@ Apertus 70B (USD 0.82 / 2.92 per million tokens) that is about USD 0.92 per 1,00
 ~USD 300 for all 325,000 affairs and one topic without a pre-filter. Throughput: 450 affairs in
 168 s with 8 parallel requests (p50 latency 2.9 s).
 
+### E1.8 — document excerpt for title-only affairs (dev)
+
+Cantonal parliaments publish the content of an affair in attached documents. `parltopic
+enrich-docs` fetches `/v1/affairs/{id}/docs` (extracted text, cached), keeps the document whose
+opening shares most words with the title and uses its first 1,500 characters as the affair text.
+Dev: 163 title-only affairs, 156 filled, 6.5 s for all API calls. Only those 156 are re-classified;
+all other answers are reused, so the comparison is paired.
+
+| Run | P | R | F1 | F1 lang=de | F1 lang=fr | F1 lang=it | F1 level=federal | F1 level=cantonal | tokens in/out per affair |
+|---|---|---|---|---|---|---|---|---|---|
+| E1.6 70B v3 | 0.955 | 0.700 | **0.808** | 0.847 | 0.766 | 0.720 | 0.733 | 0.859 | 849 / 84 |
+| E1.8a 70B v3 + documents | 0.950 | 0.753 | **0.840** | 0.876 | 0.840 | 0.720 | 0.733 | 0.909 | 1,013 / 86 |
+| E1.7 70B v3 + thinking | 0.909 | 0.800 | **0.851** | 0.852 | 0.889 | 0.814 | 0.810 | 0.883 | 1,462 / 658 |
+| **E1.8b 70B v3 + documents + thinking** | 0.906 | 0.840 | **0.872** | 0.880 | 0.909 | 0.814 | 0.810 | 0.918 | 1,729 / 670 |
+
+The document excerpt raises cantonal F1 by 0.035–0.05 at the same precision, for ~165 more input
+tokens per affair. The excerpts often name authors and parties ("Postulat von … (FDP, Meilen)"),
+which also makes a party bias check possible. Not yet run on the test split.
+
 ### E1.7 — final configuration (dev)
 
 | Run | P | R | F1 | F1 lang=de | F1 lang=fr | F1 lang=it | F1 level=federal | F1 level=cantonal | tokens in/out per affair |
@@ -132,6 +151,34 @@ All three predeclared expectations hold: E1.7 beats B0 by +0.221 F1 (bar ≥ 0.1
   parseable answer and kept the fast-pass label.
 - 400 of 404 `assigned` results carry at least one evidence passage.
 - Municipal affairs are too few to report (6 in the test split).
+
+### Bias check (test split, E1.7, no extra API calls)
+
+| Group | Positives | Precision | Recall |
+|---|---:|---:|---:|
+| Federal (CHE) | 195 | 0.81 | 0.90 |
+| Bern (BE) | 26 | 0.90 | 0.73 |
+| Zurich (ZH) | 24 | 0.88 | 0.96 |
+| Geneva (GE) | 16 | 0.83 | 0.94 |
+| Valais (VS) | 15 | 0.93 | 0.87 |
+| Basel-Stadt (BS) | 13 | 1.00 | 0.62 |
+| Title and text available | 256 | 0.84 | 0.91 |
+| Title only | 144 | 0.91 | 0.78 |
+| Government affairs (Federal Council bills) | 40 | 0.97 | 0.72 |
+
+- No language gap (F1 DE 0.87, FR 0.86, IT 0.85). Parliaments differ mainly through how much text
+  they publish: **title-only affairs lose 13 recall points**. The cantonal content sits in the PDF
+  documents (`/v1/affairs/{id}/docs`), which this run does not use; adding their first page is the
+  most promising next step for BE and BS.
+- Federal Council bills are recalled least (0.72): long legal titles where digitalisation is one
+  aspect among many.
+- Author and party are not part of the affairs export, so a party bias check is still open.
+
+### E4 — the 30 affairs on the current DVS list
+
+Apertus (E1.7) finds 27 of 30, keyword search 19 of 30. The 3 misses have uninformative titles and
+no text (*Wie weiter mit NFFS?*, *Wer trägt die Verantwortung für die «Sicherheitslücke»?*, a
+cantonal structure-plan update on landfills).
 
 **Predeclared before the single test run (2026-10-18, ~13:30):** the test split (1,200 affairs,
 2024–2026) is run once with B0, E1.6 and E1.7, nothing is tuned afterwards. Expected: E1.7 beats B0

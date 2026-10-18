@@ -73,6 +73,18 @@ def build_eval(
     typer.echo(json.dumps(build_eval_sets(raw_dir, out_dir, seed), indent=2))
 
 
+@app.command("enrich-docs")
+def enrich_docs(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+    max_chars: int = 1500,
+) -> None:
+    """Fill title-only affairs with an excerpt of their best-matching document (API, cached)."""
+    from parltopic.ingestion.documents import enrich_with_documents
+
+    typer.echo(json.dumps(enrich_with_documents(eval_set, output, max_chars=max_chars), indent=2))
+
+
 @app.command("run-eval")
 def run_eval(
     eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],

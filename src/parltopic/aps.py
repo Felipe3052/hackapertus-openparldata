@@ -70,6 +70,11 @@ class ApsNode:
     def label_terms(self) -> set[str]:
         return _tokens(" ".join(self.labels.values()))
 
+    def terms_for(self, language: str | None) -> set[str]:
+        if language and language in self.labels:
+            return _tokens(self.labels[language])
+        return set()
+
 
 @dataclass(frozen=True)
 class ApsCandidate:
@@ -244,8 +249,12 @@ class ApsRouter:
         if not text_terms:
             return ApsRoute(self.taxonomy.version, (), (), (), "no_text")
 
-        topic_candidates = self._rank(self.taxonomy.topics(), text_terms, max_topics)
-        chapter_candidates = self._rank(self.taxonomy.chapters(), text_terms, max_chapters)
+        topic_candidates = self._rank(
+            self.taxonomy.topics(), text_terms, max_topics, affair.language
+        )
+        chapter_candidates = self._rank(
+            self.taxonomy.chapters(), text_terms, max_chapters, affair.language
+        )
         chapter_by_code = {candidate.code: candidate for candidate in chapter_candidates}
         for candidate in topic_candidates:
             parent_code = self.taxonomy.node(candidate.code).parent_code
@@ -259,7 +268,7 @@ class ApsRouter:
             ]
         )
         domain_candidates = self._rank(
-            self.taxonomy.domains(), text_terms, len(self.taxonomy.domains())
+            self.taxonomy.domains(), text_terms, len(self.taxonomy.domains()), affair.language
         )
         domain_by_code = {candidate.code: candidate for candidate in domain_candidates}
         for candidate in chapter_candidates:
@@ -281,15 +290,16 @@ class ApsRouter:
 
     @staticmethod
     def _rank(
-        nodes: tuple[ApsNode, ...], text_terms: set[str], limit: int
+        nodes: tuple[ApsNode, ...], text_terms: set[str], limit: int, language: str | None = None
     ) -> tuple[ApsCandidate, ...]:
         ranked = []
         for node in nodes:
-            matched = _term_matches(node.label_terms, text_terms)
+            label_terms = node.terms_for(language) if language else node.label_terms
+            matched = _term_matches(label_terms, text_terms)
             if matched:
                 # Phrase labels receive a small bonus through the number of matched tokens;
                 # this remains deterministic and language agnostic.
-                score = len(matched) / max(len(node.label_terms), 1)
+                score = len(matched) / max(len(label_terms), 1)
                 ranked.append(ApsCandidate(node.code, node.level, round(score, 6), matched))
         ranked.sort(key=lambda item: (-item.score, item.code))
         return tuple(ranked[:limit])

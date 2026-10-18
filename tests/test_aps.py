@@ -94,6 +94,18 @@ def test_aps_router_matches_longer_word_forms_conservatively() -> None:
     assert any("verwaltungs" in term for term in route.topic_candidates[0].matched_terms)
 
 
+def test_aps_router_uses_affair_language_for_label_matching() -> None:
+    taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
+    german = ApsRouter(taxonomy).route(
+        Affair(affair_id="de-1", title="Verwaltung", language="de")
+    )
+    italian = ApsRouter(taxonomy).route(
+        Affair(affair_id="it-1", title="Amministrazione", language="it")
+    )
+    assert german.topic_candidates
+    assert italian.fallback_reason == "no_taxonomy_term_match"
+
+
 def test_aps_decision_requires_hierarchically_valid_codes() -> None:
     taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
     decision = ApsDecision(

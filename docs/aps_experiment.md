@@ -38,7 +38,7 @@ taxonomy version, context policy, segment counts and approximate token counts. I
 is found, the full context is retained and the result records the fallback reason.
 
 On the checked-in E1 digitalisation validation file (1,200 affairs), the shadow run with five
-context segments routed 1,131 affairs and fell back for 69. The approximate token reduction was
+context segments routed 922 affairs and fell back for 278. The approximate token reduction was
 0 % because the available affairs are short enough to fit within five selected segments. This is
 an observed offline result without Apertus calls, not evidence of a latency improvement. Use
 `--max-segments 2` or a long-text export for a controlled compression experiment, then compare
@@ -108,8 +108,10 @@ router diagnostic on those 9 labels reached 42.9 % chapter recall and 42.9 % top
 configured candidate limits (previously 14.3 % and 28.6 %). This small diagnostic is not a
 generalizable quality metric: the deterministic router is still not suitable as a hard APS
 classifier and remains a candidate/context pre-filter until it is validated on a larger holdout.
-The corresponding candidate precision was only 9.7 % for chapters and 5.0 % for topics, so the
-current candidate limit is intentionally not promoted as a hard filter.
+The corresponding candidate precision was 11.1 % for chapters and 5.8 % for topics after
+language-sensitive matching, so the current candidate limit is intentionally not promoted as a
+hard filter. Affairs without vetted labels for their language fall back instead of borrowing
+foreign-language matches.
 
 Compare the actual retrieval context sent to a future prompt:
 
@@ -122,8 +124,8 @@ parltopic aps-benchmark \
 
 This compares identical Affairs with the same topic and retrieval implementation. It measures
 whitespace token approximations offline. On the checked-in E1 file with `max-segments 2`, the
-baseline context is approximately 152,141 tokens and the APS context approximately 90,604
-tokens, a 40.4 % reduction. This does not claim an Apertus latency or quality gain.
+baseline context is approximately 152,141 tokens and the APS context approximately 112,450
+tokens, a 26.1 % reduction. This does not claim an Apertus latency or quality gain.
 
 A controlled live smoke test used one German, one French and one Italian affair, each with a
 baseline and APS-context call to the same Apertus endpoint. All three paired statuses were

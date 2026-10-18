@@ -40,7 +40,8 @@ parltopic aps-coverage \
 ```
 
 The current base taxonomy reports 165 topics, 22 chapters and 8 domains for German and French;
-Italian appears only after a version-matched alias file supplies reviewed labels.
+the report explicitly shows zero coverage for Italian and Romansh until a version-matched alias
+file supplies reviewed labels.
 
 The classifier now exposes the same router as an opt-in experiment through
 `APS_CONTEXT_ENABLED=true`. The default is `false`; with the flag enabled, the result records the

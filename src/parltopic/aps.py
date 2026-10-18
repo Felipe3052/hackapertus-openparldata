@@ -239,9 +239,13 @@ class ApsTaxonomy:
     def topics(self) -> tuple[ApsNode, ...]:
         return tuple(node for node in self.nodes if node.level == "topic")
 
-    def language_coverage(self) -> dict[str, dict[str, int]]:
+    def language_coverage(
+        self, languages: tuple[str, ...] = ("de", "fr", "it", "rm")
+    ) -> dict[str, dict[str, int]]:
         """Count labelled nodes by language and hierarchy level."""
-        languages = sorted({language for node in self.nodes for language in node.labels})
+        languages = tuple(
+            sorted({*languages, *(language for node in self.nodes for language in node.labels)})
+        )
         return {
             language: {
                 level: sum(

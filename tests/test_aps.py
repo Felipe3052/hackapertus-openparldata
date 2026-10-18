@@ -26,6 +26,7 @@ def test_aps_taxonomy_is_hierarchical_and_complete() -> None:
     coverage = taxonomy.language_coverage()
     assert coverage["de"] == {"domain": 8, "chapter": 22, "topic": 165}
     assert coverage["fr"] == {"domain": 8, "chapter": 22, "topic": 165}
+    assert coverage["it"] == {"domain": 0, "chapter": 0, "topic": 0}
     assert all(node.parent_code in {chapter.code for chapter in taxonomy.chapters()}
                for node in taxonomy.topics())
 

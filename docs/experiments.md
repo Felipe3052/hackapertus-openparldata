@@ -105,6 +105,26 @@ which also makes a party bias check possible. Not yet run on the test split.
 8 of 338 re-checks returned no parseable answer (reasoning ran into the 4,000-token limit); these
 keep the fast-pass label, so a failed re-check can never add a false positive.
 
+## M — after merging main (hybrid-v3 classifier, prompt v2) — frozen configuration
+
+Same 450 dev affairs, merged code (`4d3372e`), Apertus v1.5 70B, topic v4 (side-aspect rule +
+main's scope examples and online/NFT terms). Paired bootstrap with 10,000 samples (`compare-runs`).
+
+| Run | P | R | F1 | Macro-F1 | F1 de / fr / it | tokens in/out per affair |
+|---|---|---|---|---|---|---|
+| main hybrid-v3 with its own topic v3 (Josip, `docs/benchmark.md`) | 0.932 | 0.820 | 0.872 | 0.907 | | |
+| **M-A hybrid-v3 + topic v4 (frozen)** | 0.933 | 0.839 | **0.883** | **0.915** | 0.882 / 0.889 / 0.881 | 1,153 / 83 |
+| M-B M-A + document excerpt for title-only affairs | 0.914 | 0.859 | 0.886 | 0.916 | 0.880 / 0.909 / 0.881 | 1,245 / 86 |
+| M-C M-A + thinking for `not_assigned` | 0.908 | 0.859 | 0.883 | 0.913 | 0.884 / 0.893 / 0.871 | 2,108 / 703 |
+
+- M-B vs. M-A: macro-F1 +0.0009, 95 % interval [−0.013, +0.016]. M-C vs. M-A: −0.0015,
+  [−0.015, +0.012]. Neither documents nor thinking improve the merged classifier; the keyword
+  rule and prompt v2 already recover the recall that thinking bought before (E1.4). Thinking
+  would triple input and multiply output tokens by 8.
+- **Decision: freeze M-A.** Documents and thinking stay optional switches; documents remain
+  useful as evidence for title-only affairs. No further prompt or rule tuning on this dev split.
+- 78 of 450 affairs are assigned by the keyword rule without a model call.
+
 ## E3 — human agreement on APS topics (20 affairs, blind)
 
 Felipe and Josip labelled the first 20 affairs of `data/eval/e3_aps_sample.jsonl` independently

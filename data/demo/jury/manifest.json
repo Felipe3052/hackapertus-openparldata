@@ -1,0 +1,12 @@
+{
+  "description": "Six original opened-dev affairs, one per DE/FR/IT x federal/cantonal. Minimum serialized length then affair_id; no selection by label or prediction correctness. Historical predictions, not a new benchmark.",
+  "source_dataset": "data/eval/e1_digitalisation_dev.jsonl",
+  "source_dataset_sha256": "5fb54735bc2d51045dbde3209004172987081e64870e81322118c853d682237b",
+  "source_predictions": "results/hybrid_v3_actual_dev450.jsonl",
+  "source_predictions_sha256": "15b0ca5570f16fbacebb7531a84ed86d927fd549bea2854095f3d055eea5e13f",
+  "files": {
+    "data/demo/jury/affairs.jsonl": "bf667c52df7f0c2e55310fd87844c8cffc06a44c66a496ace12749c123558eda",
+    "data/demo/jury/predictions.jsonl": "2a3820919720520e834692d32e058f271bc1972758f8cb278e0160dda0ad2e2e"
+  },
+  "licence": "OpenParlData CC BY 4.0; original source URLs retained."
+}

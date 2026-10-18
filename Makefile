@@ -1,4 +1,9 @@
-.PHONY: install test lint api web demo
+.PHONY: install test lint api web demo run
+
+# Clean-checkout jury entrypoint; no .env or paid model request required to view replay.
+run:
+	docker build -t parltopic-jury .
+	docker run --rm -p 8501:8501 parltopic-jury
 
 install:
 	python -m pip install -e '.[dev]'

@@ -5,10 +5,12 @@ import streamlit as st
 
 from parltopic.classification.service import ClassificationService
 from parltopic.config import get_settings
+from parltopic.integration import content_id, topic_version
 from parltopic.models import Affair, TopicDefinition
 from parltopic.topics import load_topic
 
 ROOT = Path(__file__).resolve().parents[1]
+CURATED_TOPIC = load_topic(ROOT / "configs/topics/digitalisation.yaml")
 
 st.set_page_config(page_title="ParlTopic", page_icon="🏛️", layout="wide")
 st.title("ParlTopic")
@@ -31,11 +33,10 @@ with st.sidebar:
                                disabled=policy.startswith("Digitalisierung"))
     topic_description = st.text_area(
         "Beschreibung",
-        "Digitale Verwaltung, E-Government, elektronische Identität, "
-        "Cloud, KI und Automatisierung.",
+        CURATED_TOPIC.description,
         disabled=policy.startswith("Digitalisierung"),
     )
-    synonyms = st.text_input("Synonyme", "E-Government, digitale Verwaltung, E-ID",
+    synonyms = st.text_input("Synonyme", ", ".join(CURATED_TOPIC.synonyms),
                              disabled=policy.startswith("Digitalisierung"))
     if policy == "Eigenes Thema" and topic_name.strip() and topic_description.strip():
         import yaml
@@ -56,9 +57,12 @@ if source == "OpenParlData-ID (live)":
     if st.button("Von der OpenParlData-API laden") and affair_key.strip().isdigit():
         from parltopic.ingestion.live import fetch_affair
 
-        with st.spinner("Geschäft, Texte und Dokumente werden geladen …"):
-            st.session_state["live_affair"] = fetch_affair(int(affair_key)).model_dump(
-                mode="json")
+        try:
+            with st.spinner("Geschäft, Texte und Dokumente werden geladen …"):
+                st.session_state["live_affair"] = fetch_affair(int(affair_key)).model_dump(
+                    mode="json")
+        except Exception as error:
+            st.error(f"Live-Abruf fehlgeschlagen: {error}. Offline-Beispiele bleiben verfügbar.")
     selected = st.session_state.get("live_affair")
     if selected:
         st.caption(f"Live von api.openparldata.ch: {selected['parliament']}, "
@@ -66,7 +70,7 @@ if source == "OpenParlData-ID (live)":
                    f"{len(selected.get('documents') or [])} Dokument(e).")
 if source == "Echtes Geschäft":
     rows = [json.loads(line) for line in
-            (ROOT / "data/eval/e1_digitalisation_dev.jsonl")
+            (ROOT / "data/demo/jury/affairs.jsonl")
             .read_text("utf-8").splitlines() if line]
     selected_language = st.selectbox("Beispielsprache", ["de", "fr", "it"])
     levels = sorted({row["level"] for row in rows if row["language"] == selected_language})
@@ -76,7 +80,8 @@ if source == "Echtes Geschäft":
     identity = st.selectbox("Geschäft", list(examples),
                             format_func=lambda key: f"{key}: {examples[key]['title']}")
     selected = examples[identity]
-    st.caption("Originaldaten aus dem geöffneten Dev-Split; keine neue Qualitätsmessung.")
+    st.caption("Sechs mitgelieferte Originalbeispiele aus dem geöffneten Dev-Split; "
+               "DE/FR/IT × Bund/Kanton. Keine neue Qualitätsmessung.")
 
 title = st.text_input("Titel des parlamentarischen Geschäfts",
                       value=selected["title"] if selected else "")
@@ -88,13 +93,20 @@ language = st.selectbox("Sprache", languages,
 st.caption("Titel allein genügt. Modellaufrufe können API-Kosten verursachen; "
            "Keyword-Treffer benötigen keinen Modellaufruf.")
 
-saved_path = ROOT / "results/hybrid_v3_actual_dev450.jsonl"
+saved_path = ROOT / "data/demo/jury/predictions.jsonl"
 if selected and policy.startswith("Digitalisierung") and saved_path.exists():
     if st.button("Historisches Ergebnis anzeigen (ohne API)"):
         saved = {row["affair_id"]: row for row in
                  (json.loads(line) for line in saved_path.read_text("utf-8").splitlines() if line)}
         if selected["affair_id"] in saved:
             st.session_state["classification"] = saved[selected["affair_id"]]
+            st.session_state["classification_context"] = {
+                "source_sha256": content_id(
+                    Affair.model_validate(selected).model_dump(mode="json")
+                ),
+                "topic_version": None,
+                "historical_snapshot": "data/demo/jury/manifest.json",
+            }
             st.session_state["result_mode"] = (
                 "Historischer Dev-Lauf mit damaliger Themenkonfiguration; "
                 "bezieht sich auf den unveränderten Originaldatensatz."
@@ -123,6 +135,11 @@ if st.button("Mit Apertus klassifizieren", type="primary", disabled=(
         with ClassificationService(get_settings()) as service:
             result = service.classify(affair, topic)
     st.session_state["classification"] = result.model_dump(mode="json")
+    st.session_state["classification_context"] = {
+        "source_sha256": content_id(affair.model_dump(mode="json")),
+        "topic_version": topic_version(topic),
+        "topic_definition": topic.model_dump(mode="json"),
+    }
     st.session_state["result_mode"] = "Neuer Lauf mit aktueller Konfiguration."
 
 if "classification" in st.session_state:
@@ -155,6 +172,7 @@ if "classification" in st.session_state:
     st.subheader("Prüfung durch eine Person")
     reviews = ROOT / "results/reviews.jsonl"
     reviewer = st.text_input("Kürzel der prüfenden Person", key="reviewer")
+    review_note = st.text_input("Begründung oder Korrektur (optional)", key="review_note")
     left, right = st.columns(2)
     decision = None
     if left.button("Vorschlag bestätigen", disabled=not reviewer.strip()):
@@ -167,7 +185,11 @@ if "classification" in st.session_state:
         reviews.parent.mkdir(parents=True, exist_ok=True)
         entry = {"affair_id": result.affair_id, "topic_id": result.topic_id,
                  "suggested_status": result.status.value, "review_decision": decision,
-                 "reviewed_by": reviewer.strip(), "reviewed_at": datetime.now(UTC).isoformat()}
+                 "reviewed_by": reviewer.strip(), "reviewed_at": datetime.now(UTC).isoformat(),
+                 "prediction_id": content_id(result.model_dump(mode="json")),
+                 "prediction": result.model_dump(mode="json"),
+                 "context": st.session_state.get("classification_context"),
+                 "review_note": review_note.strip() or None}
         with reviews.open("a", encoding="utf-8") as file:  # appended, the suggestion is kept
             file.write(json.dumps(entry, ensure_ascii=False) + "\n")
         st.success(f"Gespeichert: {decision} durch {reviewer.strip()} ({reviews.name}). "

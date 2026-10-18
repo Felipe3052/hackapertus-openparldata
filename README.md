@@ -80,6 +80,12 @@ subgroup coverage, missing APS references and the limits of the 300k projection.
 
 Requires Python 3.11 or newer.
 
+For a short jury walkthrough without a key, local datasets or inference charges, run
+`make run` (Docker, port 8501). Six original DE/FR/IT examples and historical predictions are
+bundled. Select **Historisches Ergebnis anzeigen** for offline replay. Live searches are bounded
+candidate lists, not complete corpus classifications. The current submission scope uses short
+functional checks; 300k runtimes remain projections, not a completed full-corpus run.
+
 ```bash
 cp .env.example .env          # add LLM_API_KEY for the CSCS endpoint
 python -m venv .venv

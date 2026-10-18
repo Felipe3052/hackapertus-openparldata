@@ -139,13 +139,16 @@ def export_opd(
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],
     output: Annotated[Path, typer.Option()],
     compiled: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
+    allow_unverified: Annotated[bool, typer.Option(
+        help="Explicitly export historical outputs without a run manifest."
+    )] = False,
 ) -> None:
     """Rows for OpenParlData's affair_topics table (integration/opd/001_affair_topics.sql)."""
     from parltopic.compiler import CompiledTopic
     from parltopic.integration import export
 
     query = CompiledTopic.model_validate_json(compiled.read_text("utf-8")) if compiled else None
-    typer.echo(json.dumps(export(results, load_topic(topic), output, query)))
+    typer.echo(json.dumps(export(results, load_topic(topic), output, query, allow_unverified)))
 
 
 @app.command("download-data")

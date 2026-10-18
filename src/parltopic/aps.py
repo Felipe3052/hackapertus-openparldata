@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from parltopic.models import Affair, TextSegment
 
@@ -64,6 +64,12 @@ class ApsDecision(BaseModel):
         if len(values) != len(set(values)):
             raise ValueError("APS response lists must contain unique values")
         return values
+
+    @model_validator(mode="after")
+    def require_evidence_for_decision(self) -> "ApsDecision":
+        if self.status in {"assigned", "uncertain"} and not self.evidence_ids:
+            raise ValueError(f"{self.status} APS decisions require evidence IDs")
+        return self
 
 
 @dataclass(frozen=True)

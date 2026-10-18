@@ -21,10 +21,12 @@ Affair → APS candidate router → bounded context selector → existing Apertu
 ```
 
 The router is deterministic and does not call Apertus. It ranks chapter and topic candidates by
-multilingual label overlap, preserves the title and stable segment order, and reports approximate
-token compression. It is wired into the existing classifier only as an opt-in experiment. The
-default baseline therefore remains unchanged while recall, token reduction and latency can be
-compared.
+available taxonomy-label overlap, preserves the title and stable segment order, and reports
+approximate token compression. The checked-in APS taxonomy has German and French labels; it does
+not yet contain an official Italian label set. Italian input is therefore supported by the
+pipeline interface but its APS routing recall is not established. The router is wired into the
+existing classifier only as an opt-in experiment. The default baseline therefore remains
+unchanged while recall, token reduction and latency can be compared.
 
 The classifier now exposes the same router as an opt-in experiment through
 `APS_CONTEXT_ENABLED=true`. The default is `false`; with the flag enabled, the result records the

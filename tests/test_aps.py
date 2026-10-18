@@ -39,6 +39,7 @@ def test_aps_decision_requires_hierarchically_valid_codes() -> None:
         topic_codes=["1.2.2"],
         chapter_codes=["1.2"],
         explanation="Verwaltung ist Gegenstand des Geschäfts.",
+        evidence_ids=["a-title"],
     )
     assert taxonomy.validate_decision(decision) == decision
     with pytest.raises(ValueError, match="requires chapter"):

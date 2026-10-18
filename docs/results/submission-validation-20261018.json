@@ -1,0 +1,612 @@
+{
+  "overall": {
+    "expected": 1200,
+    "received": 1200,
+    "decisive": 1193,
+    "coverage": 0.9941666666666666,
+    "status_counts": {
+      "not_assigned": 794,
+      "assigned": 399,
+      "not_evaluable": 2,
+      "failed": 4,
+      "uncertain": 1
+    },
+    "metrics": {
+      "n": 1193,
+      "tp": 349,
+      "fp": 50,
+      "fn": 49,
+      "tn": 745,
+      "matrix_actual_by_predicted_false_true": [
+        [
+          745,
+          50
+        ],
+        [
+          49,
+          349
+        ]
+      ],
+      "classification_report": {
+        "negative": {
+          "precision": 0.9382871536523929,
+          "recall": 0.9371069182389937,
+          "f1": 0.9376966645689113,
+          "support": 795
+        },
+        "positive": {
+          "precision": 0.87468671679198,
+          "recall": 0.8768844221105527,
+          "f1": 0.875784190715182,
+          "support": 398
+        },
+        "macro": {
+          "precision": 0.9064869352221865,
+          "recall": 0.9069956701747732,
+          "f1": 0.9067404276420467,
+          "support": 1193
+        },
+        "weighted": {
+          "precision": 0.9170692375832861,
+          "recall": 0.9170159262363788,
+          "f1": 0.9170418744651526,
+          "support": 1193
+        },
+        "micro": {
+          "precision": 0.9170159262363788,
+          "recall": 0.9170159262363788,
+          "f1": 0.9170159262363788
+        },
+        "accuracy": 0.9170159262363788
+      },
+      "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+      "undefined": []
+    },
+    "binary_quality_evaluable": true
+  },
+  "groups": {
+    "language=de": {
+      "expected": 670,
+      "received": 670,
+      "decisive": 666,
+      "coverage": 0.9940298507462687,
+      "status_counts": {
+        "assigned": 225,
+        "not_assigned": 441,
+        "not_evaluable": 1,
+        "failed": 2,
+        "uncertain": 1
+      },
+      "metrics": {
+        "n": 666,
+        "tp": 201,
+        "fp": 24,
+        "fn": 22,
+        "tn": 419,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            419,
+            24
+          ],
+          [
+            22,
+            201
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9501133786848073,
+            "recall": 0.945823927765237,
+            "f1": 0.9479638009049773,
+            "support": 443
+          },
+          "positive": {
+            "precision": 0.8933333333333333,
+            "recall": 0.9013452914798207,
+            "f1": 0.8973214285714286,
+            "support": 223
+          },
+          "macro": {
+            "precision": 0.9217233560090703,
+            "recall": 0.9235846096225289,
+            "f1": 0.922642614738203,
+            "support": 666
+          },
+          "weighted": {
+            "precision": 0.9311014415776321,
+            "recall": 0.9309309309309309,
+            "f1": 0.9310069705290294,
+            "support": 666
+          },
+          "micro": {
+            "precision": 0.9309309309309309,
+            "recall": 0.9309309309309309,
+            "f1": 0.9309309309309309
+          },
+          "accuracy": 0.9309309309309309
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "binary_quality_evaluable": true
+    },
+    "language=fr": {
+      "expected": 325,
+      "received": 325,
+      "decisive": 323,
+      "coverage": 0.9938461538461538,
+      "status_counts": {
+        "not_assigned": 216,
+        "assigned": 107,
+        "failed": 1,
+        "not_evaluable": 1
+      },
+      "metrics": {
+        "n": 323,
+        "tp": 93,
+        "fp": 14,
+        "fn": 19,
+        "tn": 197,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            197,
+            14
+          ],
+          [
+            19,
+            93
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9120370370370371,
+            "recall": 0.933649289099526,
+            "f1": 0.9227166276346604,
+            "support": 211
+          },
+          "positive": {
+            "precision": 0.8691588785046729,
+            "recall": 0.8303571428571429,
+            "f1": 0.8493150684931506,
+            "support": 112
+          },
+          "macro": {
+            "precision": 0.8905979577708549,
+            "recall": 0.8820032159783344,
+            "f1": 0.8860158480639055,
+            "support": 323
+          },
+          "weighted": {
+            "precision": 0.8971690687533691,
+            "recall": 0.8978328173374613,
+            "f1": 0.8972646938146942,
+            "support": 323
+          },
+          "micro": {
+            "precision": 0.8978328173374613,
+            "recall": 0.8978328173374613,
+            "f1": 0.8978328173374613
+          },
+          "accuracy": 0.8978328173374613
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "binary_quality_evaluable": true
+    },
+    "language=it": {
+      "expected": 205,
+      "received": 205,
+      "decisive": 204,
+      "coverage": 0.9951219512195122,
+      "status_counts": {
+        "assigned": 67,
+        "not_assigned": 137,
+        "failed": 1
+      },
+      "metrics": {
+        "n": 204,
+        "tp": 55,
+        "fp": 12,
+        "fn": 8,
+        "tn": 129,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            129,
+            12
+          ],
+          [
+            8,
+            55
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9416058394160584,
+            "recall": 0.9148936170212766,
+            "f1": 0.9280575539568345,
+            "support": 141
+          },
+          "positive": {
+            "precision": 0.8208955223880597,
+            "recall": 0.873015873015873,
+            "f1": 0.8461538461538461,
+            "support": 63
+          },
+          "macro": {
+            "precision": 0.881250680902059,
+            "recall": 0.8939547450185747,
+            "f1": 0.8871057000553404,
+            "support": 204
+          },
+          "weighted": {
+            "precision": 0.9043276532750588,
+            "recall": 0.9019607843137255,
+            "f1": 0.9027637618412057,
+            "support": 204
+          },
+          "micro": {
+            "precision": 0.9019607843137255,
+            "recall": 0.9019607843137255,
+            "f1": 0.9019607843137255
+          },
+          "accuracy": 0.9019607843137255
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "binary_quality_evaluable": true
+    },
+    "level=cantonal": {
+      "expected": 609,
+      "received": 609,
+      "decisive": 603,
+      "coverage": 0.9901477832512315,
+      "status_counts": {
+        "not_assigned": 410,
+        "assigned": 193,
+        "not_evaluable": 2,
+        "failed": 3,
+        "uncertain": 1
+      },
+      "metrics": {
+        "n": 603,
+        "tp": 177,
+        "fp": 16,
+        "fn": 24,
+        "tn": 386,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            386,
+            16
+          ],
+          [
+            24,
+            177
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9414634146341463,
+            "recall": 0.9601990049751243,
+            "f1": 0.9507389162561576,
+            "support": 402
+          },
+          "positive": {
+            "precision": 0.917098445595855,
+            "recall": 0.8805970149253731,
+            "f1": 0.8984771573604061,
+            "support": 201
+          },
+          "macro": {
+            "precision": 0.9292809301150007,
+            "recall": 0.9203980099502487,
+            "f1": 0.9246080368082819,
+            "support": 603
+          },
+          "weighted": {
+            "precision": 0.9333417582880492,
+            "recall": 0.9336650082918739,
+            "f1": 0.9333183299575738,
+            "support": 603
+          },
+          "micro": {
+            "precision": 0.9336650082918739,
+            "recall": 0.9336650082918739,
+            "f1": 0.9336650082918739
+          },
+          "accuracy": 0.9336650082918739
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "binary_quality_evaluable": true
+    },
+    "level=federal": {
+      "expected": 585,
+      "received": 585,
+      "decisive": 584,
+      "coverage": 0.9982905982905983,
+      "status_counts": {
+        "assigned": 203,
+        "not_assigned": 381,
+        "failed": 1
+      },
+      "metrics": {
+        "n": 584,
+        "tp": 170,
+        "fp": 33,
+        "fn": 25,
+        "tn": 356,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            356,
+            33
+          ],
+          [
+            25,
+            170
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9343832020997376,
+            "recall": 0.9151670951156813,
+            "f1": 0.9246753246753247,
+            "support": 389
+          },
+          "positive": {
+            "precision": 0.8374384236453202,
+            "recall": 0.8717948717948718,
+            "f1": 0.8542713567839196,
+            "support": 195
+          },
+          "macro": {
+            "precision": 0.8859108128725288,
+            "recall": 0.8934809834552766,
+            "f1": 0.8894733407296221,
+            "support": 584
+          },
+          "weighted": {
+            "precision": 0.9020129421706085,
+            "recall": 0.9006849315068494,
+            "f1": 0.9011671504650095,
+            "support": 584
+          },
+          "micro": {
+            "precision": 0.9006849315068494,
+            "recall": 0.9006849315068494,
+            "f1": 0.9006849315068494
+          },
+          "accuracy": 0.9006849315068494
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "binary_quality_evaluable": true
+    },
+    "level=municipal": {
+      "expected": 6,
+      "received": 6,
+      "decisive": 6,
+      "coverage": 1.0,
+      "status_counts": {
+        "not_assigned": 3,
+        "assigned": 3
+      },
+      "metrics": {
+        "n": 6,
+        "tp": 2,
+        "fp": 1,
+        "fn": 0,
+        "tn": 3,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            3,
+            1
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 1.0,
+            "recall": 0.75,
+            "f1": 0.8571428571428571,
+            "support": 4
+          },
+          "positive": {
+            "precision": 0.6666666666666666,
+            "recall": 1.0,
+            "f1": 0.8,
+            "support": 2
+          },
+          "macro": {
+            "precision": 0.8333333333333333,
+            "recall": 0.875,
+            "f1": 0.8285714285714285,
+            "support": 6
+          },
+          "weighted": {
+            "precision": 0.8888888888888888,
+            "recall": 0.8333333333333334,
+            "f1": 0.8380952380952381,
+            "support": 6
+          },
+          "micro": {
+            "precision": 0.8333333333333334,
+            "recall": 0.8333333333333334,
+            "f1": 0.8333333333333334
+          },
+          "accuracy": 0.8333333333333334
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "binary_quality_evaluable": true
+    }
+  },
+  "tokens": {
+    "complete": false,
+    "input": 1322207,
+    "output": 96048
+  },
+  "api_attempts": null,
+  "retries": null,
+  "wall_seconds": null,
+  "cost": null,
+  "measurement_note": "Tokens are recorded usage; attempts, retries and wall time need a ledger.",
+  "schema_version": 1,
+  "provenance": {
+    "dataset": "data/eval/e1_digitalisation_test.jsonl",
+    "dataset_sha256": "2d8bf073d129a6ac72f0abb5f9679d059053707196299bcfb837e1e7e61e8951",
+    "predictions": "results/ma_test.jsonl",
+    "predictions_sha256": "b8746d5cb538018226c26b81d4742aacb90d45ad1f004de3361e4352eb3c1c9d",
+    "evaluator_sha256": "d6f6d955e7e774e15330a4cd240bbe36589d58f3c176660f86d63adaac75b54b",
+    "manifest": {
+      "schema_version": 1,
+      "dataset_sha256": "96f54ce33a0f65c5c75292734cf0f2214150c7ad6f6b9aab9b33480831803db8",
+      "topic": {
+        "topic_id": "digitalisation",
+        "name": "Digitalisierung",
+        "description": "Parlamentarische Geschäfte zur digitalen Transformation von Staat, Wirtschaft und Gesellschaft: digitale Verwaltung und E-Government, elektronische Identität, Informatik, IT-Projekte, Software und IT-Infrastruktur der Verwaltung, Cybersicherheit, künstliche Intelligenz und Automatisierung, Datenschutz und Datennutzung, Geodaten, digitale Medien, Plattformen und Desinformation, Breitband, Mobilfunk und 5G, Digitalisierung in Bildung, Gesundheit und Wirtschaft. Regel: Ordne das Thema zu, sobald digitale Technologie, Informatik, Daten, Online-Dienste, Online-Plattformen, Überwachungstechnologie oder Telekommunikation im Geschäft eine Rolle spielt, auch als Nebenaspekt einer Vorlage aus einem anderen Politikfeld (z. B. eine Konsumentenschutz- oder Arbeitsrechtsvorlage, die Online-Buchungen oder Homeoffice regelt), und auch wenn nur der Titel vorliegt. Verwende not_assigned nur, wenn kein digitaler Bezug erkennbar ist; bei einem möglichen, aber unklaren Bezug verwende uncertain.",
+        "synonyms": [
+          "Digitalisierung",
+          "digital",
+          "E-Government",
+          "digitale Verwaltung",
+          "elektronische Identität",
+          "E-ID",
+          "Informatik",
+          "Cybersicherheit",
+          "künstliche Intelligenz",
+          "Datenschutz",
+          "Breitband",
+          "numérique",
+          "numérisation",
+          "cyberadministration",
+          "identité électronique",
+          "informatique",
+          "cybersécurité",
+          "intelligence artificielle",
+          "protection des données",
+          "digitalizzazione",
+          "digitale",
+          "identità elettronica",
+          "informatica",
+          "cibersicurezza",
+          "intelligenza artificiale",
+          "protezione dei dati",
+          "online",
+          "NFT"
+        ],
+        "title_synonyms": [],
+        "normalize_online_variants": false,
+        "positive_examples": [
+          "Einführung einer elektronischen Identität für kantonale Dienstleistungen.",
+          "Digitale Einreichung und Verarbeitung von Behördengesuchen.",
+          "Schutz kritischer Infrastrukturen vor Cyberangriffen.",
+          "Kredit für die Erneuerung der Informatik bzw. eines ERP-Systems der Verwaltung.",
+          "Umgang mit KI-Werkzeugen wie ChatGPT an Schulen.",
+          "Ausbau von Glasfaser oder 5G-Mobilfunk.",
+          "Tätigkeitsbericht der Datenschutzaufsicht.",
+          "Mobile Arbeit und Homeoffice, wenn digitale Arbeitsformen geregelt werden.",
+          "Regulierung von Online-Buchungsplattformen und digitalem Konsum.",
+          "Finanzierung oder Migration von SAP-, ERP-, Software- oder Verwaltungssystemen.",
+          "Statistik, Geodaten oder Messindikatoren, wenn Datenerhebung und -verarbeitung zentral sind.",
+          "Réglementation des plateformes en ligne, des contenus numériques ou de la désinformation.",
+          "Regolamentazione di piattaforme online, commercio elettronico e servizi digitali.",
+          "Applicazioni online come strumento per accedere ad alloggi o servizi pubblici.",
+          "Incitamento all'odio e discriminazione su Internet o sulle piattaforme sociali."
+        ],
+        "negative_examples": [
+          "Sanierung einer Kantonsstrasse ohne digitalen Bezug.",
+          "Finanzierung eines konventionellen Schulgebäudes.",
+          "Rentenreform ohne Bezug zu digitalen Prozessen."
+        ]
+      },
+      "system_prompt": "You are a deterministic taxonomy annotator for Swiss parliamentary affairs.\nDecide whether the affair belongs to the supplied topic. Classify subject matter only; never\njudge a political position, party, institution, or proposal.\n\nDECISION POLICY\n1. Read the topic definition, inclusions, and exclusions as one operational taxonomy.\n2. Return assigned when at least one passage shows that the topic is a substantive object,\n   instrument, infrastructure, regulatory concern, implementation method, or material context\n   of the affair. The topic need not be the affair's sole or primary policy area.\n3. Procurement, financing, governance, supervision, labour rules, consumer rules, reporting,\n   security, rights, and public debate count when they concern an included technology or digital\n   practice. Do not require the literal words 'digital' or 'Digitalisierung'.\n4. A precise title is evidence. Strong technical anchors such as software, ERP, IT systems,\n   algorithms, online platforms, electronic communication, data processing, cybersecurity,\n   telecom networks, digital media, or remote digital work are sufficient even when the body is\n   short. Do not dismiss a named technical system merely because its purpose is not explained.\n5. Return not_assigned only when the supplied passages provide affirmative grounds that the\n   affair is outside the topic, or contain no included concept after considering synonyms and\n   functional equivalents.\n6. Return uncertain when there is a plausible topic connection but the available wording is too\n   ambiguous to decide. Return not_evaluable only when there is effectively no meaningful text.\n7. Before answering, silently test the strongest reason for assigned and the strongest reason\n   for not_assigned. Prefer the decision supported by explicit passage evidence.\n\nOUTPUT CONTRACT\nReturn one JSON object with exactly these keys:\n- status: assigned, not_assigned, uncertain, or not_evaluable\n- score: a number from 0 to 1 expressing decision strength, not a calibrated probability\n- explanation: one concise sentence grounded in the supplied text\n- evidence_ids: passage IDs copied exactly from the input\n\nassigned and uncertain require at least one evidence ID. not_assigned may cite the most relevant\npassage but must not invent evidence. Only cite IDs present in the input.",
+      "settings": {
+        "llm_name": "swiss-ai/Apertus-v1.5-70B",
+        "llm_base_url": "https://api.inference.cscs.ch/v1",
+        "classifier_prompt_version": "topic-v2",
+        "classifier_policy_version": "hybrid-v3",
+        "keyword_rescue_enabled": true,
+        "chunk_size": 1400,
+        "chunk_overlap": 200,
+        "retrieval_top_k": 5,
+        "keyword_document_gate_enabled": true,
+        "retrieval_pin_title": false
+      },
+      "implementation_sha256": {
+        "classification/service.py": "cb61ddddb0e3f72cd942213cad0588b26e7690034891cf15117296919f5b8ab0",
+        "classification/keyword.py": "af688c53629deba85b36f75d9243d90fd7411d4023a5da28bf5dce25e14e4e93",
+        "classification/prompts.py": "f653665601af7495d473f6b01d6e70b0f80c99c9780e0a08a2410580d0419951",
+        "classification/apertus_client.py": "2d3cce2d3f5e5611b25c1bad254f75d5911dc3a7ed39955477aea197e216419d",
+        "retrieval/chunker.py": "09a67e7b99d2e4582d705ea3bb77ea604e838c7ef71a40853706dc0d7e1c3881",
+        "retrieval/bm25.py": "71c21e52783aff58adde983050c473c6d0f05554bee679f936cf6a96018f6c6e",
+        "models.py": "fe37896cf143abd72a44b358445bcefbd101878df7e34a670e563a82191493a8"
+      }
+    }
+  },
+  "references": {
+    "e4_dvs.jsonl": {
+      "available": true,
+      "rows": 30,
+      "sha256": "4703be490b3d69363ede43dadadd3f1c1a8576a3b5f011820ab45f371b785ca5",
+      "languages": {
+        "de": 26,
+        "fr": 2,
+        "it": 2
+      },
+      "levels": {
+        "cantonal": 25,
+        "federal": 5
+      }
+    },
+    "e3_aps_sample.jsonl": {
+      "available": true,
+      "rows": 50,
+      "sha256": "d4c9f3a03bc08fa9d3526426ffca9f33e863ce97a1d695fc54311cbcb7a61aae",
+      "languages": {
+        "fr": 15,
+        "it": 16,
+        "de": 19
+      },
+      "levels": {
+        "cantonal": 25,
+        "federal": 25
+      }
+    },
+    "e3_aps_labels.jsonl": {
+      "available": true,
+      "rows": 20,
+      "sha256": "c0757b32152cdd412598bb422817f106e3a7f43f4bff5c3850c2d89e9c576343",
+      "languages": {
+        "unspecified": 20
+      },
+      "levels": {
+        "unspecified": 20
+      }
+    },
+    "aps_chapter_agreement": {
+      "same_chapter": 11,
+      "total": 20,
+      "consensus_gold_available": false
+    },
+    "aps_taxonomy": {
+      "available": true,
+      "topics": 165,
+      "chapters": 22,
+      "sha256": "9812aec43c56cde8bfb4d29153d83ccbe48da4d399e0e5f276aedbca21b340f2"
+    },
+    "warning": "DVS is positive-only: precision and binary macro-F1 are not established. APS annotators disagree; no adjudicated consensus or APS model predictions supplied. Curia Vista subject labels are not APS labels."
+  },
+  "limitations": [
+    "Metrics are selective on decisive cases; inspect subgroup coverage.",
+    "E1 labels contain untagged proxy negatives and an opened validation split.",
+    "Rescoring historical outputs is not a measurement of current code quality."
+  ]
+}

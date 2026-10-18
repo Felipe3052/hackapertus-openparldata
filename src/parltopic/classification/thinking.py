@@ -8,8 +8,7 @@ marker; the answer follows `<|inner_suffix|>`. Prompt instructions alone do not 
 import json
 import time
 
-import httpx
-
+from parltopic.classification.apertus_client import ApertusClient
 from parltopic.classification.prompts import build_user_prompt, system_prompt
 from parltopic.config import Settings
 from parltopic.models import (
@@ -17,6 +16,7 @@ from parltopic.models import (
     ClassificationResult,
     ClassificationStatus,
     Evidence,
+    ModelDecision,
     TopicDefinition,
 )
 from parltopic.retrieval.bm25 import retrieve
@@ -53,30 +53,31 @@ def rethink(
     selected = {segment.segment_id: (segment, score) for segment, score in ranked}
     started = time.perf_counter()
     try:
-        response = httpx.post(
-            f"{settings.llm_base_url.rstrip('/')}/chat/completions",
-            headers={"Authorization": f"Bearer {settings.llm_api_key}"},
-            json={
+        with ApertusClient(settings) as client:
+            body = client.request({
                 "model": model,
                 "temperature": 0,
                 "max_tokens": max_tokens,
                 "messages": [
                     {
                         "role": "system",
-                        "content": system_prompt(settings.classifier_prompt_version),
+                        "content": system_prompt(
+                            topic.prompt_version or settings.classifier_prompt_version
+                        ),
                     },
                     {"role": "user", "content": build_user_prompt(topic, [s for s, _ in ranked])},
                     {"role": "assistant", "content": PREFIX},
                 ],
                 "continue_final_message": True,
                 "add_generation_prompt": False,
-            },
-            timeout=max(settings.llm_timeout_seconds, 300),
-        )
-        response.raise_for_status()
-        body = response.json()
-        payload = parse_answer(body["choices"][0]["message"]["content"] or "")
-        status = ClassificationStatus(payload["status"])
+            }, timeout=max(settings.llm_timeout_seconds, 300))
+        decision = ModelDecision.model_validate(parse_answer(
+            body["choices"][0]["message"]["content"] or ""
+        ))
+        if set(decision.evidence_ids) - set(selected):
+            raise ValueError("Thinking returned evidence outside the supplied passages")
+        payload = decision.model_dump(mode="json")
+        status = decision.status
         usage = body.get("usage", {})
         return ClassificationResult(
             affair_id=affair.affair_id,
@@ -98,7 +99,7 @@ def rethink(
             needs_review=status
             in {ClassificationStatus.UNCERTAIN, ClassificationStatus.NOT_EVALUABLE},
             model=model,
-            prompt_version=settings.classifier_prompt_version,
+            prompt_version=topic.prompt_version or settings.classifier_prompt_version,
             classifier_version="thinking-rethink",
             input_tokens=usage.get("prompt_tokens"),
             output_tokens=usage.get("completion_tokens"),
@@ -112,5 +113,6 @@ def rethink(
             language=affair.language,
             needs_review=True,
             model=model,
+            prompt_version=topic.prompt_version or settings.classifier_prompt_version,
             error=str(error),
         )

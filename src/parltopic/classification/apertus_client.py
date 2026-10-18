@@ -46,6 +46,12 @@ class ApertusClient:
             raise RuntimeError("LLM_API_KEY is not configured")
         return self._post_with_retry(system_prompt, user_prompt).json()
 
+    def request(self, payload: dict, timeout: float | None = None) -> dict:
+        """Specialised Apertus requests share transport, quota and retry handling."""
+        if not self.settings.llm_api_key:
+            raise RuntimeError("LLM_API_KEY is not configured")
+        return self._request_with_retry(payload, timeout).json()
+
     def classify(self, system_prompt: str, user_prompt: str) -> ApertusResponse:
         started = time.perf_counter()
         body = self.complete(system_prompt, user_prompt)
@@ -59,7 +65,6 @@ class ApertusClient:
         )
 
     def _post_with_retry(self, system_prompt: str, user_prompt: str) -> httpx.Response:
-        endpoint = f"{self.settings.llm_base_url.rstrip('/')}/chat/completions"
         request = {
             "model": self.settings.llm_name,
             "temperature": 0,
@@ -69,6 +74,12 @@ class ApertusClient:
             ],
             "response_format": {"type": "json_object"},
         }
+        return self._request_with_retry(request)
+
+    def _request_with_retry(self, request: dict,
+                            timeout: float | None = None) -> httpx.Response:
+        endpoint = f"{self.settings.llm_base_url.rstrip('/')}/chat/completions"
+        retry_after = 0.0
         for attempt in range(self.settings.llm_max_retries + 1):
             try:
                 if self._closed:
@@ -87,7 +98,7 @@ class ApertusClient:
                     endpoint,
                     headers={"Authorization": f"Bearer {self.settings.llm_api_key}"},
                     json=request,
-                    timeout=self.settings.llm_timeout_seconds,
+                    timeout=timeout if timeout is not None else self.settings.llm_timeout_seconds,
                 )
                 response.raise_for_status()
                 return response
@@ -95,9 +106,17 @@ class ApertusClient:
                 retryable = error.response.status_code == 429 or error.response.status_code >= 500
                 if not retryable or attempt >= self.settings.llm_max_retries:
                     raise
-            except httpx.TimeoutException:
+                try:
+                    retry_after = max(0.0, float(
+                        error.response.headers.get("Retry-After", "0")
+                    ))
+                except ValueError:
+                    retry_after = 0.0
+                if retry_after > 300:
+                    raise  # Do not retry early when the provider requests a longer wait.
+            except (httpx.TimeoutException, httpx.NetworkError):
                 if attempt >= self.settings.llm_max_retries:
                     raise
-            time.sleep(self.settings.llm_retry_backoff_seconds * 2**attempt)
+            time.sleep(max(retry_after, self.settings.llm_retry_backoff_seconds * 2**attempt))
         raise RuntimeError("Apertus retry loop ended unexpectedly")
 

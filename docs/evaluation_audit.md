@@ -371,3 +371,13 @@ Abschlussprüfung: **25 neue Audit-Testfälle bestanden; vollständige Suite 86 
 Lint-Prüfung und Diff-Whitespace-Prüfung sind sauber. Eine bestehende Starlette-TestClient-
 Deprecation-Warnung wurde ausgegeben. Alle im Audit festgehaltenen Quellen-Hashes wurden
 nach der Prüfung erneut verglichen; Labels, Vorhersagen und übrige Eingabedateien sind unverändert.
+
+# Aktualisierung für den Abgabe-Branch
+
+Die vorangehende Prüfung beschreibt den historischen Stand. Im Branch
+`feat/hackathon-submission-ready` werden nichtboolesche Labels, doppelte Gold-IDs, fremde
+Vorhersage-IDs und unbekannte Statuswerte jetzt zentral abgewiesen. Vergleichsberichte nennen
+Coverage-Verluste ausdrücklich. Die historischen JSON-Artefakte wurden nicht umgeschrieben.
+Die ursprünglichen Metriken und die Einschränkungen durch Proxylabels und geöffnetes Dev bleiben
+unverändert. `legacy_validation_probes()` meldet für die reproduzierten Fehlformen jetzt
+explizite Rejections.

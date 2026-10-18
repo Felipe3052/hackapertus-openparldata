@@ -1,0 +1,50 @@
+name: Offline checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m ruff check .
+      - run: python -m pytest
+      - name: Recompute published quality claims without inference
+        if: matrix.python == '3.12'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m parltopic.cli fetch-results && python -m parltopic.cli claims
+      - name: Verify export and version constraints in isolated PostgreSQL
+        if: matrix.python == '3.12'
+        run: python scripts/check_postgres.py
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t parltopic-jury .
+      - name: Exercise bundled replay without network, secrets or mounts
+        run: |
+          docker run --rm --network none --entrypoint python parltopic-jury -c '
+          from pathlib import Path
+          from streamlit.testing.v1 import AppTest
+          assert not Path(".env").exists()
+          assert not Path("data/eval").exists()
+          app = AppTest.from_file("/app/app/streamlit_app.py").run()
+          assert not app.exception
+          next(b for b in app.button if b.label.startswith("Historisches Ergebnis")).click().run()
+          assert not app.exception
+          assert app.session_state["classification"]["affair_id"]
+          '

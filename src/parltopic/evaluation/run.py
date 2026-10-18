@@ -2,7 +2,7 @@
 
 import hashlib
 import json
-from collections import Counter, defaultdict
+from collections import defaultdict
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -12,7 +12,9 @@ from parltopic.classification.keyword import first_keyword_hit
 from parltopic.classification.prompts import system_prompt
 from parltopic.classification.service import ClassificationService
 from parltopic.config import Settings
+from parltopic.evaluation.execution import checkpointed_run
 from parltopic.evaluation.metrics import binary_metrics, precision_at_prevalence
+from parltopic.evaluation.validation import validate_gold, validate_results
 from parltopic.models import Affair, ClassificationStatus, TopicDefinition
 from parltopic.retrieval.chunker import chunk_affair
 
@@ -33,15 +35,18 @@ def _run_manifest(eval_path: str | Path, topic: TopicDefinition, settings: Setti
         "classification/apertus_client.py", "retrieval/chunker.py", "retrieval/bm25.py",
         "models.py",
     ]
+    with Path(eval_path).open("rb") as source:
+        dataset_sha256 = hashlib.file_digest(source, "sha256").hexdigest()
     return {
         "schema_version": 1,
-        "dataset_sha256": hashlib.sha256(Path(eval_path).read_bytes()).hexdigest(),
+        "dataset_sha256": dataset_sha256,
         "topic": topic.model_dump(mode="json"),
         "system_prompt": system_prompt(topic.prompt_version or settings.classifier_prompt_version),
         "settings": {
             key: getattr(settings, key)
             for key in (
-                "llm_name", "llm_base_url", "classifier_prompt_version",
+                "llm_name", "llm_base_url", "llm_timeout_seconds", "llm_max_retries",
+                "llm_retry_backoff_seconds", "classifier_prompt_version",
                 "classifier_policy_version", "keyword_rescue_enabled", "chunk_size",
                 "chunk_overlap", "retrieval_top_k",
                 "keyword_document_gate_enabled", "retrieval_pin_title",
@@ -64,46 +69,27 @@ def run_classifier(
     limit: int | None = None,
     retry_failed: bool = True,
     topic_for: Callable[[Affair], TopicDefinition] | None = None,
+    topic_for_provenance: dict | None = None,
 ) -> Path:
     """Classify every affair of the eval set; resumes by skipping affairs already in out_path.
 
     `topic_for` builds a per-affair topic (e.g. with retrieved few-shot examples).
     """
-    out = Path(out_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    existing = read_rows(out) if out.exists() else []
-    manifest_path = out.with_suffix(out.suffix + ".manifest.json")
     manifest = _run_manifest(eval_path, topic, settings)
-    if existing:
-        if not manifest_path.exists():
-            raise ValueError("Existing results have no provenance manifest; use a new output path")
-        if json.loads(manifest_path.read_text("utf-8")) != manifest:
-            raise ValueError("Run inputs changed; use a new output path to avoid mixing results")
-    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
-    if retry_failed:
-        existing = [
-            row for row in existing if row.get("status") != ClassificationStatus.FAILED.value
-        ]
-    done = {row["affair_id"] for row in existing}
-    candidates = read_rows(eval_path)
-    if limit is not None:
-        candidates = candidates[:limit]
-    todo = [row for row in candidates if row["affair_id"] not in done]
-    if not todo and out.exists():
-        return out
-    service = ClassificationService(settings)
-    affairs = [Affair.model_validate(row) for row in todo]
-    with service, out.open("w", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
-        for row in existing:
-            file.write(json.dumps(row, ensure_ascii=False) + "\n")
-        futures = [
-            pool.submit(service.classify, affair, topic_for(affair) if topic_for else topic)
-            for affair in affairs
-        ]
-        for future in as_completed(futures):
-            file.write(future.result().model_dump_json() + "\n")
-            file.flush()
-    return out
+    if topic_for is not None:
+        if topic_for_provenance is None:
+            output = Path(out_path)
+            if output.exists() or output.with_suffix(output.suffix + ".checkpoint.sqlite").exists():
+                raise ValueError("Per-affair topics require explicit provenance for safe resume")
+            manifest["topic_for_provenance"] = {"verified": False, "resume_supported": False}
+        else:
+            manifest["topic_for_provenance"] = topic_for_provenance
+    with ClassificationService(settings) as service:
+        return checkpointed_run(
+            eval_path, out_path, manifest,
+            lambda affair: service.classify(affair, topic_for(affair) if topic_for else topic),
+            workers, limit, retry_failed,
+        )
 
 
 def run_rethink(
@@ -208,23 +194,7 @@ def _metrics_row(
 def _validated_results(
     eval_rows: list[dict[str, Any]], result_rows: list[dict[str, Any]]
 ) -> tuple[dict[str, dict[str, Any]], set[str]]:
-    eval_ids = {row["affair_id"] for row in eval_rows}
-    result_ids = [row["affair_id"] for row in result_rows]
-    duplicates = sorted(affair_id for affair_id, count in Counter(result_ids).items() if count > 1)
-    if duplicates:
-        raise ValueError(f"Duplicate result IDs: {duplicates[:10]}")
-    unknown = sorted(set(result_ids) - eval_ids)
-    if unknown:
-        raise ValueError(f"Result IDs not present in evaluation set: {unknown[:10]}")
-    models = {row.get("model") for row in result_rows}
-    prompts = {row.get("prompt_version") for row in result_rows}
-    classifiers = {row.get("classifier_version") for row in result_rows}
-    if len(models) > 1 or len(prompts) > 1 or len(classifiers) > 1:
-        raise ValueError(
-            "A scored run must contain exactly one model, prompt, and classifier version"
-        )
-    results = {row["affair_id"]: row for row in result_rows}
-    return results, eval_ids - set(results)
+    return validate_results(eval_rows, result_rows)
 
 
 def score_binary(
@@ -235,11 +205,19 @@ def score_binary(
 ) -> dict[str, Any]:
     """Overall and per-language / per-level precision, recall and F1."""
     rows = read_rows(eval_path)
+    gold = validate_gold(rows)
+    if set(predictions) - set(gold):
+        raise ValueError("Prediction IDs not present in evaluation set")
+    if any(type(value) is not bool for value in predictions.values()):
+        raise ValueError("Binary predictions must be boolean")
+    if statuses is not None:
+        validate_results(rows, [{"affair_id": key, "status": status}
+                                for key, status in statuses.items()])
     groups: dict[str, list[tuple[bool, bool]]] = defaultdict(list)
     for row in rows:
         if row["affair_id"] not in predictions:
             continue
-        pair = (bool(row["label"]), predictions[row["affair_id"]])
+        pair = (row["label"], predictions[row["affair_id"]])
         groups["all"].append(pair)
         groups[f"lang={row['language']}"].append(pair)
         groups[f"level={row['level']}"].append(pair)

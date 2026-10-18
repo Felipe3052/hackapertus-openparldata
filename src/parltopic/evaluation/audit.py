@@ -168,20 +168,27 @@ def legacy_validation_probes():
     from parltopic.evaluation.run import _validated_results, score_binary
 
     def score(rows, predictions):
-        with patch("parltopic.evaluation.run.read_rows", return_value=rows):
-            result = score_binary("not-a-file", predictions)
+        try:
+            with patch("parltopic.evaluation.run.read_rows", return_value=rows):
+                result = score_binary("not-a-file", predictions)
+        except ValueError as error:
+            return {"rejected": True, "reason": str(error)}
         return {"coverage": result["coverage"], "all": result.get("all")}
 
     row = {"affair_id": "synthetic", "label": True, "language": "de", "level": "federal"}
+    try:
+        status_accepted = bool(_validated_results(
+            [row], [{"affair_id": "synthetic", "status": "invalid-status"}]
+        )[0])
+    except ValueError:
+        status_accepted = False
     return {
         "purpose": "Malformed-fixture diagnostics only; no real labels or predictions changed",
         "null_label_treated_as_negative": score([{**row, "label": None}], {"synthetic": False}),
         "string_false_treated_as_positive": score([{**row, "label": "false"}], {"synthetic": True}),
         "duplicate_gold_counted_twice": score([row, row], {"synthetic": True}),
         "foreign_prediction_silently_ignored": score([row], {"foreign": False}),
-        "unknown_status_accepted_by_validator": bool(_validated_results(
-            [row], [{"affair_id": "synthetic", "status": "invalid-status"}]
-        )[0]),
+        "unknown_status_accepted_by_validator": status_accepted,
     }
 
 

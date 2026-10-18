@@ -3,23 +3,32 @@
 
 CREATE TABLE IF NOT EXISTS topics (
     topic_id        text PRIMARY KEY,
+    name            text NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS topic_versions (
+    topic_id        text NOT NULL REFERENCES topics (topic_id),
     name            text NOT NULL,
     definition      jsonb NOT NULL,          -- the topic YAML (description, terms, examples, policy)
     compiled_query  jsonb,                   -- terms per language written by Apertus, editable
     topic_version   text NOT NULL,           -- sha256 of definition + compiled_query
-    created_at      timestamptz NOT NULL DEFAULT now()
+    created_at      timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (topic_id, topic_version)
 );
 
 CREATE TABLE IF NOT EXISTS affair_topics (
     affair_id            integer NOT NULL,   -- OpenParlData affairs.id
     topic_id             text NOT NULL REFERENCES topics (topic_id),
     topic_version        text NOT NULL,
+    run_id               text NOT NULL,
+    prediction_id        text NOT NULL,
     status               text NOT NULL CHECK (status IN
                          ('assigned', 'not_assigned', 'uncertain', 'not_evaluable')),
     explanation          text,
     evidence_text        text,               -- original source text, never model-written
     evidence_document_id text,               -- OpenParlData docs.id when the passage is a document
     evidence_url         text,
+    evidence             jsonb NOT NULL DEFAULT '[]'::jsonb,
     language             text,
     model                text NOT NULL,      -- e.g. swiss-ai/Apertus-v1.5-70B
     prompt_version       text,
@@ -31,7 +40,8 @@ CREATE TABLE IF NOT EXISTS affair_topics (
     review_decision      text CHECK (review_decision IN ('confirmed', 'rejected')),
     reviewed_by          text,
     reviewed_at          timestamptz,
-    PRIMARY KEY (affair_id, topic_id, topic_version)
+    PRIMARY KEY (affair_id, topic_id, topic_version, run_id),
+    FOREIGN KEY (topic_id, topic_version) REFERENCES topic_versions (topic_id, topic_version)
 );
 
 CREATE INDEX IF NOT EXISTS affair_topics_topic_status

@@ -1,6 +1,6 @@
 import httpx
 
-from parltopic.compiler import CompiledTopic, search_candidates
+from parltopic.compiler import CompiledTopic, newest_matches, search_candidates
 
 
 def test_query_joins_terms_phrases_and_strips_operators():
@@ -30,3 +30,15 @@ def test_search_stops_on_last_page_even_if_has_more_stays_true():
                               page_size=2, client=client)
     assert found == {"de": [0, 1, 2]}
     assert calls == [("BE", "0"), ("BE", "2")]
+
+
+def test_live_ranking_keeps_one_relevant_hit_in_small_pool():
+    with httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200, json={
+        "data": [{"id": 42, "body_key": "BE", "begin_date": "2026-01-01",
+                  "title_de": "ChatGPT in der Verwaltung"}],
+    }))) as client:
+        results = newest_matches(CompiledTopic(topic_id="fixture", terms={"de": ["ChatGPT"]}),
+                                 bodies=["BE"], languages=["de"], client=client)
+    assert len(results) == 1
+    assert results[0]["score"] > 0
+    assert results[0]["matched_terms"] == ["chatgpt"]

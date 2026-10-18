@@ -5,14 +5,22 @@ ParlTopic adds topic suggestions next to OpenParlData's affairs; it never change
 ## Table
 
 [`integration/opd/001_affair_topics.sql`](../integration/opd/001_affair_topics.sql) creates two
-PostgreSQL tables:
+PostgreSQL tables (fresh installation; existing deployments require an explicit migration):
 
-- `topics`: one row per topic with its YAML definition, the compiled search terms and a
-  `topic_version` hash. Editing a topic creates a new version; old suggestions stay attributable.
-- `affair_topics`: one row per affair, topic and topic version with status, explanation, the
+- `topics`: one identity row per topic (`topic_id`, `name`).
+- `topic_versions`: immutable YAML definitions and compiled terms keyed by
+  `(topic_id, topic_version)`. Editing a topic adds a version; old definitions remain available.
+- `affair_topics`: one row per affair, topic, topic version and run with status, explanation, the
   original evidence text, its document ID and link, model, prompt and classifier version and
   tokens. `review_decision`, `reviewed_by` and `reviewed_at` hold the human check (confirmed /
-  rejected); a review never deletes the suggestion.
+  rejected); a review never deletes the suggestion. `prediction_id` identifies the exact result.
+  `evidence` retains every original passage; the legacy evidence columns contain the first.
+
+The exporter requires a `.jsonl.manifest.json` whose topic definition matches the supplied YAML.
+It rejects foreign topic IDs, duplicates, missing positive evidence and existing output files.
+Historical outputs without a manifest require explicit `--allow-unverified`; the run sidecar
+records that verification was unavailable. This checks declared provenance, not a cryptographic
+signature proving who produced a model output. The source-results hash is recorded separately.
 
 Failed calls are not exported: they are a technical state, not a topic decision.
 
@@ -25,9 +33,12 @@ parltopic classify-affair 303044 --topic configs/topics/digitalisation.yaml
 # batch over an eval set or any Affair JSONL, then rows for affair_topics
 parltopic run-eval --eval-set data/eval/e1_digitalisation_test.jsonl \
   --topic configs/topics/digitalisation.yaml --output results/run.jsonl
+# For unlabelled production Affairs JSONL, add --no-score; --limit bounds a short trial.
+# The checkpointed runner is the same; no gold labels are invented for production data.
 parltopic export-opd --results results/run.jsonl \
   --topic configs/topics/digitalisation.yaml --output out/affair_topics.ndjson
-# -> out/affair_topics.ndjson (rows) and out/affair_topics.ndjson.topic.json (topics row)
+# -> rows, .topic.json (topic_versions row), .run.json (manifest and exact source hash)
+# First ensure the parent topics identity exists; then insert the topic_versions row.
 
 # ad-hoc topic: Apertus writes the search terms once, a person can edit them
 parltopic compile-topic --topic configs/topics/adhoc/health.yaml --output topics/health.json
@@ -43,7 +54,8 @@ OpenParlData's ETL runs on Apache Hop. A nightly pipeline needs three transforms
 2. **Execute process / Shell** — `parltopic run-eval` (or `classify-affair` per ID) on those
    affairs, one call per active topic; output NDJSON via `parltopic export-opd`.
 3. **JSON input → Table output** — load the NDJSON into `affair_topics` (insert only; the
-   primary key `(affair_id, topic_id, topic_version)` makes reruns idempotent).
+   primary key `(affair_id, topic_id, topic_version, run_id)` with `ON CONFLICT DO NOTHING`
+   makes repeat imports idempotent; a plain duplicate INSERT will raise an error).
 
 The FastAPI service (`make api`, `POST /classify`) is the alternative for a REST client
 transform. All calls go to an OpenAI-compatible Apertus endpoint (`LLM_BASE_URL`): CSCS, a Swiss

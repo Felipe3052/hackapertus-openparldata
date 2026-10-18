@@ -1,5 +1,13 @@
 # Experiment log
 
+This is a historical working log. Early tables retain the figures recorded during the
+experiments and can differ from later report corrections and recalculations. They are not
+claims about the current submission branch. The canonical submission figures are in README.md
+and technical_report.md; `parltopic claims` verifies their 41 registered quality statements
+against the published prediction archive. See `docs/results/submission-validation-20261018.json`
+for the independently recomputed frozen 1,200-affair run, including decisive coverage.
+No new inference, label edits or final-test tuning were performed for the submission preparation.
+
 Two parts, one per line of work. Part A covers the eval sets, the ablations on the digitalisation topic, the frozen configuration and the checks across languages, levels, parliaments and topics. Part B covers the classifier-quality experiments run in isolation against `main` (title anchors, online spelling variants, document enrichment, supervised baseline, confirmation panel).
 
 # Part A — evaluation and ablations

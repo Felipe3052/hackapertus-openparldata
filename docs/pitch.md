@@ -1,6 +1,6 @@
 # Pitch und Demo-Drehbuch (Team Token Tell)
 
-Stand 18.10.2026. Jede Zahl hier ist mit `parltopic claims` nachrechenbar (Release
+Stand 18.10.2026. Die 41 Qualitätsaussagen sind mit `parltopic claims` nachrechenbar (Release
 `results-2026-10-18`).
 
 ## Kernbotschaft (ein Satz)
@@ -25,16 +25,18 @@ OpenParlData-Suche (keine Präfixe, Datumsfilter ignoriert, tiefe Seiten langsam
 
 ## Demo-Drehbuch
 
-Vorbereitung (vor dem Pitch, einmal): `make install`, `.env` mit `LLM_API_KEY`,
-`parltopic fetch-results`, `make web`. Endpoint testen mit einem Geschäft.
+Vorbereitung: `make run`. Sechs echte DE/FR/IT-Originalfälle samt historischen Ergebnissen
+sind mitgeliefert. Der sichere Fünf-Minuten-Pitch zeigt zuerst diesen kurzen Offline-Pfad.
+Live-Modus nur mit vorbereitetem Key und vereinbartem API-Budget; kein Vollbestand-Lauf.
 
-1. Modus **Einzelnes Geschäft** → Eingabe **OpenParlData-ID (live)** → `303044` → *Von der
-   OpenParlData-API laden* (BE, «eBau – elektronisches Baubewilligungsverfahren»).
-2. Konfiguration **Digitalisierung (validiert)** → *Mit Apertus klassifizieren* → Status, Erklärung,
-   Belegstelle, Link zur Quelle.
+1. Modus **Einzelnes Geschäft** → Eingabe **Echtes Geschäft** → Sprache und Ebene wählen.
+   Sechs Originalfälle sind im Container vorhanden; Titel, ID und Quelle zeigen.
+2. Konfiguration **Digitalisierung (validiert)** → *Historisches Ergebnis anzeigen* → Status,
+   Erklärung, Belegstelle und historische Kennzeichnung. Optional mit vorbereitetem Budget
+   einen Live-Abruf per ID statt des historischen Ergebnisses zeigen.
 3. Kürzel eintragen → **Vorschlag bestätigen** → «Gespeichert».
-4. Französisch/Italienisch zeigen: `235308` (Bund, FR-Fassung) oder `329562` (TI, «Per
-   un'intelligenza artificiale pubblica svizzera»).
+4. Die mitgelieferten französischen/italienischen Fälle wechseln. Eigene Themendefinition und
+   YAML-Download zeigen: kein Training erforderlich, Qualität neuer Themen separat prüfen.
 5. Modus **Thema über Parlamente suchen** → Thema eingeben **mit 2–3 spezifischen eigenen
    Begriffen** (z. B. «KI, ChatGPT, künstliche Intelligenz») → *Suchbegriffe schreiben lassen*
    (≈ 20–40 s) → Begriffe kurz zeigen und allgemeine Wörter (z. B. «Verwaltung») löschen →
@@ -43,9 +45,9 @@ Vorbereitung (vor dem Pitch, einmal): `make install`, `.env` mit `LLM_API_KEY`,
    editierbar) ist Teil der Botschaft «Mensch behält die Kontrolle».
 
 **Fallback, falls der Endpoint langsam ist** (nachmittags bis 70 s pro Anfrage gemessen):
-Schritt 1–2 mit *Historisches Ergebnis anzeigen (ohne API)* im Modus «Echtes Geschäft»; Schritt 5
-mit dem vorbereiteten Lauf `results/compiler/find_health_be.jsonl` (Gesundheit, Bern: 900
-Kandidaten in 5,7 s, 9 von 15 geprüften passen).
+Schritt 1–2 mit *Historisches Ergebnis anzeigen (ohne API)* im Modus «Echtes Geschäft».
+Schritt 5 bei langsamem Endpoint durch die Compiler-Ergebnistabelle im Bericht ersetzen.
+Keine lokal vorhandenen, aber nicht ausgelieferten Suchläufe als Fallback voraussetzen.
 
 ## Wahrscheinliche Fragen
 
@@ -53,9 +55,9 @@ Kandidaten in 5,7 s, 9 von 15 geprüften passen).
 |---|---|
 | Wie gut ist die Precision wirklich? | 0,875 auf der Stichprobe. Bei der echten Häufigkeit (2,3 %) ist etwa jeder vierte Vorschlag getaggt – gleich wie bei der Volltextsuche, aber mit 1,6-fachem Recall. Ein Teil der «Fehlalarme» sind Lücken im PolitMonitor-Tag. Darum: Vorschlagsliste mit Prüfung. |
 | Was ist mit APS? | Zwei Personen sind sich beim APS-Kapitel nur in 11 von 20 Fällen einig (κ 0,51). Ein starres Schema ist schon für Menschen schwer; wir setzen auf frei definierbare Themen. Das Schema ist exportiert. |
-| Wie lange für 300'000 Geschäfte? | Gemessen 64–150 Anfragen/Minute auf CSCS, also 28–67 h pro Thema auf einem Key; ~USD 370 zum Public-AI-Listenpreis. Nächtlich nur neue Geschäfte: Minuten. |
+| Wie lange für 300'000 Geschäfte? | Kein Vollbestand-Lauf ausgeführt. Beim Default von 30 RPM und historischem Mix etwa 139 h als Hochrechnung. Höhere historische Durchsätze sind keine Kapazitätszusage. Geldkosten hängen vom Vertrag ab; nächtliche inkrementelle Laufzeiten sind nicht gemessen. |
 | Warum nicht 8B? | Gemessen: F1 0,43 statt 0,80, Recall 0,28. |
 | Warum nicht nur suchen statt lesen? | Gemessen: Die beste Suche findet 60–68 % der Treffer in 4–8 % der Geschäfte. Für hohen Recall muss Apertus jedes Geschäft lesen. |
-| Bias? | Keine Sprachlücke über 0,05; Geschäfte nur mit Titel genauso gut wie mit Text (0,87/0,88); Parteien noch nicht geprüft. |
+| Bias? | Positive F1 DE/FR/IT 0,897/0,849/0,846: Abstand etwa 0,051 und damit knapp über dem 0,05-Ziel. Parteien und eine belastbare kommunale Stichprobe fehlen. |
 | Souverän? | Apertus 70B (offene Gewichte) auf CSCS, alternativ Swiss Provider oder lokal vLLM. Keine proprietären Dienste zur Laufzeit. |
 | Wie übernimmt OPD das? | SQL-Tabelle `affair_topics`, `parltopic export-opd`, Apache-Hop-Pipeline in `docs/integration.md`. |

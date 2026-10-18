@@ -6,12 +6,14 @@ from collections import Counter
 from pathlib import Path
 
 from parltopic.evaluation.audit import audit_predictions, read_rows, sha, unique_index
+from parltopic.evaluation.validation import validate_results
 from parltopic.models import ClassificationResult
 
 
 def evaluate(gold_rows, prediction_rows):
     """Include unresolved cases in every subgroup's coverage denominator."""
     unique_index(gold_rows, "gold")
+    validate_results(gold_rows, prediction_rows)
     for row in prediction_rows:
         result = ClassificationResult.model_validate(row)
         if result.status in {"assigned", "uncertain"} and not result.evidence:

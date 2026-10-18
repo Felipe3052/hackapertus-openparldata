@@ -4,7 +4,7 @@
 - **Event:** Hack Apertus Liebefeld, 18–19 October 2026
 - **Team:** Token Tell — Felipe Wüthrich, Josip Jukic
 - **Repository:** [GitHub](https://github.com/Felipe3052/hackapertus-openparldata) · **Experiment log:** [docs/experiments.md](docs/experiments.md) · **Benchmark notes:** [docs/benchmark.md](docs/benchmark.md)
-- **Demo:** video link to add · Streamlit app (`make web`) · API (`make api`) · CLI (`parltopic classify`)
+- **Demo:** `make run` (Docker, bundled offline replay) · API (`make api`) · CLI (`parltopic classify`)
 
 ---
 
@@ -98,8 +98,8 @@ topics are the stronger offer.
 - **8B vs. 70B (dev, same prompt):** 8B reaches F1 0.43 (recall 0.28) against 0.80 for 70B. It
   rejects most affairs whose digital aspect is not in the title, and in 169 of 450 answers it
   returned malformed evidence lists. 70B is the only viable size for this task.
-- **Determinism:** two identical 70B runs change 0 of 450 labels, so paired differences measure
-  the change, not noise.
+- **Observed repeatability:** two identical 70B runs change 0 of 450 labels. This is evidence
+  for repeatability on that sample, not a guarantee of deterministic serving.
 - **Scores are not confidences:** 46 of the 64 missed positives of the first run had a score ≤ 0.1
   and only 16 of 450 answers lay between 0.1 and 0.9. A "send low-confidence cases to a second
   model" cascade cannot find these errors.
@@ -124,7 +124,7 @@ topics are the stronger offer.
   comparable content. Seed 42; `parltopic build-eval` reproduces the files byte for byte.
 - **Label caveat:** untagged affairs are positive-unlabelled proxies. Our error analysis found
   digitalisation affairs among the "false positives" (e.g. *Digital Services Act per la Svizzera*,
-  the SIPAC IT system, the telecom surveillance ordinance), so precision is a lower bound.
+  the SIPAC IT system, the telecom surveillance ordinance), so precision may understate quality.
 - **Protocol:** prompts and topic definitions were tuned on dev only. The test split was first
   run once with predeclared expectations; since then it counts as opened validation, and the
   frozen configuration was run on it once more with expectations declared beforehand
@@ -149,7 +149,8 @@ topics are the stronger offer.
 By level (frozen configuration): federal F1 0.854, cantonal 0.898. Municipal affairs are too
 few to report (6). 30 affairs on the DVS list: 27 found (keyword search: 19). The frozen run met
 two of its three predeclared expectations (F1 ≥ 0.84, DVS ≥ 27); the language spread of 0.051
-narrowly misses the 0.05 bar. 6 of 1,200 affairs have no decision (4 failed calls, 2 without text).
+narrowly misses the 0.05 bar. Decisive coverage is 1,193/1,200 (99.4 %): 4 failed,
+2 not evaluable and 1 uncertain. Quality metrics use the decisive cases.
 
 **Precision at the real base rate.** The sample is one third positive; in the corpus 2.3 % of the
 eligible affairs are tagged. Re-weighting the false-positive rate to that base rate gives the share
@@ -231,9 +232,9 @@ classify subject matter only and never judge a position.
 Both team members labelled 20 affairs (12 federal, 8 cantonal) blind with an APS chapter and topic,
 reading French and Italian affairs in German. They agree on 11 of 20 chapters (55 %, κ 0.51) and
 9 of 20 topics; most disagreements are multi-aspect affairs (*no transfer of tax data without
-anonymisation*: data protection or taxes). A model scored against one human label would therefore
-look worse than it is; standard topics should be multi-label and judged against this human
-ceiling. The APS scheme (8 domains, 22 chapters, 165 topics) is exported to
+anonymisation*: data protection or taxes). A single unadjudicated label would make model scoring
+ambiguous. This agreement is not a measured model accuracy ceiling; APS needs multi-label
+consensus labels before quality claims. The APS scheme (8 domains, 22 chapters, 165 topics) is exported to
 `configs/taxonomies/aps_topics.json`.
 
 ### 5.6 Cost and runtime
@@ -284,7 +285,7 @@ nothing, so compounds such as "Digitalisierungsstrategie" are missed) and date f
 
 ## 6. Limitations
 
-- **Labels:** PolitMonitor tags are positives only; precision against them is a lower bound. One
+- **Labels:** PolitMonitor tags are positives only; precision is a proxy, not a guaranteed bound. One
   topic is evaluated in depth; three more against official subject areas.
 - **Test split:** opened validation, not a sealed holdout; a later, manually adjudicated holdout is
   needed for an independent quality claim.
@@ -294,7 +295,10 @@ nothing, so compounds such as "Digitalisierungsstrategie" are missed) and date f
   long reports bring incidental mentions.
 - **Standard topics:** the APS scheme is available, but a multi-label APS mode is not evaluated.
 - **Full-corpus runtime:** high recall needs every affair read (28–67 h per topic over 325,000
-  affairs on one key); a lexical pre-filter keeps only about 60 % of the hits (5.7).
+  affairs projected from historical higher-throughput runs, not a completed corpus measurement);
+  the default 30 RPM yields about 139 h for 300,000 at the measured 25/30 model-call mix.
+  The submission deliberately runs small functional checks only; a lexical pre-filter keeps
+  only about 60 % of the hits (5.7).
 - **Party bias** is not checked yet.
 - **Topic policy:** the term rule and prompt v2 suit curated topics only; quickly written topics
   need the generic prompt (5.3), which in 2 % of answers cites an affair ID instead of a passage.
@@ -316,7 +320,13 @@ parltopic compare-runs --eval-set … --baseline-results … --candidate-results
 ```
 
 Every `run-eval` output has a manifest with the dataset hash, topic, system prompt, settings and
-source-file hashes; resuming with changed inputs is refused. All settings are in `.env.example`.
+source-file hashes; resuming with changed inputs is refused. Bounded submission uses a SQLite
+checkpoint journal, per-output writer lock and atomic JSONL snapshots; eight synthetic affairs
+exercise interrupted resume, including process termination. No 300k run was executed.
+Compiler, classifier and thinking share HTTP transport and process-local quota admission.
+All settings are in `.env.example`. `make run` starts the bundled six-case historical replay
+without an API key. Export preserves all evidence and checks the declared topic manifest;
+the isolated PostgreSQL check verifies version retention, repeated import and foreign keys.
 
 ---
 

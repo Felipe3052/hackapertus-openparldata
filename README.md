@@ -9,7 +9,7 @@ topics need no training.
 
 - **Challenge:** [Topic classification for Swiss parliaments with Apertus](https://app.sprintd.org/events/hack-apertus-liebefeld/cases/topic-classification-for-swiss-parliaments-with-apertus)
 - **Technical report:** [technical_report.md](technical_report.md) · **Experiment log:** [docs/experiments.md](docs/experiments.md) · **Benchmark notes:** [docs/benchmark.md](docs/benchmark.md)
-- **Demo video:** link to add
+- **Demo:** `make run` starts the bundled historical replay without an API key.
 
 > Topic labels are suggestions about subject matter. They do not judge political positions, and a
 > person should confirm them before they are published.
@@ -31,7 +31,8 @@ by hand, based on the PolitMonitor editorial tag. Model: `swiss-ai/Apertus-v1.5-
 | Ad-hoc topic *transport*, F1 | 0.545 | **0.784** | official subject areas (500 affairs) |
 
 Keyword search uses the same multilingual terms as the topic file. The digitalisation labels are
-editorial tags without checked negatives, so precision is a lower bound. The sample is one third
+editorial tags without checked negatives, so precision is a proxy estimate that may miss label gaps.
+The sample is one third
 positive; in the whole corpus only 2.3 % of the affairs are tagged, so about one in four
 suggestions is a tagged affair (keyword search: the same ratio at 63 % of our recall). ParlTopic is
 a suggestion list for editors to review. Configuration and prompts were chosen on a separate
@@ -79,6 +80,12 @@ Jury walkthrough with real DE/FR/IT affairs, historical replay, custom topics an
 subgroup coverage, missing APS references and the limits of the 300k projection.
 
 Requires Python 3.11 or newer.
+
+For a short jury walkthrough without a key, local datasets or inference charges, run
+`make run` (Docker, port 8501). Six original DE/FR/IT examples and historical predictions are
+bundled. Select **Historisches Ergebnis anzeigen** for offline replay. Live searches are bounded
+candidate lists, not complete corpus classifications. The current submission scope uses short
+functional checks; 300k runtimes remain projections, not a completed full-corpus run.
 
 ```bash
 cp .env.example .env          # add LLM_API_KEY for the CSCS endpoint

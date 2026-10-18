@@ -1,0 +1,17 @@
+.git
+.env
+.env.*
+!.env.example
+.venv
+venv
+__pycache__
+.pytest_cache
+.ruff_cache
+results
+data/raw
+data/cache
+data/processed
+data/eval
+*.db
+*.pdf
+.DS_Store

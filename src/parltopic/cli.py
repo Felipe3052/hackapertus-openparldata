@@ -139,13 +139,16 @@ def export_opd(
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],
     output: Annotated[Path, typer.Option()],
     compiled: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
+    allow_unverified: Annotated[bool, typer.Option(
+        help="Explicitly export historical outputs without a run manifest."
+    )] = False,
 ) -> None:
     """Rows for OpenParlData's affair_topics table (integration/opd/001_affair_topics.sql)."""
     from parltopic.compiler import CompiledTopic
     from parltopic.integration import export
 
     query = CompiledTopic.model_validate_json(compiled.read_text("utf-8")) if compiled else None
-    typer.echo(json.dumps(export(results, load_topic(topic), output, query)))
+    typer.echo(json.dumps(export(results, load_topic(topic), output, query, allow_unverified)))
 
 
 @app.command("download-data")
@@ -204,6 +207,9 @@ def run_eval(
     ] = None,
     fewshot_k: int = 3,
     title_rules: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
+    evaluate: Annotated[bool, typer.Option(
+        "--score/--no-score", help="Disable scoring for production affairs without gold labels."
+    )] = True,
 ) -> None:
     """Classify an eval set with Apertus (resumable), then print the scores."""
     from parltopic.evaluation.run import run_classifier, score_results
@@ -218,13 +224,24 @@ def run_eval(
         )
         settings = settings.model_copy(update={"classifier_policy_version": policy})
     topic_for = None
+    topic_for_provenance = None
     if fewshot_pool:
+        import hashlib
+
         from parltopic.evaluation.fewshot import FewShotIndex
 
         index = FewShotIndex(fewshot_pool)
         topic_for = lambda affair: index.topic_for(definition, affair, fewshot_k)  # noqa: E731
-    run_classifier(eval_set, definition, output, settings, workers, limit, topic_for=topic_for)
-    typer.echo(json.dumps(score_results(eval_set, output), indent=2))
+        topic_for_provenance = {
+            "pool_sha256": hashlib.sha256(fewshot_pool.read_bytes()).hexdigest(),
+            "fewshot_k": fewshot_k,
+        }
+    run_classifier(eval_set, definition, output, settings, workers, limit, topic_for=topic_for,
+                   topic_for_provenance=topic_for_provenance)
+    if evaluate:
+        typer.echo(json.dumps(score_results(eval_set, output), indent=2))
+    else:
+        typer.echo(str(output))
 
 
 @app.command()

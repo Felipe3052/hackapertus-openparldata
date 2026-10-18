@@ -34,7 +34,7 @@ def test_hard_smoke_budget_counts_every_http_attempt(tmp_path):
     with ThreadPoolExecutor(4) as pool:
         list(pool.map(send, range(15)))
     assert len(calls) == 10
-    assert len((tmp_path / "attempts.jsonl").read_text().splitlines()) == 10
+    assert len((tmp_path / "attempts.jsonl").read_text("utf-8").splitlines()) == 10
     resumed = Probe(tmp_path, rpm=60)
     assert resumed.count == 10
 
@@ -48,7 +48,7 @@ def test_persistent_total_budget_survives_new_process_probe(tmp_path):
     probe.post("https://example.test", json={"messages": []})
     with pytest.raises(RuntimeError):
         probe.post("https://example.test", json={"messages": []})
-    assert len((tmp_path / "attempts.jsonl").read_text().splitlines()) == 100
+    assert len((tmp_path / "attempts.jsonl").read_text("utf-8").splitlines()) == 100
 
 
 def test_provider_rate_limit_stops_further_calls(tmp_path):
@@ -60,7 +60,7 @@ def test_provider_rate_limit_stops_further_calls(tmp_path):
     with pytest.raises(RuntimeError):
         probe.post("https://example.test", json={"messages": []})
     assert probe.count == 1
-    assert json.loads((tmp_path / "responses.jsonl").read_text())["limit_headers"]
+    assert json.loads((tmp_path / "responses.jsonl").read_text("utf-8"))["limit_headers"]
 
 
 def test_response_logging_never_waits_for_admission_lock(tmp_path):
@@ -121,7 +121,7 @@ def test_instrumentation_preserves_live_payload_and_additive_times(tmp_path):
            "language": "de", "label": False, "benchmark_arm": "sequential"}
     with patch("parltopic.classification.apertus_client.httpx.post", probe.post):
         execute_phase(tmp_path, "smoke", [row], 1, settings, topic, probe)
-    measured = json.loads((tmp_path / "smoke.jsonl").read_text())
+    measured = json.loads((tmp_path / "smoke.jsonl").read_text("utf-8"))
     assert measured["pre_ms"] + measured["client_ms"] + measured["post_ms"] == pytest.approx(
         measured["total_ms"]
     )

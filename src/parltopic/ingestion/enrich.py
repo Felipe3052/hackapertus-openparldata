@@ -40,7 +40,7 @@ def enrich_dataset(
 ) -> dict[str, Any]:
     if input_path.resolve() == output_path.resolve():
         raise ValueError("Enrichment requires a separate output file")
-    rows = [json.loads(line) for line in input_path.read_text().splitlines() if line.strip()]
+    rows = [json.loads(line) for line in input_path.read_text("utf-8").splitlines() if line.strip()]
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     def enrich(row: dict[str, Any]) -> tuple[dict[str, Any], str]:
@@ -52,7 +52,7 @@ def enrich_dataset(
             key = hashlib.sha256(f"{client.base_url}/{endpoint}".encode()).hexdigest()
             cached = cache_dir / f"{key}.json"
             if cached.exists():
-                records = json.loads(cached.read_text(encoding="utf-8"))["data"]
+                records = json.loads(cached.read_text("utf-8"))["data"]
             else:
                 records = []
                 offset = 0

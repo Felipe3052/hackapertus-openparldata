@@ -39,7 +39,7 @@ def test_panel_is_immutable_and_excludes_development_training_and_duplicate_titl
     training.write_text(json.dumps({"split_ids": {"train": [900], "calibration": [901]}}))
     output = tmp_path / "panel.jsonl"
     metadata = build_panel(tmp_path, dev, training, output, 1, 1)
-    selected = [json.loads(line) for line in output.read_text().splitlines()]
+    selected = [json.loads(line) for line in output.read_text("utf-8").splitlines()]
     assert len(selected) == metadata["count"] == 6
     assert not {"900", "901", "902", "999"} & {row["affair_id"] for row in selected}
     assert sum(row["label"] for row in selected) == 3
@@ -63,9 +63,9 @@ def test_archived_main_import_and_zero_api_smoke(tmp_path: Path):
     dataset.write_text('{"affair_id":"smoke","title":"Digitalisierung","language":"de"}\n')
     output = tmp_path / "smoke-results.jsonl"
     run_main(dataset, output, "unused-rule-only")
-    result = json.loads(output.read_text())
+    result = json.loads(output.read_text("utf-8"))
     assert result["status"] == "assigned"
     assert result["input_tokens"] == 0
-    manifest = json.loads(output.with_suffix(".jsonl.main.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".jsonl.main.manifest.json").read_text("utf-8"))
     assert manifest["main_commit"] == before
     assert subprocess.check_output(["git", "rev-parse", "main"], text=True).strip() == before

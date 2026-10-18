@@ -39,11 +39,11 @@ def test_training_excludes_eval_ids_and_titles_and_uses_chronological_splits(tmp
     }) + "\n", encoding="utf-8")
     output = tmp_path / "results"
     fit_baseline(tmp_path, evaluation, output)
-    report = json.loads((output / "report.json").read_text())
+    report = json.loads((output / "report.json").read_text("utf-8"))
     split_ids = report["split_ids"]
     assert not ({held_out["id"], 999} & set(sum(split_ids.values(), [])))
     assert all(i // 100 == 2019 for i in split_ids["train"])
     assert all(i // 100 == 2022 for i in split_ids["calibration"])
     assert all(i // 100 == 2023 for i in split_ids["validation"])
     assert report["validation_2023"]["count"] > 0
-    assert len((output / "predictions.jsonl").read_text().splitlines()) == 1
+    assert len((output / "predictions.jsonl").read_text("utf-8").splitlines()) == 1

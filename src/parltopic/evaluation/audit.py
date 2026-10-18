@@ -226,7 +226,7 @@ def run_audit(root):
         normalize(r["title"])], "title": r["title"]} for r in dev
         if normalize(r["title"]) and normalize(r["title"]) in temporal_titles]
     linear_path = Path("results/linear_baseline_v1/report.json")
-    linear = json.loads(linear_path.read_text())
+    linear = json.loads(linear_path.read_text("utf-8"))
     split_ids = {k: {str(i) for i in ids} for k, ids in linear["split_ids"].items()}
     wanted = set().union(*split_ids.values())
     linear_title_matches = []
@@ -251,7 +251,7 @@ def run_audit(root):
             sliced[f"{field}={value}"] = independent_metrics([
                 (r["label"], r["prediction"]) for r in selected if r["prediction"] is not None
             ])
-    published = json.loads(Path("docs/results/batching-20261018-summary.json").read_text())
+    published = json.loads(Path("docs/results/batching-20261018-summary.json").read_text("utf-8"))
     published_checks = {}
     for size, variant in variants.items():
         actual = variant["metrics"]["classification_report"]

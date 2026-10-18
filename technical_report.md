@@ -22,10 +22,10 @@ We validated it on the challenge's real use case: Digital Administration Switzer
 identifies digitalisation affairs by hand, based on the PolitMonitor editorial tag (3,433 tagged
 affairs from 35 parliaments). On the 1,200 affairs of 2024–2026 (one third tagged), **Apertus finds
 88 % of the tagged affairs at 88 % precision (F1 0.876); keyword search over the same
-multilingual terms finds 51 % (F1 0.642)**. F1 is 0.90 in German and 0.85 in French and
+multilingual terms finds 55 % (F1 0.674)**. F1 is 0.90 in German and 0.85 in French and
 Italian, and 27 of the 30 affairs on the current DVS list are found. Three further topics written
 once from their name only (migration, health, transport) reach F1 0.78–0.87 against the Federal
-Assembly's official subject areas, where keyword search reaches 0.54–0.72. Because only 2.3 % of
+Assembly's official subject areas, where keyword search reaches 0.55–0.72. Because only 2.3 % of
 all affairs are digitalisation affairs, about one in four suggestions over the full corpus is
 PolitMonitor-tagged; keyword search has the same ratio at 63 % of our recall. ParlTopic is
 therefore a suggestion list for the editors, not an automatic label.
@@ -95,7 +95,7 @@ topics are the stronger offer.
   evidence passages by ID, so every cited text is original source text. It also translated the
   French and Italian cantonal titles into German for our human labelling page. No other model is
   used for classification or evaluation; no proprietary model is called at runtime.
-- **8B vs. 70B (dev, same prompt):** 8B reaches F1 0.41 (recall 0.26) against 0.78 for 70B. It
+- **8B vs. 70B (dev, same prompt):** 8B reaches F1 0.43 (recall 0.28) against 0.80 for 70B. It
   rejects most affairs whose digital aspect is not in the title, and in 169 of 450 answers it
   returned malformed evidence lists. 70B is the only viable size for this task.
 - **Determinism:** two identical 70B runs change 0 of 450 labels, so paired differences measure
@@ -105,7 +105,7 @@ topics are the stronger offer.
   model" cascade cannot find these errors.
 - **Reasoning:** Apertus only reasons before answering when the assistant turn is prefilled with
   `<|inner_prefix|>`; the answer follows `<|inner_suffix|>`. Re-checking rejected affairs this
-  way raised dev F1 from 0.784 to 0.847 with the first prompt, but adds nothing once prompt v2 and
+  way raised dev F1 from 0.797 to 0.866 with the first prompt, but adds nothing once prompt v2 and
   the term rule are in place (macro-F1 −0.0015, 95 % CI [−0.015, +0.012]) at 3× the input tokens.
   It stays optional.
 
@@ -141,9 +141,9 @@ topics are the stronger offer.
 
 | Configuration | Precision | Recall | F1 | Macro-F1 | F1 DE / FR / IT | Tokens in / out per affair |
 |---|---:|---:|---:|---:|---|---:|
-| Keyword search, same multilingual terms | 0.864 | 0.510 | 0.642 | | 0.60 / 0.68 / 0.72 | 0 / 0 |
-| Apertus 70B, topic v3, first prompt | 0.908 | 0.785 | 0.842 | | 0.85 / 0.82 / 0.86 | 855 / 87 |
-| … + reasoning re-check of rejections | 0.859 | 0.868 | 0.863 | | 0.87 / 0.86 / 0.85 | 1,434 / 635 |
+| Keyword search, same multilingual terms | 0.870 | 0.550 | 0.674 | 0.776 | 0.64 / 0.68 / 0.76 | 0 / 0 |
+| Apertus 70B, topic v3, first prompt | 0.908 | 0.797 | 0.849 | 0.890 | 0.86 / 0.82 / 0.86 | 855 / 87 |
+| … + reasoning re-check of rejections | 0.859 | 0.885 | 0.872 | 0.904 | 0.88 / 0.87 / 0.85 | 1,434 / 635 |
 | **Frozen: term rule + Apertus 70B, prompt v2, topic v4** | **0.875** | **0.877** | **0.876** | **0.907** | 0.90 / 0.85 / 0.85 | 1,102 / 80 |
 
 By level (frozen configuration): federal F1 0.854, cantonal 0.898. Municipal affairs are too
@@ -170,14 +170,14 @@ ParlTopic keeps that ratio at 1.6 times the recall. Part of the untagged suggest
 
 | Step | P | R | F1 |
 |---|---:|---:|---:|
-| Keyword search | 0.930 | 0.440 | 0.597 |
+| Keyword search | 0.936 | 0.487 | 0.640 |
 | Apertus 70B, topic definition v1 | 0.966 | 0.573 | 0.720 |
-| + inclusion rule in the definition (v2) | 0.952 | 0.667 | 0.784 |
-| + side aspects count (v3) | 0.955 | 0.700 | 0.808 |
+| + inclusion rule in the definition (v2) | 0.952 | 0.685 | 0.797 |
+| + side aspects count (v3) | 0.955 | 0.709 | 0.814 |
 | + term rule and prompt v2 (hybrid-v3, main) | 0.932 | 0.820 | 0.872 |
 | **+ topic v4 (frozen)** | **0.933** | **0.839** | **0.883** |
-| Rejected: 8B instead of 70B | 0.951 | 0.260 | 0.408 |
-| Rejected: 3 + 3 retrieved labelled examples | 0.952 | 0.660 | 0.780 |
+| Rejected: 8B instead of 70B | 0.951 | 0.275 | 0.426 |
+| Rejected: 3 + 3 retrieved labelled examples | 0.952 | 0.673 | 0.789 |
 | Not significant: document text for title-only affairs | 0.914 | 0.859 | 0.886 |
 | Not significant: reasoning re-check on the frozen configuration | 0.908 | 0.859 | 0.883 |
 
@@ -195,7 +195,7 @@ affairs from 2024–2026.
 |---|---:|---:|---:|---:|---:|
 | Migration | 63 | 0.717 | 0.762 | 0.757 | **0.874** |
 | Health | 83 | 0.571 | 0.656 | 0.667 | **0.805** |
-| Transport | 55 | 0.540 | 0.642 | 0.690 | **0.784** |
+| Transport | 55 | 0.545 | 0.642 | 0.690 | **0.784** |
 
 The policy tuned for digitalisation does not transfer. Prompt v2 names digital anchors
 (software, ERP, online platforms) and makes Apertus strict on other topics (precision 0.94–1.00,
@@ -209,13 +209,21 @@ affair ID instead of a passage ID, which the validator rejects rather than inven
 
 ### 5.4 Bias and neutrality
 
-Languages: F1 DE 0.90, FR 0.85, IT 0.85 with the frozen configuration (0.87 / 0.86 / 0.85 with the
-first prompt); the term rule finds German affairs slightly more often. The following slices come
-from the run with the reasoning re-check (E1.7 in the log). Parliaments
-differ mainly by how much text they publish: affairs with only a title lose 13 recall points
-(0.78 vs. 0.91), which is why Bern (0.73) and Basel-Stadt (0.62) trail; their content sits in
-attached documents. Federal Council bills, with long legal titles, are recalled least (0.72). Author
-and party are not in the affairs export; a party check is open. The prompt instructs Apertus to
+Frozen configuration, test split, decided affairs:
+
+| Slice | Tagged affairs | Precision | Recall |
+|---|---:|---:|---:|
+| German / French / Italian (F1) | 670 / 325 / 205 affairs | | F1 0.90 / 0.85 / 0.85 |
+| Federal Assembly | 195 | 0.84 | 0.87 |
+| Bern / Zurich / Geneva / Valais / Basel-Stadt | 25 / 24 / 16 / 15 / 13 | 0.88 / 0.92 / 0.82 / 0.93 / 1.00 | 0.88 / 0.96 / 0.88 / 0.87 / 0.85 |
+| Title and text / title only | 256 / 142 | 0.86 / 0.91 | 0.88 / 0.87 |
+| Federal Council bills | 40 | 0.94 | 0.75 |
+
+Title-only affairs, mostly cantonal, are now recalled as well as affairs with text; with the first
+prompt they lost 13 recall points (0.78 vs. 0.91, Bern 0.73, Basel-Stadt 0.62). The term rule finds
+German affairs slightly more often. Federal Council bills, with long legal titles where
+digitalisation is one aspect among many, are recalled least. Author and party are not in the
+affairs export; a party check is open. The prompt instructs Apertus to
 classify subject matter only and never judge a position.
 
 ### 5.5 Standard topics: how hard is APS?
@@ -264,6 +272,7 @@ next step to cut both numbers.
 ```bash
 python -m pip install -e '.[dev]'          # Python 3.11+; copy .env.example to .env, add LLM_API_KEY
 make test                                  # unit tests, no API calls
+parltopic fetch-results && parltopic claims # recompute every number in this report, no API calls
 parltopic download-data                    # exports and label files to data/raw (~350 MB)
 parltopic build-eval                       # rebuilds data/eval byte for byte (seed 42)
 parltopic baseline --eval-set data/eval/e1_digitalisation_test.jsonl --topic configs/topics/digitalisation.yaml

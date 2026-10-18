@@ -21,7 +21,7 @@ def test_resume_rejects_topic_changes_and_preserves_results(tmp_path: Path) -> N
     original = output.read_bytes()
     run_classifier(dataset, topic, output, settings)
     assert output.read_bytes() == original
-    assert "secret-test-key" not in output.with_suffix(".jsonl.manifest.json").read_text()
+    assert "secret-test-key" not in output.with_suffix(".jsonl.manifest.json").read_text("utf-8")
     with pytest.raises(ValueError, match="Run inputs changed"):
         changed_topic = topic.model_copy(update={"description": "Changed"})
         run_classifier(dataset, changed_topic, output, settings)

@@ -41,7 +41,8 @@ source = st.radio("Eingabe", ["Echtes Geschäft", "Manuelle Eingabe"], horizonta
 selected = None
 if source == "Echtes Geschäft":
     rows = [json.loads(line) for line in
-            (ROOT / "data/eval/e1_digitalisation_dev.jsonl").read_text().splitlines() if line]
+            (ROOT / "data/eval/e1_digitalisation_dev.jsonl")
+            .read_text("utf-8").splitlines() if line]
     selected_language = st.selectbox("Beispielsprache", ["de", "fr", "it"])
     levels = sorted({row["level"] for row in rows if row["language"] == selected_language})
     selected_level = st.selectbox("Parlamentsebene", levels)
@@ -66,7 +67,7 @@ saved_path = ROOT / "results/hybrid_v3_actual_dev450.jsonl"
 if selected and policy.startswith("Digitalisierung") and saved_path.exists():
     if st.button("Historisches Ergebnis anzeigen (ohne API)"):
         saved = {row["affair_id"]: row for row in
-                 (json.loads(line) for line in saved_path.read_text().splitlines() if line)}
+                 (json.loads(line) for line in saved_path.read_text("utf-8").splitlines() if line)}
         if selected["affair_id"] in saved:
             st.session_state["classification"] = saved[selected["affair_id"]]
             st.session_state["result_mode"] = (

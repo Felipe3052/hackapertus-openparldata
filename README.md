@@ -23,12 +23,12 @@ by hand, based on the PolitMonitor editorial tag. Model: `swiss-ai/Apertus-v1.5-
 
 | Evaluation set | Keyword search | **ParlTopic** | Notes |
 |---|---:|---:|---|
-| Digitalisation, 1,200 affairs 2024–2026, F1 | 0.642 | **0.876** | precision 0.875, recall 0.877 |
-| … F1 German / French / Italian | 0.60 / 0.68 / 0.72 | **0.90 / 0.85 / 0.85** | official translations of federal affairs |
+| Digitalisation, 1,200 affairs 2024–2026, F1 | 0.674 | **0.876** | precision 0.875, recall 0.877 |
+| … F1 German / French / Italian | 0.64 / 0.68 / 0.76 | **0.90 / 0.85 / 0.85** | official translations of federal affairs |
 | Current DVS list (30 affairs), found | 19 | **27** | federal and cantonal |
 | Ad-hoc topic *migration*, F1 | 0.717 | **0.874** | topic written once, no tuning; |
 | Ad-hoc topic *health*, F1 | 0.571 | **0.805** | scored against the Federal Assembly's |
-| Ad-hoc topic *transport*, F1 | 0.540 | **0.784** | official subject areas (500 affairs) |
+| Ad-hoc topic *transport*, F1 | 0.545 | **0.784** | official subject areas (500 affairs) |
 
 Keyword search uses the same multilingual terms as the topic file. The digitalisation labels are
 editorial tags without checked negatives, so precision is a lower bound. The sample is one third
@@ -107,6 +107,15 @@ docker compose up --build     # both in containers
 ---
 
 ## Reproduce the evaluation
+
+Every number above can be recomputed from the published prediction files, without API calls:
+
+```bash
+parltopic fetch-results      # prediction files + manifests from the release results-2026-10-18
+parltopic claims             # recomputes each stated number; exits 1 on any mismatch
+```
+
+To rerun the experiments themselves:
 
 ```bash
 parltopic download-data                       # OpenParlData exports + hackathon labels, ~350 MB
@@ -191,7 +200,7 @@ vLLM server with the open weights. With the exports cached, it runs without inte
   and a stored, searchable result per topic are next.
 - The UI has no correction button yet; the APS scheme is exported but no multi-label APS mode is
   evaluated; party bias is not checked; Romansh is not evaluated.
-- Apertus 8B is not suitable for this task (dev F1 0.41 vs. 0.78 for 70B).
+- Apertus 8B is not suitable for this task (dev F1 0.43 vs. 0.80 for 70B).
 
 ## Licence
 

@@ -84,7 +84,7 @@ def references(root):
     taxonomy = root / "configs/taxonomies/aps_topics.json"
     inventory["aps_taxonomy"] = {"available": taxonomy.exists()}
     if taxonomy.exists():
-        topics = json.loads(taxonomy.read_text())
+        topics = json.loads(taxonomy.read_text("utf-8"))
         inventory["aps_taxonomy"].update(
             topics=len(topics), chapters=len({t["chapter_code"] for t in topics}),
             sha256=sha(taxonomy),
@@ -111,7 +111,8 @@ def main():
         provenance={"dataset": str(args.eval_set), "dataset_sha256": sha(args.eval_set),
                     "predictions": str(args.results), "predictions_sha256": sha(args.results),
                     "evaluator_sha256": sha(__file__),
-                    "manifest": json.loads(manifest.read_text()) if manifest.exists() else None},
+                    "manifest": (json.loads(manifest.read_text("utf-8"))
+                                 if manifest.exists() else None)},
         references=references(args.root),
         limitations=["Metrics are selective on decisive cases; inspect subgroup coverage.",
                      "E1 labels contain untagged proxy negatives and an opened validation split.",

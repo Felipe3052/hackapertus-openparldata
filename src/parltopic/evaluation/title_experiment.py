@@ -25,7 +25,7 @@ def run_experiment(
     experiment_id: str = "hybrid-title-v1",
 ) -> dict:
     started = time.perf_counter()
-    manifest = json.loads(baseline_path.with_suffix(".jsonl.manifest.json").read_text())
+    manifest = json.loads(baseline_path.with_suffix(".jsonl.manifest.json").read_text("utf-8"))
     main_ref = subprocess.check_output(["git", "rev-parse", "main"], text=True).strip()
     for name, expected in manifest["implementation_sha256"].items():
         content = subprocess.check_output(["git", "show", f"{main_ref}:src/parltopic/{name}"])
@@ -51,7 +51,7 @@ def run_experiment(
     if missing or any(row["status"] not in {"assigned", "not_assigned"}
                       for row in baseline.values()):
         raise ValueError("A complete, decisive baseline is required")
-    overlay_data = yaml.safe_load(overlay.read_text())
+    overlay_data = yaml.safe_load(overlay.read_text("utf-8"))
     allowed = {"title_synonyms", "normalize_online_variants"}
     if not isinstance(overlay_data, dict) or set(overlay_data) - allowed:
         raise ValueError("Unsupported experiment overlay fields")

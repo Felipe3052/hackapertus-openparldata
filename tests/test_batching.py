@@ -157,7 +157,7 @@ def test_paid_attempt_cap_and_strict_quality_guard(tmp_path):
         controller.before(httpx.Request("POST", "https://example.test", json={"messages": []}))
     with pytest.raises(RuntimeError, match="budget"):
         controller.before(httpx.Request("POST", "https://example.test", json={"messages": []}))
-    assert len((tmp_path / "attempts.jsonl").read_text().splitlines()) == 2
+    assert len((tmp_path / "attempts.jsonl").read_text("utf-8").splitlines()) == 2
     baseline = dict.fromkeys(["coverage", "macro_f1", "macro_precision", "macro_recall",
                               "precision", "recall"], .9)
     assert not_worse(baseline, baseline)
@@ -178,7 +178,7 @@ def test_new_benchmark_budget_is_global_across_workers_and_persistent(tmp_path):
 
     with ThreadPoolExecutor(4) as pool:
         assert sum(pool.map(attempt, range(60))) == 50
-    assert len((tmp_path / "attempts.jsonl").read_text().splitlines()) == 50
+    assert len((tmp_path / "attempts.jsonl").read_text("utf-8").splitlines()) == 50
     resumed = AttemptController(tmp_path, {}, cap=50)
     resumed.limiter = StartLimiter(0)
     resumed.local.context = {"variant": 3, "ids": ["never-sent"]}

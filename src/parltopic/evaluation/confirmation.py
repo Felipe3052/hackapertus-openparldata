@@ -33,7 +33,7 @@ def build_panel(
     if min(positives_per_language, negatives_per_language) < 1:
         raise ValueError("Both class quotas must be positive")
     excluded = {int(row["affair_id"]) for row in read_rows(opened_dev)}
-    split_ids = json.loads(training_report.read_text())["split_ids"]
+    split_ids = json.loads(training_report.read_text("utf-8"))["split_ids"]
     excluded.update(split_ids["train"])
     excluded.update(split_ids["calibration"])
     positive_ids = {int(row["openparldata_id"])
@@ -141,7 +141,7 @@ manifest = {
 # Own file: run_classifier (main since PR #1) writes its manifest to output + ".manifest.json".
 path = Path(output + ".main.manifest.json")
 path.parent.mkdir(parents=True, exist_ok=True)
-if path.exists() and json.loads(path.read_text()) != manifest:
+if path.exists() and json.loads(path.read_text("utf-8")) != manifest:
     raise ValueError("Run inputs changed; use a new output path")
 if Path(output).exists() and not path.exists():
     raise ValueError("Existing results have no verified main manifest")

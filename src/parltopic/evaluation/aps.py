@@ -114,6 +114,62 @@ def benchmark_context(
     }
 
 
+def regression_gate(
+    eval_path: Path,
+    baseline_path: Path,
+    candidate_path: Path,
+    max_macro_f1_drop: float = 0.01,
+    max_recall_drop: float = 0.01,
+    max_group_drop: float = 0.03,
+) -> dict[str, Any]:
+    """Check that a candidate run does not materially regress the frozen baseline."""
+    from parltopic.evaluation.run import score_results
+
+    baseline = score_results(eval_path, baseline_path)
+    candidate = score_results(eval_path, candidate_path)
+    checks: dict[str, bool] = {}
+
+    base_coverage = float(baseline["result_integrity"]["coverage"])
+    candidate_coverage = float(candidate["result_integrity"]["coverage"])
+    checks["coverage"] = candidate_coverage >= base_coverage
+    base_all = baseline["assigned"]["all"]
+    candidate_all = candidate["assigned"]["all"]
+    checks["macro_f1"] = candidate_all["macro_f1"] >= base_all["macro_f1"] - max_macro_f1_drop
+    checks["positive_recall"] = candidate_all["recall"] >= base_all["recall"] - max_recall_drop
+
+    group_checks: dict[str, bool] = {}
+    for group in ("lang=de", "lang=fr", "lang=it", "level=federal", "level=cantonal"):
+        base_group = baseline["assigned"].get(group)
+        candidate_group = candidate["assigned"].get(group)
+        if not base_group or not candidate_group or base_group["n"] < 10:
+            continue
+        group_checks[group] = (
+            candidate_group["macro_f1"] >= base_group["macro_f1"] - max_group_drop
+            and candidate_group["recall"] >= base_group["recall"] - max_group_drop
+        )
+    checks["language_and_level_groups"] = all(group_checks.values())
+    return {
+        "passed": all(checks.values()),
+        "checks": checks,
+        "group_checks": group_checks,
+        "thresholds": {
+            "max_macro_f1_drop": max_macro_f1_drop,
+            "max_recall_drop": max_recall_drop,
+            "max_group_drop": max_group_drop,
+        },
+        "baseline": {
+            "coverage": base_coverage,
+            "macro_f1": base_all["macro_f1"],
+            "recall": base_all["recall"],
+        },
+        "candidate": {
+            "coverage": candidate_coverage,
+            "macro_f1": candidate_all["macro_f1"],
+            "recall": candidate_all["recall"],
+        },
+    }
+
+
 def evaluate_shadow(
     sample_path: Path,
     labels_path: Path,

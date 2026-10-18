@@ -4,7 +4,12 @@ from pathlib import Path
 import pytest
 
 from parltopic.aps import ApsDecision, ApsRouter, ApsTaxonomy, build_aps_prompt, select_context
-from parltopic.evaluation.aps import benchmark_context, check_disjoint_ids, evaluate_shadow
+from parltopic.evaluation.aps import (
+    benchmark_context,
+    check_disjoint_ids,
+    evaluate_shadow,
+    regression_gate,
+)
 from parltopic.models import Affair
 from parltopic.retrieval.chunker import chunk_affair
 
@@ -114,3 +119,22 @@ def test_aps_context_benchmark_compares_identical_affairs() -> None:
     assert report["affairs"] == 1200
     assert report["aps_context"]["tokens_approx"] <= report["baseline"]["tokens_approx"]
     assert "No Apertus calls" in report["warning"]
+
+
+def test_aps_regression_gate_accepts_identical_runs(tmp_path: Path) -> None:
+    gold = tmp_path / "gold.jsonl"
+    baseline = tmp_path / "baseline.jsonl"
+    candidate = tmp_path / "candidate.jsonl"
+    gold.write_text(
+        '{"affair_id":"1","label":true,"language":"de","level":"federal"}\n'
+        '{"affair_id":"2","label":false,"language":"fr","level":"cantonal"}\n'
+    )
+    results = (
+        '{"affair_id":"1","status":"assigned"}\n'
+        '{"affair_id":"2","status":"not_assigned"}\n'
+    )
+    baseline.write_text(results)
+    candidate.write_text(results)
+    report = regression_gate(gold, baseline, candidate)
+    assert report["passed"] is True
+    assert all(report["checks"].values())

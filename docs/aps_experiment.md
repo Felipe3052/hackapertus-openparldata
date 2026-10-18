@@ -85,6 +85,18 @@ whitespace token approximations offline. On the checked-in E1 file with `max-seg
 baseline context is approximately 152,141 tokens and the APS context approximately 111,197
 tokens, a 26.9 % reduction. This does not claim an Apertus latency or quality gain.
 
+After producing a candidate result file with the same evaluation IDs, run the regression gate:
+
+```bash
+parltopic aps-regression-gate \
+  --eval-set data/eval/e1_digitalisation_test.jsonl \
+  --baseline results/baseline.jsonl \
+  --candidate results/aps-context.jsonl
+```
+
+The default gate allows at most one percentage point loss in overall Macro-F1 or positive Recall,
+three percentage points per sufficiently large language/level group, and no coverage loss.
+
 The next experiment must add an independent, double-annotated APS holdout before using hard
 routing. It must support multiple topic codes, `not_classifiable`, taxonomy versions and a
 consensus rule. Any context-compression candidate must retain valid evidence IDs and pass the

@@ -144,6 +144,26 @@ def aps_benchmark(
     typer.echo(json.dumps(benchmark_context(input, topic, taxonomy, max_segments), indent=2))
 
 
+@app.command("aps-regression-gate")
+def aps_regression_gate(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    baseline: Annotated[Path, typer.Option(exists=True, readable=True)],
+    candidate: Annotated[Path, typer.Option(exists=True, readable=True)],
+    max_macro_f1_drop: float = 0.01,
+    max_recall_drop: float = 0.01,
+    max_group_drop: float = 0.03,
+) -> None:
+    """Gate an APS candidate run against an identical frozen baseline."""
+    from parltopic.evaluation.aps import regression_gate
+
+    report = regression_gate(
+        eval_set, baseline, candidate, max_macro_f1_drop, max_recall_drop, max_group_drop
+    )
+    typer.echo(json.dumps(report, indent=2))
+    if not report["passed"]:
+        raise typer.Exit(1)
+
+
 @app.command("compile-topic")
 def compile_topic_command(
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],

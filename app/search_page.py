@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 import streamlit as st
 
 from parltopic.classification.service import ClassificationService
-from parltopic.compiler import LANGUAGES, CompiledTopic, compile_topic, search_candidates
+from parltopic.compiler import LANGUAGES, CompiledTopic, compile_topic, newest_matches
 from parltopic.config import get_settings
 from parltopic.ingestion.live import fetch_affair
 from parltopic.models import TopicDefinition
@@ -40,7 +40,7 @@ def render() -> None:
 
     if st.button("1 · Suchbegriffe von Apertus schreiben lassen", disabled=not name.strip()):
         with st.spinner("Apertus kompiliert das Thema …"):
-            compiled = compile_topic(topic, get_settings())
+            compiled = compile_topic(topic, get_settings(), prompt_version="compiler-core")
         st.session_state["s_compiled"] = compiled.model_dump(mode="json")
 
     if "s_compiled" not in st.session_state:
@@ -61,13 +61,13 @@ def render() -> None:
     if st.button("2 · Kandidaten suchen und prüfen", type="primary", disabled=not chosen):
         started = time.perf_counter()
         with st.spinner("OpenParlData-Suche …"):
-            found = search_candidates(compiled, scope="metadata",
-                                      bodies=[PARLIAMENTS[c] for c in chosen],
-                                      newest_first=True, max_pages=1, page_size=100)
-        candidates = sorted({i for ids in found.values() for i in ids}, reverse=True)
+            pool = newest_matches(compiled, [PARLIAMENTS[c] for c in chosen])
+        ranked = [r for r in pool if r["score"] > 0 and (not r["date"] or r["date"] >= since)]
+        candidates = [r["id"] for r in ranked]
         searched = time.perf_counter() - started
-        st.write(f"**{len(candidates)} neueste Kandidaten** in {searched:.1f} s "
-                 f"({', '.join(f'{k.upper()} {len(v)}' for k, v in found.items())}).")
+        st.write(f"**{len(pool)} neueste Suchtreffer** in {searched:.1f} s, davon "
+                 f"{len(ranked)} mit spezifischen Themenbegriffen im Titel (geprüft wird in "
+                 "dieser Reihenfolge).")
 
         def check(affair_id: int):
             affair = fetch_affair(affair_id, documents=1)
@@ -76,8 +76,8 @@ def render() -> None:
             return affair, service.classify(affair, topic)
 
         with st.spinner(f"Apertus prüft die neuesten {limit} Kandidaten …"):
-            with ClassificationService(get_settings()) as service, ThreadPoolExecutor(8) as pool:
-                checked = [r for r in pool.map(check, candidates[: limit * 2]) if r][:limit]
+            with ClassificationService(get_settings()) as service, ThreadPoolExecutor(8) as workers:
+                checked = [r for r in workers.map(check, candidates[: limit * 2]) if r][:limit]
         st.session_state["s_hits"] = [(a.model_dump(mode="json"), r.model_dump(mode="json"))
                                       for a, r in checked]
         st.session_state["s_time"] = time.perf_counter() - started

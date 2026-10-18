@@ -197,6 +197,25 @@ OpenParlData search findings: no prefix matching (`digital:*` → 0 results), `d
 `date_to` ignored (9,194 results with and without), deep offsets slow (offset 5,000: 61 s per
 page), `search_scope=all` returned HTTP 500 for one parliament (city of Zurich).
 
+## A · D — live search view (demo, not an evaluated configuration)
+
+The Streamlit mode *Thema über Parlamente suchen* compiles a topic with the prompt
+`compiler-core` (only terms that indicate the topic on their own), takes the newest 100 search
+hits per parliament and language from OpenParlData (`sort_by=-begin_date`, one page, about
+2–30 s depending on load) and ranks them by the compiled terms in the title, weighted by rarity in
+the pool (terms in more than 3 % of the pool titles count nothing). Apertus checks the ranked
+candidates in that order.
+
+Observed in end-to-end runs on 18 October (no metric, no tuning on labels):
+- Unranked newest hits for "KI in der Verwaltung" (CHE, BE, TI): 0 of 10 checked candidates fit;
+  the compiled terms included context words such as "Verwaltung" and "Gesetz".
+- Ranked pool with the validated digitalisation terms: top titles are on generative AI,
+  disinformation, IT infrastructure, mobile networks and cybersecurity.
+- Ranked pool with quickly compiled "KI in der Verwaltung" terms: the first title fits
+  ("Künstliche Intelligenz in der Kantonsverwaltung"), the next ones are general administration
+  affairs. Ranking quality depends on the terms; specific own terms (e.g. "KI, ChatGPT") help.
+- Health topic, Bern (`parltopic find`): 900 candidates in 5.7 s, 9 of 15 checked assigned.
+
 ## A · E3 — human agreement on APS topics (20 affairs, blind)
 
 Felipe and Josip labelled the first 20 affairs of `data/eval/e3_aps_sample.jsonl` independently

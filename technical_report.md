@@ -274,7 +274,9 @@ Schulen?!", smart glasses, robotaxis, a pension affair with a digital side aspec
 needs Apertus to read every affair, which is what the main configuration does. The compiler is
 still useful as a fast first pass — 60–68 % of the hits sit in 4–8 % of the affairs and arrive
 in minutes, the complete pass follows — and its terms are a readable, editable description of a
-topic. OpenParlData's own search would serve it if it supported prefixes (`digital:*` returns
+topic. The demo's live search view uses it this way: the newest search hits per parliament,
+ranked by the compiled terms in the title, are checked first (experiment log, A · D).
+OpenParlData's own search would serve it if it supported prefixes (`digital:*` returns
 nothing, so compounds such as "Digitalisierungsstrategie" are missed) and date filters
 (`date_from`/`date_to` are ignored; deep offsets take about 60 s per page).
 

@@ -35,9 +35,12 @@ Vorbereitung (vor dem Pitch, einmal): `make install`, `.env` mit `LLM_API_KEY`,
 3. Kürzel eintragen → **Vorschlag bestätigen** → «Gespeichert».
 4. Französisch/Italienisch zeigen: `235308` (Bund, FR-Fassung) oder `329562` (TI, «Per
    un'intelligenza artificiale pubblica svizzera»).
-5. Modus **Thema über Parlamente suchen** → Thema vorschlagen lassen oder vom Publikum nehmen →
-   *Suchbegriffe schreiben lassen* (≈ 20 s) → Begriffe kurz zeigen → Parlamente Bund, Bern, Tessin
-   → *Kandidaten suchen und prüfen* (10–20 Kandidaten).
+5. Modus **Thema über Parlamente suchen** → Thema eingeben **mit 2–3 spezifischen eigenen
+   Begriffen** (z. B. «KI, ChatGPT, künstliche Intelligenz») → *Suchbegriffe schreiben lassen*
+   (≈ 20–40 s) → Begriffe kurz zeigen und allgemeine Wörter (z. B. «Verwaltung») löschen →
+   Parlamente Bund, Bern, Tessin → *Kandidaten suchen und prüfen* (10 Kandidaten, ≈ 1–2 min).
+   Die Rangfolge hängt an der Qualität der Begriffe; das live zu zeigen (Begriffe sind lesbar und
+   editierbar) ist Teil der Botschaft «Mensch behält die Kontrolle».
 
 **Fallback, falls der Endpoint langsam ist** (nachmittags bis 70 s pro Anfrage gemessen):
 Schritt 1–2 mit *Historisches Ergebnis anzeigen (ohne API)* im Modus «Echtes Geschäft»; Schritt 5

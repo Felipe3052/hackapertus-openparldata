@@ -54,6 +54,16 @@ Do not list stems shorter than four letters except well-known acronyms.
 
 Return one JSON object with exactly these keys: "de", "fr", "it", "rm" — each a list of strings —
 and "excluded": a list of up to 10 short notes on what the topic does not cover.""",
+    "compiler-core": """You write search terms for a live topic search over Swiss parliamentary
+affairs (federal, cantonal, municipal). Each term is matched on its own (OR), so every term must
+by itself indicate the topic: specific nouns, technologies, systems, programmes, laws and
+acronyms of the topic. Leave out context words that also occur in unrelated affairs (for a topic
+"AI in administration": no "administration", "law", "school", "risk", "project").
+
+List per language 10 to 25 such terms; short phrases (two words) are fine.
+
+Return one JSON object with exactly these keys: "de", "fr", "it", "rm" — each a list of strings —
+and "excluded": a list of up to 10 short notes on what the topic does not cover.""",
 }
 COMPILER_PROMPT = COMPILER_PROMPTS["compiler-v2"]
 
@@ -191,3 +201,72 @@ def _search_window(
 def save(compiled: CompiledTopic, path: str | Path) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     Path(path).write_text(compiled.model_dump_json(indent=2), encoding="utf-8")
+
+
+def _term_patterns(compiled: CompiledTopic) -> dict[str, re.Pattern]:
+    patterns = {}
+    for terms in compiled.terms.values():
+        for term in terms:
+            words = [re.escape(w.casefold()) for w in term.split() if w.strip()]
+            if not words or term.casefold() in patterns:
+                continue
+            if len(words) == 1 and len(term) <= 3:  # acronyms: whole token
+                patterns[term.casefold()] = re.compile(rf"(?<!\w){words[0]}(?!\w)")
+            else:  # word prefixes: compounds and inflections
+                patterns[term.casefold()] = re.compile(r"(?<!\w)" + r"\w*[\s-]+".join(words))
+    return patterns
+
+
+def newest_matches(
+    compiled: CompiledTopic,
+    bodies: Iterable[str],
+    languages: Iterable[str] = ("de", "fr", "it"),
+    per_body: int = 100,
+    client: httpx.Client | None = None,
+) -> list[dict]:
+    """Newest search hits per parliament with their titles, ranked for a live view.
+
+    OpenParlData's search gives the pool (one fast page per parliament and language). Each title is
+    scored by the compiled terms it contains, weighted by how rare the term is in the pool (IDF):
+    a term in more than 3 % of the pool titles ("administration", "law") counts nothing, so
+    specific terms decide what Apertus checks first.
+    """
+    import math
+
+    patterns = _term_patterns(compiled)
+    own = client is None
+    client = client or httpx.Client(timeout=120, follow_redirects=True)
+    rows: dict[int, dict] = {}
+    try:
+        for language in languages:
+            query = compiled.query(language)
+            for body_key in bodies:
+                if not query:
+                    continue
+                page = client.get(f"{OPD_API}/affairs/", params={
+                    "search": query, "search_mode": "boolean", "search_scope": "metadata",
+                    "search_language": language, "body_key": body_key, "sort_by": "-begin_date",
+                    "limit": per_body, "lang_format": "flat",
+                    "fields": "id,body_key,begin_date,title_de,title_fr,title_it",
+                })
+                page.raise_for_status()
+                for row in page.json().get("data", []):
+                    title = " ".join(row.get(f"title_{lang}") or "" for lang in ("de", "fr", "it"))
+                    rows[int(row["id"])] = {"id": int(row["id"]), "body_key": row.get("body_key"),
+                                            "date": (row.get("begin_date") or "")[:10],
+                                            "title": " ".join(title.split())}
+    finally:
+        if own:
+            client.close()
+    matched = {i: {t for t, p in patterns.items() if p.search(r["title"].casefold())}
+               for i, r in rows.items()}
+    df: dict[str, int] = {}
+    for terms in matched.values():
+        for term in terms:
+            df[term] = df.get(term, 0) + 1
+    n = max(len(rows), 1)
+    weight = {t: (0.0 if c / n > 0.03 else math.log(n / c)) for t, c in df.items()}
+    for i, row in rows.items():
+        row["matched_terms"] = sorted(t for t in matched[i] if weight[t] > 0)
+        row["score"] = round(sum(weight[t] for t in matched[i]), 2)
+    return sorted(rows.values(), key=lambda r: (r["score"], r["date"]), reverse=True)

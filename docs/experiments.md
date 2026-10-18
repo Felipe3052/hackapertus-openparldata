@@ -172,6 +172,31 @@ policy (`prompt_version`, `keyword_rule`); the ad-hoc topics use `topic-v1` with
 
 The 34 failed answers cite the affair ID instead of a passage ID; the validator rejects them.
 
+## A · C — topic compiler as a pre-filter (negative result)
+
+Apertus 70B writes search terms per language for the digitalisation topic (`compile-topic`;
+v1 prompt: 51/52/51/56 terms DE/FR/IT/RM incl. the topic's own terms, 18 s, 841 / 1,044 tokens;
+v2 prompt asks for prefix stems, 42–50 terms, 26 s). Candidates are scored against the full
+population behind E1 (same parliaments and affair types; `evaluation/compiler_eval.py`).
+Bar set before measuring: ≥ 85 % of the tagged affairs among the candidates.
+
+| Period | Pre-filter | Candidates / affairs | Tagged found |
+|---|---|---:|---:|
+| test 2024–26 | OPD search, `search_scope=metadata`, per parliament, 503 s | 6,073 / 37,258 (16.3 %) | 504 / 853 (59.1 %) |
+| dev 2018–23 | local word-prefix (`compiler_local.py`), terms v1, 468 s | 4,703 / 72,741 (6.5 %) | 61.0 % of 2,487 |
+| dev 2018–23 | local word-prefix, terms v2 | 2,932 / 72,741 (4.0 %) | 59.5 % |
+| test 2024–26 | local word-prefix, terms v1, 290 s | 2,982 / 37,258 (8.0 %) | 577 / 853 (67.6 %) |
+
+Test sample, frozen classifier restricted to the local candidates: P 0.873, R 0.656, F1 0.749
+(all affairs read: 0.876). Bar missed in every variant; stopped after the v2 attempt. The first
+local test run (66.7 %) had a phrase bug ("künstliche Intelligenz" did not match
+"künstlicher Intelligenz"), fixed before the dev runs. Misses are affairs without a predictable
+term (smart glasses, robotaxis, "Nevo/Rialto – Wie weiter?", "Handyfreie Schulen?!").
+
+OpenParlData search findings: no prefix matching (`digital:*` → 0 results), `date_from` and
+`date_to` ignored (9,194 results with and without), deep offsets slow (offset 5,000: 61 s per
+page), `search_scope=all` returned HTTP 500 for one parliament (city of Zurich).
+
 ## A · E3 — human agreement on APS topics (20 affairs, blind)
 
 Felipe and Josip labelled the first 20 affairs of `data/eval/e3_aps_sample.jsonl` independently

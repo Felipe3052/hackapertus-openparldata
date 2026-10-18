@@ -108,6 +108,8 @@ router diagnostic on those 9 labels reached 42.9 % chapter recall and 42.9 % top
 configured candidate limits (previously 14.3 % and 28.6 %). This small diagnostic is not a
 generalizable quality metric: the deterministic router is still not suitable as a hard APS
 classifier and remains a candidate/context pre-filter until it is validated on a larger holdout.
+The corresponding candidate precision was only 9.7 % for chapters and 5.0 % for topics, so the
+current candidate limit is intentionally not promoted as a hard filter.
 
 Compare the actual retrieval context sent to a future prompt:
 

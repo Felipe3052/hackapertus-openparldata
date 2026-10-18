@@ -338,6 +338,7 @@ def evaluate_shadow(
 
     router = ApsRouter(ApsTaxonomy.load(taxonomy_path, aliases_path=aliases_path))
     chapter_hits = topic_hits = chapter_total = topic_total = 0
+    chapter_candidates_total = topic_candidates_total = 0
     routed = no_text = 0
     disagreements = {"chapter": 0, "topic": 0}
     compression_ratios: list[float] = []
@@ -367,10 +368,12 @@ def evaluate_shadow(
         topics = _codes(expected, "topic")
         predicted_chapters = {candidate.code for candidate in route.chapter_candidates}
         predicted_topics = {candidate.code for candidate in route.topic_candidates}
-        chapter_total += bool(chapters)
-        topic_total += bool(topics)
-        chapter_hits += bool(chapters & predicted_chapters)
-        topic_hits += bool(topics & predicted_topics)
+        chapter_total += len(chapters)
+        topic_total += len(topics)
+        chapter_hits += len(chapters & predicted_chapters)
+        topic_hits += len(topics & predicted_topics)
+        chapter_candidates_total += len(predicted_chapters)
+        topic_candidates_total += len(predicted_topics)
         other = row.get("josip" if annotator == "felipe" else "felipe", expected)
         disagreements["chapter"] += bool(_codes(expected, "chapter") != _codes(other, "chapter"))
         disagreements["topic"] += bool(_codes(expected, "topic") != _codes(other, "topic"))
@@ -393,6 +396,8 @@ def evaluate_shadow(
         "no_text": no_text,
         "chapter_recall_at_k": ratio(chapter_hits, chapter_total),
         "topic_recall_at_k": ratio(topic_hits, topic_total),
+        "chapter_precision_at_k": ratio(chapter_hits, chapter_candidates_total),
+        "topic_precision_at_k": ratio(topic_hits, topic_candidates_total),
         "context": {
             "mean_compression_ratio": round(sum(compression_ratios) / len(compression_ratios), 6),
             "token_reduction_ratio": ratio(tokens_before - tokens_after, tokens_before),

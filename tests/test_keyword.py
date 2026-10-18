@@ -1,5 +1,21 @@
-from parltopic.classification.keyword import first_keyword_hit
+import pytest
+
+from parltopic.classification.keyword import _contains_term, first_keyword_hit
 from parltopic.models import TextSegment, TopicDefinition
+
+
+@pytest.mark.parametrize("text", ["on line", "on-line", "on–line", "ON LINE", "Onlinehandel"])
+def test_online_orthographic_variants(text: str) -> None:
+    assert _contains_term(text, "online", online_variants=True)
+
+
+@pytest.mark.parametrize("text", ["on linear systems", "London line", "on-linearity"])
+def test_online_variants_do_not_match_neighboring_words(text: str) -> None:
+    assert not _contains_term(text, "online", online_variants=True)
+
+
+def test_online_normalization_is_explicitly_opt_in() -> None:
+    assert not _contains_term("on line", "online")
 
 
 def test_first_keyword_hit_is_multilingual_and_case_insensitive() -> None:

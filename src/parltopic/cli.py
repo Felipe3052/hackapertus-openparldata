@@ -22,12 +22,18 @@ def classify(
     input: Annotated[Path, typer.Option(exists=True, readable=True)],
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],
     output: Annotated[Path | None, typer.Option()] = None,
+    title_rules: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
     offline: Annotated[
         bool, typer.Option(help="Validate and retrieve without calling Apertus.")
     ] = False,
 ) -> None:
     settings = get_settings()
-    definition = load_topic(topic)
+    definition = load_topic(topic, title_rules)
+    if title_rules:
+        policy = (
+            "hybrid-title-online-v2" if definition.normalize_online_variants else "hybrid-title-v1"
+        )
+        settings = settings.model_copy(update={"classifier_policy_version": policy})
     service = ClassificationService(settings)
     rows = []
     for affair in read_affairs(input):
@@ -73,6 +79,21 @@ def build_eval(
     typer.echo(json.dumps(build_eval_sets(raw_dir, out_dir, seed), indent=2))
 
 
+@app.command("enrich-documents")
+def enrich_documents(
+    input: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+    cache_dir: Path = Path("data/cache/documents"),
+    workers: Annotated[int, typer.Option(min=1, max=8)] = 4,
+) -> None:
+    """Add original documents to title-only inputs, preserving labels and row order."""
+    from parltopic.ingestion.enrich import enrich_dataset
+    from parltopic.ingestion.openparldata_client import OpenParlDataClient
+
+    report = enrich_dataset(input, output, OpenParlDataClient(get_settings()), cache_dir, workers)
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("run-eval")
 def run_eval(
     eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
@@ -81,6 +102,7 @@ def run_eval(
     model: Annotated[str | None, typer.Option(help="Override LLM_NAME.")] = None,
     workers: int = 8,
     limit: int | None = None,
+    title_rules: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
 ) -> None:
     """Classify an eval set with Apertus (resumable), then print the scores."""
     from parltopic.evaluation.run import run_classifier, score_results
@@ -88,7 +110,13 @@ def run_eval(
     settings = get_settings()
     if model:
         settings = settings.model_copy(update={"llm_name": model})
-    run_classifier(eval_set, load_topic(topic), output, settings, workers, limit)
+    definition = load_topic(topic, title_rules)
+    if title_rules:
+        policy = (
+            "hybrid-title-online-v2" if definition.normalize_online_variants else "hybrid-title-v1"
+        )
+        settings = settings.model_copy(update={"classifier_policy_version": policy})
+    run_classifier(eval_set, definition, output, settings, workers, limit)
     typer.echo(json.dumps(score_results(eval_set, output), indent=2))
 
 
@@ -118,6 +146,19 @@ def compare_run_outputs(
         eval_set, baseline_results, candidate_results, samples=samples, seed=seed
     )
     typer.echo(json.dumps(report, indent=2))
+
+
+@app.command("score-confidence")
+def score_confidence(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    results: Annotated[Path, typer.Option(exists=True, readable=True)],
+    samples: Annotated[int, typer.Option(min=1)] = 2000,
+    seed: int = 42,
+) -> None:
+    """Report class-stratified bootstrap intervals for precision, recall and F1."""
+    from parltopic.evaluation.uncertainty import bootstrap_metrics
+
+    typer.echo(json.dumps(bootstrap_metrics(eval_set, results, samples, seed), indent=2))
 
 
 @app.command()

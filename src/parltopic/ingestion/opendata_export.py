@@ -84,23 +84,42 @@ def load_bodies(raw_dir: str | Path) -> dict[str, dict[str, Any]]:
 
 
 def load_che_texts(
-    raw_dir: str | Path, affair_ids: Iterable[int] | None = None
+    raw_dir: str | Path, affair_ids: Iterable[int] | None = None,
+    source_path: str | Path | None = None,
 ) -> dict[int, dict[str, str]]:
-    """Return {openparldata_id: {lang: text}} for submitted text, reasoning and lead."""
+    """Read the canonical CHE export or the legacy hackathon text schema.
+
+    Prefer texts_CHE.ndjson.gz when available; an explicit source permits snapshot comparisons.
+    Both exports join onto affairs.id. Neither source contributes topic labels.
+    """
+    raw = Path(raw_dir)
+    source = Path(source_path) if source_path is not None else raw / "texts_CHE.ndjson.gz"
+    if source_path is None and not source.exists():
+        source = raw / "che_affair_texts.ndjson.gz"
     wanted = set(affair_ids) if affair_ids is not None else None
-    parts: dict[int, dict[str, list[str]]] = {}
-    for row in read_ndjson(Path(raw_dir) / "che_affair_texts.ndjson.gz"):
-        affair_id = row["openparldata_id"]
+    parts: dict[int, dict[str, list[tuple[int, int, str]]]] = {}
+    for row in read_ndjson(source):
+        affair_id = row.get("affair_id", row.get("openparldata_id"))
+        if affair_id is None:
+            raise ValueError(f"Text row in {source} is missing its affair join key")
+        affair_id = int(affair_id)
         if wanted is not None and affair_id not in wanted:
             continue
         if row.get("type_de") not in CHE_TEXT_TYPES:
             continue
+        priority = CHE_TEXT_TYPES.index(row["type_de"])
+        text_id = int(row.get("text_id", row.get("id", 0)))
         for lang in ("de", "fr", "it"):
             text = strip_html(row.get(f"text_{lang}"))
             if text:
-                parts.setdefault(affair_id, {}).setdefault(lang, []).append(text)
+                parts.setdefault(affair_id, {}).setdefault(lang, []).append(
+                    (priority, text_id, text)
+                )
     return {
-        affair_id: {lang: "\n\n".join(texts) for lang, texts in by_lang.items()}
+        affair_id: {
+            lang: "\n\n".join(text for _, _, text in sorted(texts))
+            for lang, texts in by_lang.items()
+        }
         for affair_id, by_lang in parts.items()
     }
 

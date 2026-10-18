@@ -1,0 +1,7 @@
+# E02 adds only orthographic online equivalence to the preserved E01 title rules.
+title_synonyms:
+  - fake news
+  - Hochfrequenzhandel
+  - négoce à haute fréquence
+  - trading ad alta frequenza
+normalize_online_variants: true

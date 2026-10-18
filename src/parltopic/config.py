@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     classifier_prompt_version: str = "topic-v2"
     classifier_policy_version: str = "hybrid-v3"
     keyword_rescue_enabled: bool = True
+    keyword_document_gate_enabled: bool = True
+    retrieval_pin_title: bool = False
 
 
 @lru_cache

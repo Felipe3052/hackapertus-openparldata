@@ -1,0 +1,626 @@
+{
+  "status": "experiment concluded; E02 retained as optional candidate",
+  "main_commit": "1266c7ebfc1819c3c6c8d134699ebdfb138b204c",
+  "model": "swiss-ai/Apertus-v1.5-70B",
+  "scope": "one binary topic, digitalisation; positive-unlabeled proxy labels",
+  "currency_cost_note": "Provider tariff unavailable; no currency cost fabricated. Replay has zero additional API usage.",
+  "secondary_validation_note": "No independent improvement on the 90-case panel; predictions unchanged. It does not confirm superiority.",
+  "panels": [
+    {
+      "panel": "primary-validation-450",
+      "dataset_sha256": "5fb54735bc2d51045dbde3209004172987081e64870e81322118c853d682237b",
+      "baseline": {
+        "all": {
+          "n": 450,
+          "positives": 150,
+          "precision": 0.932,
+          "recall": 0.82,
+          "f1": 0.872,
+          "negative_f1": 0.942,
+          "macro_precision": 0.923,
+          "macro_recall": 0.895,
+          "macro_f1": 0.907,
+          "micro_f1": 0.92,
+          "accuracy": 0.92,
+          "confusion": {
+            "tp": 123,
+            "fp": 9,
+            "fn": 27,
+            "tn": 291
+          },
+          "precision_at_deployment_prevalence": 0.492,
+          "deployment_prevalence": 0.0342
+        },
+        "lang=de": {
+          "n": 276,
+          "positives": 91,
+          "precision": 0.95,
+          "recall": 0.835,
+          "f1": 0.889,
+          "negative_f1": 0.95,
+          "macro_precision": 0.937,
+          "macro_recall": 0.907,
+          "macro_f1": 0.92,
+          "micro_f1": 0.931,
+          "accuracy": 0.931,
+          "confusion": {
+            "tp": 76,
+            "fp": 4,
+            "fn": 15,
+            "tn": 181
+          }
+        },
+        "lang=fr": {
+          "n": 93,
+          "positives": 28,
+          "precision": 0.88,
+          "recall": 0.786,
+          "f1": 0.83,
+          "negative_f1": 0.932,
+          "macro_precision": 0.896,
+          "macro_recall": 0.87,
+          "macro_f1": 0.881,
+          "micro_f1": 0.903,
+          "accuracy": 0.903,
+          "confusion": {
+            "tp": 22,
+            "fp": 3,
+            "fn": 6,
+            "tn": 62
+          }
+        },
+        "lang=it": {
+          "n": 81,
+          "positives": 31,
+          "precision": 0.926,
+          "recall": 0.806,
+          "f1": 0.862,
+          "negative_f1": 0.923,
+          "macro_precision": 0.907,
+          "macro_recall": 0.883,
+          "macro_f1": 0.893,
+          "micro_f1": 0.901,
+          "accuracy": 0.901,
+          "confusion": {
+            "tp": 25,
+            "fp": 2,
+            "fn": 6,
+            "tn": 48
+          }
+        },
+        "level=cantonal": {
+          "n": 264,
+          "positives": 88,
+          "precision": 0.974,
+          "recall": 0.841,
+          "f1": 0.902,
+          "negative_f1": 0.956,
+          "macro_precision": 0.95,
+          "macro_recall": 0.915,
+          "macro_f1": 0.929,
+          "micro_f1": 0.939,
+          "accuracy": 0.939,
+          "confusion": {
+            "tp": 74,
+            "fp": 2,
+            "fn": 14,
+            "tn": 174
+          }
+        },
+        "level=federal": {
+          "n": 183,
+          "positives": 61,
+          "precision": 0.889,
+          "recall": 0.787,
+          "f1": 0.835,
+          "negative_f1": 0.924,
+          "macro_precision": 0.894,
+          "macro_recall": 0.869,
+          "macro_f1": 0.88,
+          "micro_f1": 0.896,
+          "accuracy": 0.896,
+          "confusion": {
+            "tp": 48,
+            "fp": 6,
+            "fn": 13,
+            "tn": 116
+          }
+        },
+        "level=municipal": {
+          "n": 3,
+          "positives": 1,
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.667,
+          "negative_f1": 0.667,
+          "macro_precision": 0.75,
+          "macro_recall": 0.75,
+          "macro_f1": 0.667,
+          "micro_f1": 0.667,
+          "accuracy": 0.667,
+          "confusion": {
+            "tp": 1,
+            "fp": 1,
+            "fn": 0,
+            "tn": 1
+          }
+        },
+        "coverage": "450/450",
+        "statuses": {
+          "assigned": 132,
+          "not_assigned": 318
+        }
+      },
+      "E02": {
+        "all": {
+          "n": 450,
+          "positives": 150,
+          "precision": 0.933,
+          "recall": 0.833,
+          "f1": 0.88,
+          "negative_f1": 0.945,
+          "macro_precision": 0.927,
+          "macro_recall": 0.902,
+          "macro_f1": 0.913,
+          "micro_f1": 0.924,
+          "accuracy": 0.924,
+          "confusion": {
+            "tp": 125,
+            "fp": 9,
+            "fn": 25,
+            "tn": 291
+          },
+          "precision_at_deployment_prevalence": 0.496,
+          "deployment_prevalence": 0.0342
+        },
+        "lang=de": {
+          "n": 276,
+          "positives": 91,
+          "precision": 0.95,
+          "recall": 0.835,
+          "f1": 0.889,
+          "negative_f1": 0.95,
+          "macro_precision": 0.937,
+          "macro_recall": 0.907,
+          "macro_f1": 0.92,
+          "micro_f1": 0.931,
+          "accuracy": 0.931,
+          "confusion": {
+            "tp": 76,
+            "fp": 4,
+            "fn": 15,
+            "tn": 181
+          }
+        },
+        "lang=fr": {
+          "n": 93,
+          "positives": 28,
+          "precision": 0.885,
+          "recall": 0.821,
+          "f1": 0.852,
+          "negative_f1": 0.939,
+          "macro_precision": 0.905,
+          "macro_recall": 0.888,
+          "macro_f1": 0.896,
+          "micro_f1": 0.914,
+          "accuracy": 0.914,
+          "confusion": {
+            "tp": 23,
+            "fp": 3,
+            "fn": 5,
+            "tn": 62
+          }
+        },
+        "lang=it": {
+          "n": 81,
+          "positives": 31,
+          "precision": 0.929,
+          "recall": 0.839,
+          "f1": 0.881,
+          "negative_f1": 0.932,
+          "macro_precision": 0.917,
+          "macro_recall": 0.899,
+          "macro_f1": 0.907,
+          "micro_f1": 0.914,
+          "accuracy": 0.914,
+          "confusion": {
+            "tp": 26,
+            "fp": 2,
+            "fn": 5,
+            "tn": 48
+          }
+        },
+        "level=cantonal": {
+          "n": 264,
+          "positives": 88,
+          "precision": 0.974,
+          "recall": 0.841,
+          "f1": 0.902,
+          "negative_f1": 0.956,
+          "macro_precision": 0.95,
+          "macro_recall": 0.915,
+          "macro_f1": 0.929,
+          "micro_f1": 0.939,
+          "accuracy": 0.939,
+          "confusion": {
+            "tp": 74,
+            "fp": 2,
+            "fn": 14,
+            "tn": 174
+          }
+        },
+        "level=federal": {
+          "n": 183,
+          "positives": 61,
+          "precision": 0.893,
+          "recall": 0.82,
+          "f1": 0.855,
+          "negative_f1": 0.932,
+          "macro_precision": 0.903,
+          "macro_recall": 0.885,
+          "macro_f1": 0.893,
+          "micro_f1": 0.907,
+          "accuracy": 0.907,
+          "confusion": {
+            "tp": 50,
+            "fp": 6,
+            "fn": 11,
+            "tn": 116
+          }
+        },
+        "level=municipal": {
+          "n": 3,
+          "positives": 1,
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.667,
+          "negative_f1": 0.667,
+          "macro_precision": 0.75,
+          "macro_recall": 0.75,
+          "macro_f1": 0.667,
+          "micro_f1": 0.667,
+          "accuracy": 0.667,
+          "confusion": {
+            "tp": 1,
+            "fp": 1,
+            "fn": 0,
+            "tn": 1
+          }
+        },
+        "coverage": "450/450",
+        "statuses": {
+          "not_assigned": 316,
+          "assigned": 134
+        }
+      },
+      "macro_f1_delta": 0.0055,
+      "delta_bootstrap_interval_95": [
+        0,
+        0.014
+      ],
+      "baseline_wall_seconds": null,
+      "replay_wall_seconds": 0.265,
+      "replay_new_api_calls": 0,
+      "replay_incremental_api_cost": 0,
+      "live_currency_cost": null,
+      "usage": {
+        "main": {
+          "input_tokens": 506252,
+          "output_tokens": 36846,
+          "predictions_sha256": "15b0ca5570f16fbacebb7531a84ed86d927fd549bea2854095f3d055eea5e13f"
+        },
+        "E02": {
+          "input_tokens": 501537,
+          "output_tokens": 36517,
+          "predictions_sha256": "b1c73c000a50c7a7f75abb7cbb75e1b51536615b518a3c132c8c10927da7e4c1"
+        }
+      }
+    },
+    {
+      "panel": "secondary-validation-90",
+      "dataset_sha256": "e6b039bba4dcb7c00adae91fc8c836db02e2913acf6d4a144b15975b36da6f7c",
+      "baseline": {
+        "all": {
+          "n": 90,
+          "positives": 30,
+          "precision": 0.962,
+          "recall": 0.833,
+          "f1": 0.893,
+          "negative_f1": 0.952,
+          "macro_precision": 0.942,
+          "macro_recall": 0.908,
+          "macro_f1": 0.922,
+          "micro_f1": 0.933,
+          "accuracy": 0.933,
+          "confusion": {
+            "tp": 25,
+            "fp": 1,
+            "fn": 5,
+            "tn": 59
+          }
+        },
+        "lang=de": {
+          "n": 30,
+          "positives": 10,
+          "precision": 1,
+          "recall": 0.9,
+          "f1": 0.947,
+          "negative_f1": 0.976,
+          "macro_precision": 0.976,
+          "macro_recall": 0.95,
+          "macro_f1": 0.961,
+          "micro_f1": 0.967,
+          "accuracy": 0.967,
+          "confusion": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 1,
+            "tn": 20
+          }
+        },
+        "lang=fr": {
+          "n": 30,
+          "positives": 10,
+          "precision": 1,
+          "recall": 0.8,
+          "f1": 0.889,
+          "negative_f1": 0.952,
+          "macro_precision": 0.955,
+          "macro_recall": 0.9,
+          "macro_f1": 0.921,
+          "micro_f1": 0.933,
+          "accuracy": 0.933,
+          "confusion": {
+            "tp": 8,
+            "fp": 0,
+            "fn": 2,
+            "tn": 20
+          }
+        },
+        "lang=it": {
+          "n": 30,
+          "positives": 10,
+          "precision": 0.889,
+          "recall": 0.8,
+          "f1": 0.842,
+          "negative_f1": 0.927,
+          "macro_precision": 0.897,
+          "macro_recall": 0.875,
+          "macro_f1": 0.884,
+          "micro_f1": 0.9,
+          "accuracy": 0.9,
+          "confusion": {
+            "tp": 8,
+            "fp": 1,
+            "fn": 2,
+            "tn": 19
+          }
+        },
+        "level=cantonal": {
+          "n": 52,
+          "positives": 23,
+          "precision": 1,
+          "recall": 0.87,
+          "f1": 0.93,
+          "negative_f1": 0.951,
+          "macro_precision": 0.953,
+          "macro_recall": 0.935,
+          "macro_f1": 0.941,
+          "micro_f1": 0.942,
+          "accuracy": 0.942,
+          "confusion": {
+            "tp": 20,
+            "fp": 0,
+            "fn": 3,
+            "tn": 29
+          }
+        },
+        "level=federal": {
+          "n": 22,
+          "positives": 7,
+          "precision": 0.833,
+          "recall": 0.714,
+          "f1": 0.769,
+          "negative_f1": 0.903,
+          "macro_precision": 0.854,
+          "macro_recall": 0.824,
+          "macro_f1": 0.836,
+          "micro_f1": 0.864,
+          "accuracy": 0.864,
+          "confusion": {
+            "tp": 5,
+            "fp": 1,
+            "fn": 2,
+            "tn": 14
+          }
+        },
+        "level=municipal": {
+          "n": 16,
+          "positives": 0,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "negative_f1": 1,
+          "macro_precision": 0.5,
+          "macro_recall": 0.5,
+          "macro_f1": 0.5,
+          "micro_f1": 1,
+          "accuracy": 1,
+          "confusion": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 16
+          }
+        },
+        "coverage": "90/90",
+        "statuses": {
+          "assigned": 26,
+          "not_assigned": 64
+        }
+      },
+      "E02": {
+        "all": {
+          "n": 90,
+          "positives": 30,
+          "precision": 0.962,
+          "recall": 0.833,
+          "f1": 0.893,
+          "negative_f1": 0.952,
+          "macro_precision": 0.942,
+          "macro_recall": 0.908,
+          "macro_f1": 0.922,
+          "micro_f1": 0.933,
+          "accuracy": 0.933,
+          "confusion": {
+            "tp": 25,
+            "fp": 1,
+            "fn": 5,
+            "tn": 59
+          }
+        },
+        "lang=de": {
+          "n": 30,
+          "positives": 10,
+          "precision": 1,
+          "recall": 0.9,
+          "f1": 0.947,
+          "negative_f1": 0.976,
+          "macro_precision": 0.976,
+          "macro_recall": 0.95,
+          "macro_f1": 0.961,
+          "micro_f1": 0.967,
+          "accuracy": 0.967,
+          "confusion": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 1,
+            "tn": 20
+          }
+        },
+        "lang=fr": {
+          "n": 30,
+          "positives": 10,
+          "precision": 1,
+          "recall": 0.8,
+          "f1": 0.889,
+          "negative_f1": 0.952,
+          "macro_precision": 0.955,
+          "macro_recall": 0.9,
+          "macro_f1": 0.921,
+          "micro_f1": 0.933,
+          "accuracy": 0.933,
+          "confusion": {
+            "tp": 8,
+            "fp": 0,
+            "fn": 2,
+            "tn": 20
+          }
+        },
+        "lang=it": {
+          "n": 30,
+          "positives": 10,
+          "precision": 0.889,
+          "recall": 0.8,
+          "f1": 0.842,
+          "negative_f1": 0.927,
+          "macro_precision": 0.897,
+          "macro_recall": 0.875,
+          "macro_f1": 0.884,
+          "micro_f1": 0.9,
+          "accuracy": 0.9,
+          "confusion": {
+            "tp": 8,
+            "fp": 1,
+            "fn": 2,
+            "tn": 19
+          }
+        },
+        "level=cantonal": {
+          "n": 52,
+          "positives": 23,
+          "precision": 1,
+          "recall": 0.87,
+          "f1": 0.93,
+          "negative_f1": 0.951,
+          "macro_precision": 0.953,
+          "macro_recall": 0.935,
+          "macro_f1": 0.941,
+          "micro_f1": 0.942,
+          "accuracy": 0.942,
+          "confusion": {
+            "tp": 20,
+            "fp": 0,
+            "fn": 3,
+            "tn": 29
+          }
+        },
+        "level=federal": {
+          "n": 22,
+          "positives": 7,
+          "precision": 0.833,
+          "recall": 0.714,
+          "f1": 0.769,
+          "negative_f1": 0.903,
+          "macro_precision": 0.854,
+          "macro_recall": 0.824,
+          "macro_f1": 0.836,
+          "micro_f1": 0.864,
+          "accuracy": 0.864,
+          "confusion": {
+            "tp": 5,
+            "fp": 1,
+            "fn": 2,
+            "tn": 14
+          }
+        },
+        "level=municipal": {
+          "n": 16,
+          "positives": 0,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "negative_f1": 1,
+          "macro_precision": 0.5,
+          "macro_recall": 0.5,
+          "macro_f1": 0.5,
+          "micro_f1": 1,
+          "accuracy": 1,
+          "confusion": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 16
+          }
+        },
+        "coverage": "90/90",
+        "statuses": {
+          "assigned": 26,
+          "not_assigned": 64
+        }
+      },
+      "macro_f1_delta": 0,
+      "delta_bootstrap_interval_95": [
+        0,
+        0
+      ],
+      "baseline_wall_seconds": 47.47975458299334,
+      "replay_wall_seconds": 0.104,
+      "replay_new_api_calls": 0,
+      "replay_incremental_api_cost": 0,
+      "live_currency_cost": null,
+      "usage": {
+        "main": {
+          "input_tokens": 100809,
+          "output_tokens": 7251,
+          "predictions_sha256": "774bffe6edf0ad2009eddfd42cefdb57f9094de44ac84da84d3628bb38dd62c6"
+        },
+        "E02": {
+          "input_tokens": 100809,
+          "output_tokens": 7251,
+          "predictions_sha256": "5b54b270db5fb094167582f05616f8f540b55a937caa269f1e76a4e572434f15"
+        }
+      }
+    }
+  ]
+}

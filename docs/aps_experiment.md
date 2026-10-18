@@ -35,7 +35,9 @@ are project additions, not official APS translations, and must be evaluated befo
 The classifier now exposes the same router as an opt-in experiment through
 `APS_CONTEXT_ENABLED=true`. The default is `false`; with the flag enabled, the result records the
 taxonomy version, context policy, segment counts and approximate token counts. If no APS candidate
-is found, the full context is retained and the result records the fallback reason.
+is found, or if no topic-level candidate is available, the full context is retained and the result
+records the fallback reason. This guard prevents chapter-only or cross-language matches from
+silently truncating evidence.
 
 On the checked-in E1 digitalisation validation file (1,200 affairs), the shadow run with five
 context segments routed 922 affairs and fell back for 278. The approximate token reduction was

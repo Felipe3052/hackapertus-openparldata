@@ -148,10 +148,11 @@ class ClassificationService:
             max_chapters=self.settings.aps_max_chapters,
             max_topics=self.settings.aps_max_topics,
         )
-        if route.fallback_reason:
+        if route.fallback_reason or not route.topic_candidates:
+            reason = route.fallback_reason or "no_topic_candidates"
             return {
                 "segments": segments,
-                "policy": f"aps-fallback:{route.fallback_reason}",
+                "policy": f"aps-fallback:{reason}",
                 "taxonomy_version": route.taxonomy_version,
                 "segments_before": len(segments),
                 "segments_after": len(segments),

@@ -158,3 +158,19 @@ def test_aps_context_is_opt_in_and_reports_reduction() -> None:
     assert result.context_segments_after == 2
     assert result.context_segments_after < result.context_segments_before
     assert result.context_tokens_approx_after < result.context_tokens_approx_before
+
+
+def test_aps_context_falls_back_without_language_topic_candidates() -> None:
+    settings = Settings(
+        _env_file=None,
+        aps_context_enabled=True,
+        keyword_rescue_enabled=False,
+        retrieval_top_k=1,
+    )
+    service = ClassificationService(settings, client=RecordingClient())
+    prepared = service.prepare(
+        Affair(affair_id="it", title="Amministrazione", language="it"),
+        TopicDefinition(topic_id="test", name="Test", description="Test"),
+    )
+    assert prepared.context_policy == "aps-fallback:no_taxonomy_term_match"
+    assert prepared.context_segments_before == prepared.context_segments_after

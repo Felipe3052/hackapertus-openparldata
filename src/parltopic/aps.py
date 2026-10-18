@@ -46,6 +46,7 @@ class ApsCandidate:
 @dataclass(frozen=True)
 class ApsRoute:
     taxonomy_version: str
+    domain_candidates: tuple[ApsCandidate, ...]
     chapter_candidates: tuple[ApsCandidate, ...]
     topic_candidates: tuple[ApsCandidate, ...]
     fallback_reason: str | None = None
@@ -53,6 +54,7 @@ class ApsRoute:
     def model_dump(self) -> dict:
         return {
             "taxonomy_version": self.taxonomy_version,
+            "domain_candidates": [candidate.__dict__ for candidate in self.domain_candidates],
             "chapter_candidates": [candidate.__dict__ for candidate in self.chapter_candidates],
             "topic_candidates": [candidate.__dict__ for candidate in self.topic_candidates],
             "fallback_reason": self.fallback_reason,
@@ -71,6 +73,7 @@ class ApsTaxonomy:
         raw = json.loads(path.read_text(encoding="utf-8"))
         nodes: list[ApsNode] = []
         chapter_labels: dict[str, dict[str, str]] = {}
+        domain_labels: dict[str, dict[str, str]] = {}
         for item in raw:
             code = str(item["code"])
             parts = code.split(".")
@@ -95,25 +98,37 @@ class ApsTaxonomy:
                     for key, value in item.items()
                     if key.startswith("chapter_") and value
                 }
+                domain_labels[parts[0]] = {
+                    key[7:]: str(value)
+                    for key, value in item.items()
+                    if key.startswith("domain_") and value
+                }
 
         # The source file contains topic rows and derives chapter/domain names from them.
         chapter_codes = {node.parent_code for node in nodes if node.parent_code}
         for code in sorted(chapter_codes):
-            nodes.append(ApsNode(code, None, "chapter", chapter_labels.get(code, {})))
+            nodes.append(ApsNode(code, code.split(".")[0], "chapter", chapter_labels.get(code, {})))
+        for code in sorted(domain_labels):
+            nodes.append(ApsNode(code, None, "domain", domain_labels[code]))
         return cls(tuple(nodes), version)
 
     def _validate(self) -> None:
         if len(self._by_code) != len(self.nodes):
             raise ValueError("APS taxonomy contains duplicate codes")
         for node in self.nodes:
-            if node.level == "topic" and node.parent_code not in self._by_code:
-                raise ValueError(f"APS topic {node.code} has unknown chapter {node.parent_code}")
+            if node.parent_code and node.parent_code not in self._by_code:
+                raise ValueError(
+                    f"APS {node.level} {node.code} has unknown parent {node.parent_code}"
+                )
 
     def node(self, code: str) -> ApsNode:
         return self._by_code[code]
 
     def chapters(self) -> tuple[ApsNode, ...]:
         return tuple(node for node in self.nodes if node.level == "chapter")
+
+    def domains(self) -> tuple[ApsNode, ...]:
+        return tuple(node for node in self.nodes if node.level == "domain")
 
     def topics(self) -> tuple[ApsNode, ...]:
         return tuple(node for node in self.nodes if node.level == "topic")
@@ -126,13 +141,20 @@ class ApsRouter:
     def route(self, affair: Affair, max_chapters: int = 4, max_topics: int = 8) -> ApsRoute:
         text_terms = _tokens(affair.combined_text())
         if not text_terms:
-            return ApsRoute(self.taxonomy.version, (), (), "no_text")
+            return ApsRoute(self.taxonomy.version, (), (), (), "no_text")
 
         topic_candidates = self._rank(self.taxonomy.topics(), text_terms, max_topics)
         chapter_candidates = self._rank(self.taxonomy.chapters(), text_terms, max_chapters)
+        domain_candidates = self._rank(
+            self.taxonomy.domains(), text_terms, len(self.taxonomy.domains())
+        )
         if not chapter_candidates:
-            return ApsRoute(self.taxonomy.version, (), (), "no_taxonomy_term_match")
-        return ApsRoute(self.taxonomy.version, chapter_candidates, topic_candidates)
+            return ApsRoute(
+                self.taxonomy.version, domain_candidates, (), (), "no_taxonomy_term_match"
+            )
+        return ApsRoute(
+            self.taxonomy.version, domain_candidates, chapter_candidates, topic_candidates
+        )
 
     @staticmethod
     def _rank(
@@ -159,7 +181,14 @@ def select_context(
     """Select a bounded, evidence-preserving context for a shadow experiment."""
     if max_segments < 1:
         raise ValueError("max_segments must be positive")
-    candidate_codes = {candidate.code for candidate in route.topic_candidates}
+    candidate_codes = {
+        candidate.code
+        for candidate in (
+            *route.domain_candidates,
+            *route.chapter_candidates,
+            *route.topic_candidates,
+        )
+    }
     candidate_terms = set()
     for code in candidate_codes:
         candidate_terms.update(taxonomy.node(code).label_terms)

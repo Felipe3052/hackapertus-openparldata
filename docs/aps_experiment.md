@@ -14,6 +14,8 @@ but are not a model-quality gold standard.
 ## Shadow architecture
 
 ```text
+Domain → Chapter → Topic
+                    ↑
 Affair → APS candidate router → bounded context selector → existing Apertus classifier
                          ↘ route manifest and token/compression measurements
 ```

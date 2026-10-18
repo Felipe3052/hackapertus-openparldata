@@ -13,6 +13,7 @@ def test_aps_taxonomy_is_hierarchical_and_complete() -> None:
     taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
     assert len(taxonomy.topics()) == 165
     assert len(taxonomy.chapters()) == 22
+    assert len(taxonomy.domains()) == 8
     assert all(node.parent_code in {chapter.code for chapter in taxonomy.chapters()}
                for node in taxonomy.topics())
 

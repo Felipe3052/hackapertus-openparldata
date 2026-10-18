@@ -107,6 +107,31 @@ parltopic classify \
   --output results/digitalisation.jsonl
 ```
 
+## OpenParlData source data
+
+Download the hackathon snapshot and the complementary affair/body exports:
+
+```bash
+parltopic download-data --raw-dir data/raw
+```
+
+The source is [the OpenParlData hackathon directory](https://files.openparldata.ch/hackapertus/).
+The importer downloads the JSONL versions of federal and cantonal labels, multilingual federal
+texts, both keyword vocabularies, the PolitMonitor and DVS digitalisation lists, and the APS
+taxonomy workbook. Equivalent CSV/long-format label copies are available upstream. The source
+documentation is saved as `data/raw/SOURCE_README.md`. Existing files are retained; downloads
+are promoted from `.part` files only after completion. Raw data is excluded from Git.
+
+Build a separate evaluation snapshot without replacing the checked-in evaluation sets:
+
+```bash
+parltopic build-eval --raw-dir data/raw --out-dir data/processed/eval
+```
+
+Join files using `openparldata_id`; bulk affair exports use `id` for the same identifier.
+PolitMonitor and DVS lists contain positive examples only. The APS workbook defines the
+target hierarchy; these affairs do not have APS ground-truth labels.
+
 ## Repository structure
 
 ```text

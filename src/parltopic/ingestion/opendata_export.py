@@ -17,12 +17,14 @@ from parltopic.models import Affair
 EXPORT_URL = "https://files.openparldata.ch/exports"
 LABELS_URL = "https://files.openparldata.ch/hackapertus"
 RAW_FILES = {
+    f"{LABELS_URL}/README.md": "SOURCE_README.md",
     f"{EXPORT_URL}/affairs.ndjson.gz": "affairs.ndjson.gz",
     f"{EXPORT_URL}/bodies.ndjson.gz": "bodies.ndjson.gz",
     f"{LABELS_URL}/che_affair_texts.ndjson.gz": "che_affair_texts.ndjson.gz",
     f"{LABELS_URL}/che_affairs_keywords.jsonl": "che_affairs_keywords.jsonl",
     f"{LABELS_URL}/che_topics_vocabulary.csv": "che_topics_vocabulary.csv",
     f"{LABELS_URL}/cantonal_affairs_keywords.jsonl": "cantonal_affairs_keywords.jsonl",
+    f"{LABELS_URL}/cantonal_keywords_vocabulary.csv": "cantonal_keywords_vocabulary.csv",
     f"{LABELS_URL}/politmonitor_digitalisierung.csv": "politmonitor_digitalisierung.csv",
     f"{LABELS_URL}/dvs_digitalisierung.csv": "dvs_digitalisierung.csv",
     f"{LABELS_URL}/aps_topics.xlsx": "aps_topics.xlsx",
@@ -48,7 +50,12 @@ def download_raw(target_dir: str | Path, overwrite: bool = False) -> list[Path]:
     for url, name in RAW_FILES.items():
         path = target / name
         if overwrite or not path.exists():
-            urllib.request.urlretrieve(url, path)
+            temporary = path.with_name(path.name + ".part")
+            try:
+                urllib.request.urlretrieve(url, temporary)
+                temporary.replace(path)
+            finally:
+                temporary.unlink(missing_ok=True)
         paths.append(path)
     return paths
 

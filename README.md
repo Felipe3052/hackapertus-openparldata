@@ -129,6 +129,10 @@ parltopic build-eval --raw-dir data/raw --out-dir data/processed/eval
 ```
 
 Join files using `openparldata_id`; bulk affair exports use `id` for the same identifier.
+For federal text ingestion, an available `data/raw/texts_CHE.ndjson.gz` is preferred. Its
+`affair_id` joins to `affairs.id`; the hackathon `che_affair_texts.ndjson.gz` schema remains a
+fallback using `openparldata_id`. Both are normalized to submitted text, reasoning and lead
+in a stable order before chunking. Existing evaluation files are not rewritten automatically.
 PolitMonitor and DVS lists contain positive examples only. The APS workbook defines the
 target hierarchy; these affairs do not have APS ground-truth labels.
 

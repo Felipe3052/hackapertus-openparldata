@@ -55,3 +55,13 @@ Bootstrap intervals on this development set are conditional on the selected rule
 Because those rules were chosen after inspecting the same labels, the intervals do not account
 for model-selection bias. The reported fraction of bootstrap deltas above zero is a resampling
 frequency, not a posterior probability that the candidate is better in production.
+
+## Federal text source compatibility
+
+The normalizer accepts both the general `texts_CHE.ndjson.gz` export (`affair_id`) and the
+hackathon text file (`openparldata_id`). It prefers the general export if present and orders
+submitted text before reasoning and lead, with stable text-ID ordering within each type.
+The two local snapshots yielded identical normalized content for all 183 federal development
+affairs after this ordering rule (174 had usable text). Four affairs previously differed only
+in paragraph order. Future `build-eval` metadata records the chosen source and ordering rule;
+the checked-in evaluation sets and existing benchmark results remain unchanged.

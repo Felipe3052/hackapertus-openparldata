@@ -84,3 +84,39 @@ parltopic run-eval \
 ```
 
 Ongoing quality experiments are developed on branch `experiment/classifier-quality`.
+
+## Supervised title baseline
+
+The optional character TF-IDF/logistic-regression experiment uses only titles. It trains on
+2018–2021, selects a threshold on 2022, and reports 2023 validation without threshold selection
+on those results. All 450 opened development IDs and exact matching titles are excluded before
+fitting. Additional exact title duplicates are assigned only to their earliest eligible affair;
+multiple language versions of a training affair share total sample weight one. Eligible bodies
+are derived from training-period positives. Near-duplicate titles are not detected.
+
+The first run used 5,908 training affairs (9,984 language rows), 1,468 threshold-selection affairs
+and 1,612 validation affairs. With threshold `0.55`, 2023 precision is `0.809`, recall `0.754`,
+positive F1 `0.780` and macro-F1 `0.855`. Samples use up to three untagged proxy negatives per
+positive, so these are not natural-prevalence precision estimates or adjudicated gold results.
+The snapshots contain editorial labels as of 2026; this is a chronological split, not a
+reconstruction of which labels were available in 2021.
+
+On the existing 450-case development diagnostic, macro-F1 is `0.821`, precision `0.809` and
+recall `0.707`. Title-only inputs make this an intentionally cheaper comparison rather than an
+equal-context model comparison. OR with Apertus-v3 reaches macro-F1 `0.879`, precision `0.818`,
+recall `0.867`; AND reaches macro-F1 `0.846`, precision `0.952`, recall `0.660`. Neither improves
+the primary metric over Apertus-v3. No production policy change follows from this experiment.
+
+```bash
+pip install -e '.[experiments]'
+python -m parltopic.evaluation.linear_baseline \
+  --eval-set data/eval/e1_digitalisation_dev.jsonl \
+  --output-dir results/linear_baseline_v1
+```
+
+`report.json` records split affair IDs, seed, source hashes and scikit-learn version;
+`predictions.jsonl` records all diagnostic predictions. Weights are refitted by the command,
+not persisted as an executable model artifact. Implementation follows the official
+[text feature extraction](https://scikit-learn.org/stable/modules/feature_extraction.html)
+and [logistic regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
+interfaces.

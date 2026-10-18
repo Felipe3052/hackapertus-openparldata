@@ -49,6 +49,72 @@ def classify(
         typer.echo(rendered, nl=False)
 
 
+@app.command("download-data")
+def download_data(
+    raw_dir: Annotated[Path, typer.Option()] = Path("data/raw"),
+    overwrite: bool = False,
+) -> None:
+    """Download OpenParlData exports and the hackathon label files (~350 MB)."""
+    from parltopic.ingestion.opendata_export import download_raw
+
+    for path in download_raw(raw_dir, overwrite):
+        typer.echo(f"{path} ({path.stat().st_size / 1e6:.1f} MB)")
+
+
+@app.command("build-eval")
+def build_eval(
+    raw_dir: Annotated[Path, typer.Option(exists=True)] = Path("data/raw"),
+    out_dir: Annotated[Path, typer.Option()] = Path("data/eval"),
+    seed: int = 42,
+) -> None:
+    """Build the frozen eval sets E1 (digitalisation), E2 (Curia subject areas), E4 (DVS)."""
+    from parltopic.evaluation.datasets import build_eval_sets
+
+    typer.echo(json.dumps(build_eval_sets(raw_dir, out_dir, seed), indent=2))
+
+
+@app.command("run-eval")
+def run_eval(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+    model: Annotated[str | None, typer.Option(help="Override LLM_NAME.")] = None,
+    workers: int = 8,
+    limit: int | None = None,
+) -> None:
+    """Classify an eval set with Apertus (resumable), then print the scores."""
+    from parltopic.evaluation.run import run_classifier, score_results
+
+    settings = get_settings()
+    if model:
+        settings = settings.model_copy(update={"llm_name": model})
+    run_classifier(eval_set, load_topic(topic), output, settings, workers, limit)
+    typer.echo(json.dumps(score_results(eval_set, output), indent=2))
+
+
+@app.command()
+def score(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    results: Annotated[Path, typer.Option(exists=True, readable=True)],
+) -> None:
+    """Score an existing results file against an eval set."""
+    from parltopic.evaluation.run import score_results
+
+    typer.echo(json.dumps(score_results(eval_set, results), indent=2))
+
+
+@app.command()
+def baseline(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+) -> None:
+    """Baseline B0: multilingual keyword match on name + synonyms (full-text search), no LLM."""
+    from parltopic.evaluation.run import keyword_predictions, score_binary
+
+    predictions = keyword_predictions(eval_set, load_topic(topic))
+    typer.echo(json.dumps(score_binary(eval_set, predictions), indent=2))
+
+
 if __name__ == "__main__":
     app()
 

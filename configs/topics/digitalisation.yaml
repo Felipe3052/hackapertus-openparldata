@@ -1,20 +1,56 @@
 topic_id: digitalisation
 name: Digitalisierung
+# Scope follows the PolitMonitor editorial tag behind the DVS list (see data/raw/README.md):
+# e-government, cybersecurity, AI, data protection, digital media and broadband.
+# v2: inclusion rule added after error analysis on the dev split (2018-2023) only.
 description: >-
-  Parlamentarische Geschäfte zu digitaler Verwaltung, E-Government,
-  elektronischer Identität, Cloud-Infrastruktur, künstlicher Intelligenz,
-  Automatisierung und digitalen öffentlichen Dienstleistungen.
+  Parlamentarische Geschäfte zur digitalen Transformation von Staat, Wirtschaft und
+  Gesellschaft: digitale Verwaltung und E-Government, elektronische Identität,
+  Informatik, IT-Projekte, Software und IT-Infrastruktur der Verwaltung, Cybersicherheit,
+  künstliche Intelligenz und Automatisierung, Datenschutz und Datennutzung, Geodaten,
+  digitale Medien, Plattformen und Desinformation, Breitband, Mobilfunk und 5G,
+  Digitalisierung in Bildung, Gesundheit und Wirtschaft.
+  Regel: Ordne das Thema zu, sobald digitale Technologie, Informatik, Daten, Online-Dienste
+  oder Telekommunikation ein wesentlicher Aspekt des Geschäfts ist, auch wenn nur der Titel
+  vorliegt. Ein Titel wie "Digital first" oder "Projekt Digital+" genügt. Verwende
+  not_assigned nur, wenn kein digitaler Bezug erkennbar ist; bei einem möglichen, aber
+  unklaren Bezug verwende uncertain.
 synonyms:
+  - Digitalisierung
+  - digital
   - E-Government
   - digitale Verwaltung
   - elektronische Identität
   - E-ID
-  - Cloud-Infrastruktur
-  - Automatisierung
+  - Informatik
+  - Cybersicherheit
+  - künstliche Intelligenz
+  - Datenschutz
+  - Breitband
+  - numérique
+  - numérisation
+  - cyberadministration
+  - identité électronique
+  - informatique
+  - cybersécurité
+  - intelligence artificielle
+  - protection des données
+  - digitalizzazione
+  - digitale
+  - identità elettronica
+  - informatica
+  - cibersicurezza
+  - intelligenza artificiale
+  - protezione dei dati
 positive_examples:
   - Einführung einer elektronischen Identität für kantonale Dienstleistungen.
   - Digitale Einreichung und Verarbeitung von Behördengesuchen.
+  - Schutz kritischer Infrastrukturen vor Cyberangriffen.
+  - Kredit für die Erneuerung der Informatik bzw. eines ERP-Systems der Verwaltung.
+  - Umgang mit KI-Werkzeugen wie ChatGPT an Schulen.
+  - Ausbau von Glasfaser oder 5G-Mobilfunk.
+  - Tätigkeitsbericht der Datenschutzaufsicht.
 negative_examples:
   - Sanierung einer Kantonsstrasse ohne digitalen Bezug.
   - Finanzierung eines konventionellen Schulgebäudes.
-
+  - Rentenreform ohne Bezug zu digitalen Prozessen.

@@ -1,0 +1,176 @@
+"""Build frozen, labelled evaluation sets from the OpenParlData hackathon files.
+
+E1 digitalisation: PolitMonitor positives vs. untagged affairs of the same parliaments,
+    period and affair types (dev 2018-2023 for tuning, test 2024-2026 frozen).
+E2 Curia Vista subject areas: multi-label federal affairs, test 2024-2026.
+E4 DVS: the 30 affairs listed by Digital Public Services Switzerland (positives only).
+"""
+
+import json
+import random
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any
+
+from parltopic.ingestion.opendata_export import (
+    available_languages,
+    load_bodies,
+    load_che_texts,
+    read_csv,
+    read_ndjson,
+    to_affair,
+)
+
+SPLITS = {"dev": ("2018-01-01", "2023-12-31"), "test": ("2024-01-01", "2026-12-31")}
+MIN_TYPE_POSITIVES = 10
+
+
+def _in_split(date: str | None, split: str) -> bool:
+    start, end = SPLITS[split]
+    return bool(date) and start <= date[:10] <= end
+
+
+def _che_language(record: dict[str, Any], rng: random.Random) -> str | None:
+    languages = [lang for lang in available_languages(record) if lang in ("de", "fr", "it")]
+    return rng.choice(languages) if languages else None
+
+
+def _rows(
+    records: list[dict[str, Any]],
+    bodies: dict[str, dict[str, Any]],
+    texts: dict[int, dict[str, str]],
+    rng: random.Random,
+    extra: dict[int, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    rows = []
+    for record in records:
+        body = bodies.get(record["body_key"])
+        language = _che_language(record, rng) if record["body_key"] == "CHE" else None
+        text = texts.get(record["id"], {}).get(language or "", "")
+        affair = to_affair(record, body, language=language, text=text)
+        if affair:
+            rows.append({**affair.model_dump(mode="json"), **extra[record["id"]]})
+    return rows
+
+
+def _write(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as file:
+        for row in rows:
+            file.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def build_eval_sets(
+    raw_dir: str | Path,
+    out_dir: str | Path,
+    seed: int = 42,
+    sizes: dict[str, tuple[int, int]] | None = None,
+    curia_size: int = 500,
+) -> dict[str, Any]:
+    raw, out = Path(raw_dir), Path(out_dir)
+    rng = random.Random(seed)
+    sizes = sizes or {"dev": (150, 300), "test": (400, 800)}
+    bodies = load_bodies(raw)
+    positive_ids = {
+        int(r["openparldata_id"]) for r in read_csv(raw / "politmonitor_digitalisierung.csv")
+    }
+    dvs_ids = {int(r["openparldata_id"]) for r in read_csv(raw / "dvs_digitalisierung.csv")}
+    curia = {
+        row["openparldata_id"]: row
+        for row in read_ndjson(raw / "che_affairs_keywords.jsonl")
+        if row["topic_ids"]
+    }
+
+    affairs = {record["id"]: record for record in read_ndjson(raw / "affairs.ndjson.gz")}
+    positives = [affairs[i] for i in positive_ids if i in affairs]
+    positive_bodies = Counter(record["body_key"] for record in positives)
+    type_counts = Counter(record["type_harmonized_en"] for record in positives)
+    positive_types = {t for t, n in type_counts.items() if n >= MIN_TYPE_POSITIVES}
+
+    meta: dict[str, Any] = {"seed": seed, "positive_types": sorted(map(str, positive_types))}
+    chosen: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for split in SPLITS:
+        eligible = [
+            record
+            for record in affairs.values()
+            if record["body_key"] in positive_bodies
+            and record["type_harmonized_en"] in positive_types
+            and _in_split(record.get("begin_date"), split)
+            and available_languages(record)
+        ]
+        split_pos = [r for r in eligible if r["id"] in positive_ids]
+        split_neg = [r for r in eligible if r["id"] not in positive_ids]
+        n_pos, n_neg = sizes[split]
+        sample_pos = rng.sample(split_pos, min(n_pos, len(split_pos)))
+        # Negatives per parliament in proportion to its positives, so the parliament alone
+        # does not reveal the label.
+        neg_by_body = defaultdict(list)
+        for record in split_neg:
+            neg_by_body[record["body_key"]].append(record)
+        pos_by_body = Counter(r["body_key"] for r in sample_pos)
+        sample_neg = []
+        for body_key, count in pos_by_body.items():
+            quota = round(n_neg * count / len(sample_pos))
+            pool = neg_by_body[body_key]
+            sample_neg.extend(rng.sample(pool, min(quota, len(pool))))
+        chosen[split] = {"pos": sample_pos, "neg": sample_neg}
+        meta[f"e1_{split}"] = {
+            "eligible": len(eligible),
+            "eligible_positives": len(split_pos),
+            "prevalence": round(len(split_pos) / len(eligible), 4) if eligible else None,
+            "positives": len(sample_pos),
+            "negatives": len(sample_neg),
+        }
+
+    curia_test = [
+        affairs[i]
+        for i in curia
+        if i in affairs and _in_split(affairs[i].get("begin_date"), "test")
+    ]
+    curia_sample = rng.sample(curia_test, min(curia_size, len(curia_test)))
+    dvs = [affairs[i] for i in dvs_ids if i in affairs]
+
+    che_ids = {
+        r["id"]
+        for group in [*(c["pos"] + c["neg"] for c in chosen.values()), curia_sample, dvs]
+        for r in group
+        if r["body_key"] == "CHE"
+    }
+    texts = load_che_texts(raw, che_ids)
+
+    for split, groups in chosen.items():
+        extra = {r["id"]: {"label": True, "split": split} for r in groups["pos"]}
+        extra |= {r["id"]: {"label": False, "split": split} for r in groups["neg"]}
+        rows = _rows(groups["pos"] + groups["neg"], bodies, texts, rng, extra)
+        rng.shuffle(rows)
+        _write(out / f"e1_digitalisation_{split}.jsonl", rows)
+        meta[f"e1_{split}"]["languages"] = dict(Counter(r["language"] for r in rows))
+        meta[f"e1_{split}"]["levels"] = dict(Counter(r["level"] for r in rows))
+
+    curia_extra = {
+        i: {
+            "labels": [str(t) for t in curia[i]["topic_ids"]],
+            "label_names": curia[i]["topics_de"],
+            "split": "test",
+        }
+        for i in (r["id"] for r in curia_sample)
+    }
+    curia_rows = _rows(curia_sample, bodies, texts, rng, curia_extra)
+    _write(out / "e2_curia_test.jsonl", curia_rows)
+    meta["e2_test"] = {
+        "affairs": len(curia_rows),
+        "languages": dict(Counter(r["language"] for r in curia_rows)),
+        "labels_per_affair": round(sum(len(r["labels"]) for r in curia_rows) / len(curia_rows), 2),
+    }
+
+    dvs_rows = _rows(
+        dvs, bodies, texts, rng, {r["id"]: {"label": True, "split": "dvs"} for r in dvs}
+    )
+    _write(out / "e4_dvs.jsonl", dvs_rows)
+    meta["e4_dvs"] = {
+        "affairs": len(dvs_rows),
+        "levels": dict(Counter(r["level"] for r in dvs_rows)),
+    }
+
+    (out / "meta.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+    return meta

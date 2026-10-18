@@ -31,5 +31,7 @@ build/
 # Runtime outputs and local datasets
 data/*.db
 data/cache/
+data/raw/
+data/processed/
 results/*
 !results/.gitkeep

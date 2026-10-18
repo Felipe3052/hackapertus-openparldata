@@ -1,0 +1,66 @@
+{
+  "seed": 42,
+  "positive_types": [
+    "Consultation",
+    "Government affairs",
+    "Interpellation",
+    "Motion",
+    "None",
+    "Parliamentary initiative",
+    "Petition",
+    "Postulate",
+    "Question",
+    "Question time",
+    "Report"
+  ],
+  "e1_dev": {
+    "eligible": 72741,
+    "eligible_positives": 2487,
+    "prevalence": 0.0342,
+    "positives": 150,
+    "negatives": 300,
+    "languages": {
+      "it": 81,
+      "de": 276,
+      "fr": 93
+    },
+    "levels": {
+      "federal": 183,
+      "cantonal": 264,
+      "municipal": 3
+    }
+  },
+  "e1_test": {
+    "eligible": 37258,
+    "eligible_positives": 853,
+    "prevalence": 0.0229,
+    "positives": 400,
+    "negatives": 800,
+    "languages": {
+      "fr": 325,
+      "de": 670,
+      "it": 205
+    },
+    "levels": {
+      "cantonal": 609,
+      "federal": 585,
+      "municipal": 6
+    }
+  },
+  "e2_test": {
+    "affairs": 500,
+    "languages": {
+      "fr": 153,
+      "it": 195,
+      "de": 152
+    },
+    "labels_per_affair": 2.48
+  },
+  "e4_dvs": {
+    "affairs": 30,
+    "levels": {
+      "cantonal": 25,
+      "federal": 5
+    }
+  }
+}

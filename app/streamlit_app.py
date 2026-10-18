@@ -31,7 +31,8 @@ if st.button("Mit Apertus klassifizieren", type="primary", disabled=not title or
         synonyms=[item.strip() for item in synonyms.split(",") if item.strip()],
     )
     with st.spinner("Apertus analysiert relevante Passagen …"):
-        result = ClassificationService(get_settings()).classify(affair, topic)
+        with ClassificationService(get_settings()) as service:
+            result = service.classify(affair, topic)
     if result.error:
         st.error(result.error)
     else:

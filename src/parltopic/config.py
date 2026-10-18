@@ -1,6 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +15,10 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 60.0
     llm_max_retries: int = 2
     llm_retry_backoff_seconds: float = 0.5
+    llm_connection_reuse: bool = True
+    llm_requests_per_minute: float = Field(default=30, ge=0, allow_inf_nan=False)
+    # Batch 3/5 failed paired quality/coverage checks; only the research runner permits them.
+    llm_batch_size: Literal[1] = 1
     openparldata_base_url: str = "https://api.openparldata.ch"
     data_dir: Path = Path("data")
     database_path: Path = Path("data/parltopic.db")

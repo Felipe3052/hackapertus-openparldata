@@ -37,6 +37,8 @@ suggestions is a tagged affair (keyword search: the same ratio at 63 % of our re
 a suggestion list for editors to review. Configuration and prompts were chosen on a separate
 2018–2023 split; see the [technical report](technical_report.md) for the protocol, the ablations,
 the bias check and costs.
+Further documentation: [performance and scale measurements](docs/performance.md) ([methodology](docs/performance_methodology.md)),
+the [independent evaluation audit](docs/evaluation_audit.md) and the [evaluation protocol](docs/evaluation_protocol.md).
 
 ---
 
@@ -166,6 +168,8 @@ technical_report.md     Hackathon technical report
 | `CLASSIFIER_PROMPT_VERSION` | Prompt version (`topic-v2`) |
 | `KEYWORD_RESCUE_ENABLED` | Multilingual term rule on or off |
 | `KEYWORD_DOCUMENT_GATE_ENABLED` | Term rule also inside attached documents |
+| `LLM_REQUESTS_PER_MINUTE` | Process-local request limit (default 30; 0 disables) |
+| `LLM_CONNECTION_REUSE` | Reuse pooled HTTP connections (default on) |
 
 All settings and defaults are listed in [.env.example](.env.example).
 

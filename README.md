@@ -23,23 +23,29 @@ by hand, based on the PolitMonitor editorial tag. Model: `swiss-ai/Apertus-v1.5-
 
 | Evaluation set | Keyword search | **ParlTopic** | Notes |
 |---|---:|---:|---|
-| Digitalisation, 1,200 affairs 2024–2026, F1 | 0.674 | **0.876** | precision 0.875, recall 0.877 |
+| Digitalisation, 1,200 affairs 2024–2026, positive-class F1 | 0.674 | **0.876** | positive-class precision 0.875, recall 0.877; Macro-F1 0.907 |
 | … F1 German / French / Italian | 0.64 / 0.68 / 0.76 | **0.90 / 0.85 / 0.85** | official translations of federal affairs |
 | Current DVS list (30 affairs), found | 19 | **27** | federal and cantonal |
-| Ad-hoc topic *migration*, F1 | 0.717 | **0.874** | topic written once, no tuning; |
-| Ad-hoc topic *health*, F1 | 0.571 | **0.805** | scored against the Federal Assembly's |
-| Ad-hoc topic *transport*, F1 | 0.545 | **0.784** | official subject areas (500 affairs) |
+| Ad-hoc topic *migration*, F1 | 0.717 | **0.874** | exploratory; scored against Curia Vista subject labels |
+| Ad-hoc topic *health*, F1 | 0.571 | **0.805** | exploratory; scored against Curia Vista subject labels |
+| Ad-hoc topic *transport*, F1 | 0.545 | **0.784** | exploratory; scored against Curia Vista subject labels |
 
 Keyword search uses the same multilingual terms as the topic file. The digitalisation labels are
 editorial tags without checked negatives, so precision is a proxy estimate that may miss label gaps.
-The sample is one third
-positive; in the whole corpus only 2.3 % of the affairs are tagged, so about one in four
-suggestions is a tagged affair (keyword search: the same ratio at 63 % of our recall). ParlTopic is
-a suggestion list for editors to review. Configuration and prompts were chosen on a separate
-2018–2023 split; see the [technical report](technical_report.md) for the protocol, the ablations,
-the bias check and costs.
+The sample is one third positive; in the whole corpus only 2.3 % of the affairs are tagged. At
+that base rate, the measured recall and the observed false-positive rate imply an estimated
+precision of about one in four suggestions; this is a base-rate projection, not a directly
+adjudicated production precision. ParlTopic is a suggestion list for editors to review.
+Configuration and prompts were chosen on a separate 2018–2023 split; see the
+[technical report](technical_report.md) for the protocol, the ablations, the bias check and costs.
 Further documentation: [performance and scale measurements](docs/performance.md) ([methodology](docs/performance_methodology.md)),
 the [independent evaluation audit](docs/evaluation_audit.md) and the [evaluation protocol](docs/evaluation_protocol.md).
+
+The 1,200-affair set is an opened validation benchmark rather than a sealed final holdout.
+DVS contains positive editorial tags but no fully adjudicated negative set, so its 27/30 result
+is a discovery rate, not a precision estimate. The ad-hoc topic results use Curia Vista labels
+and are not APS model evaluations. The 300,000-affair runtime is documented as a projection;
+no full-corpus run was executed.
 
 ---
 

@@ -174,8 +174,8 @@ def prepare(args):
 def run(args):
     root = args.run_dir
     with run_lock(root):
-        manifest = json.loads((root / "manifest.json").read_text())
-        baseline = json.loads((root / "baseline.json").read_text())
+        manifest = json.loads((root / "manifest.json").read_text("utf-8"))
+        baseline = json.loads((root / "baseline.json").read_text("utf-8"))
         settings = get_settings()
         topic = load_topic("configs/topics/digitalisation.yaml")
         expected = _run_manifest(Path(manifest["parent"]) / "panel.jsonl", topic, settings)
@@ -248,8 +248,8 @@ def run(args):
 
 def summarize(args):
     root = args.run_dir
-    manifest = json.loads((root / "manifest.json").read_text())
-    baseline = json.loads((root / "baseline.json").read_text())
+    manifest = json.loads((root / "manifest.json").read_text("utf-8"))
+    baseline = json.loads((root / "baseline.json").read_text("utf-8"))
     responses, attempts = read_rows(root / "responses.jsonl"), read_rows(root / "attempts.jsonl")
     panel = read_rows(root / "panel.jsonl")
     report = {"manifest": manifest, "historical_quality": baseline["quality"],
@@ -277,7 +277,8 @@ def summarize(args):
         tried = [r for r in attempts if r["variant"] == size]
         tokens = {key: sum(r.get("usage", {}).get(key, 0) or 0 for r in used)
                   for key in ("prompt_tokens", "completion_tokens")}
-        elapsed = json.loads((root / f"batch{size}.runtime.json").read_text())["wall_seconds"]
+        runtime_path = root / f"batch{size}.runtime.json"
+        elapsed = json.loads(runtime_path.read_text("utf-8"))["wall_seconds"]
         report["variants"][str(size)] = {
             "n": len(rows), "quality": metrics, "wall_seconds": elapsed,
             "quality_scope": "Decisive cases only; always assess with coverage on fixed panel",
@@ -340,7 +341,7 @@ def summarize(args):
 
 def verify_refactor(args):
     """API-free equivalence of original and refactored flow, using recorded model decisions."""
-    reference = json.loads((args.parent / "manifest.json").read_text())["commit"]
+    reference = json.loads((args.parent / "manifest.json").read_text("utf-8"))["commit"]
     source = subprocess.check_output(
         ["git", "show", f"{reference}:src/parltopic/classification/service.py"], text=True
     )
@@ -350,7 +351,7 @@ def verify_refactor(args):
     dataset = Path("data/eval/e1_digitalisation_dev.jsonl")
     recorded = Path("results/hybrid_v3_actual_dev450.jsonl")
     decisions = {r["affair_id"]: r for r in read_rows(recorded)}
-    manifest = json.loads(recorded.with_suffix(".jsonl.manifest.json").read_text())
+    manifest = json.loads(recorded.with_suffix(".jsonl.manifest.json").read_text("utf-8"))
     settings = Settings(_env_file=None, **manifest["settings"])
     topic = load_topic("configs/topics/digitalisation.yaml")
 

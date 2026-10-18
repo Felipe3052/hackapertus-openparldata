@@ -312,7 +312,7 @@ def execute_phase(root, name, rows, workers, settings, topic, probe):
 def run(args):
     root = args.run_dir
     with run_lock(root):
-        manifest = json.loads((root / "manifest.json").read_text())
+        manifest = json.loads((root / "manifest.json").read_text("utf-8"))
         settings = historical_settings()
         topic = load_topic(manifest["topic_path"])
         current = _run_manifest(manifest["source_path"], topic, settings)
@@ -336,7 +336,7 @@ def run(args):
         smoke_ids = {r["affair_id"] for r in smoke}
         probe = Probe(root, manifest["requests_per_minute_cap"], args.phase == "smoke")
         if args.phase == "complete":
-            status = json.loads((root / "smoke.runtime.json").read_text())
+            status = json.loads((root / "smoke.runtime.json").read_text("utf-8"))
             if status["stopped"] or status["completed"] != len(smoke):
                 raise ValueError("Smoke test did not pass; do not spend more calls")
         with patch("parltopic.classification.apertus_client.httpx.post", probe.post):
@@ -370,7 +370,7 @@ def calibrate(args):
     """Small live check of corrected observer, sharing the original <=100-call ledger."""
     root = args.run_dir
     with run_lock(root):
-        manifest = json.loads((root / "manifest.json").read_text())
+        manifest = json.loads((root / "manifest.json").read_text("utf-8"))
         if digest(root / "instrumentation-v1.py") != manifest["instrumentation_sha256"]:
             raise ValueError("Original instrumentation archive is required")
         settings = historical_settings()
@@ -381,7 +381,7 @@ def calibrate(args):
         if digest(root / "panel.jsonl") != manifest["panel_sha256"]:
             raise ValueError("Original panel changed")
         for phase in ("smoke", "sequential", "parallel"):
-            status = json.loads((root / f"{phase}.runtime.json").read_text())
+            status = json.loads((root / f"{phase}.runtime.json").read_text("utf-8"))
             if status["stopped"] or status["completed"] != status["expected"]:
                 raise ValueError("Original measurement is incomplete")
         eligible = sorted([r for r in read_rows(root / "panel.jsonl")
@@ -409,12 +409,12 @@ def calibrate(args):
 
 def summarize(args):
     root = args.run_dir
-    manifest = json.loads((root / "manifest.json").read_text())
+    manifest = json.loads((root / "manifest.json").read_text("utf-8"))
     rows, runtimes = [], []
     for phase in ("smoke", "sequential", "parallel"):
         if (root / f"{phase}.runtime.json").exists():
             rows.extend(read_rows(root / f"{phase}.jsonl"))
-            runtimes.append(json.loads((root / f"{phase}.runtime.json").read_text()))
+            runtimes.append(json.loads((root / f"{phase}.runtime.json").read_text("utf-8")))
     if len({r["affair_id"] for r in rows}) != len(rows):
         raise ValueError("Duplicate measurements")
     responses = read_rows(root / "responses.jsonl")
@@ -468,9 +468,9 @@ def summarize(args):
     result["http_statuses"] = dict(Counter(str(r["status_code"]) for r in responses))
     if (root / "calibration.runtime.json").exists():
         calibration = read_rows(root / "calibration.jsonl")
-        calibration_runtime = json.loads((root / "calibration.runtime.json").read_text())
+        calibration_runtime = json.loads((root / "calibration.runtime.json").read_text("utf-8"))
         result["calibration"] = {
-            "manifest": json.loads((root / "calibration.manifest.json").read_text()),
+            "manifest": json.loads((root / "calibration.manifest.json").read_text("utf-8")),
             "runtime": calibration_runtime,
             "n": len(calibration),
             "status_counts": dict(Counter(r["result"]["status"] for r in calibration)),

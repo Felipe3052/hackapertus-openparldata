@@ -185,6 +185,25 @@ def score(
     typer.echo(json.dumps(score_results(eval_set, results), indent=2))
 
 
+@app.command()
+def claims(root: Annotated[Path, typer.Option()] = Path(".")) -> None:
+    """Recompute every number stated in README and report from the prediction files."""
+    from parltopic.evaluation.claims import check, describe
+
+    report = check(root)
+    typer.echo(describe(report))
+    if not report["all_ok"]:
+        raise typer.Exit(1)
+
+
+@app.command("fetch-results")
+def fetch_results(root: Annotated[Path, typer.Option()] = Path(".")) -> None:
+    """Download the published prediction files (GitHub release) into results/."""
+    from parltopic.evaluation.claims import fetch_results as fetch
+
+    typer.echo(f"{len(fetch(root))} files unpacked under results/")
+
+
 @app.command("compare-runs")
 def compare_run_outputs(
     eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],

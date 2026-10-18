@@ -36,4 +36,4 @@ def test_runner_retains_per_affair_topics_and_closes_shared_service(tmp_path, mo
         topic_for=lambda affair: topic.model_copy(update={"topic_id": "per-affair"}),
     )
     assert events == ["created", ("1", "per-affair"), "closed"]
-    assert json.loads(output.read_text())["topic_id"] == "per-affair"
+    assert json.loads(output.read_text("utf-8"))["topic_id"] == "per-affair"

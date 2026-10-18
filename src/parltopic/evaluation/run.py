@@ -77,7 +77,7 @@ def run_classifier(
     if existing:
         if not manifest_path.exists():
             raise ValueError("Existing results have no provenance manifest; use a new output path")
-        if json.loads(manifest_path.read_text(encoding="utf-8")) != manifest:
+        if json.loads(manifest_path.read_text("utf-8")) != manifest:
             raise ValueError("Run inputs changed; use a new output path to avoid mixing results")
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     if retry_failed:
@@ -265,7 +265,7 @@ def _deployment_prevalence(eval_path: str | Path) -> float | None:
     split = "test" if name.endswith("_test") else "dev" if name.endswith("_dev") else None
     if split is None or not name.startswith("e1_digitalisation_"):
         return None
-    metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+    metadata = json.loads(meta_path.read_text("utf-8"))
     prevalence = metadata.get(f"e1_{split}", {}).get("prevalence")
     return float(prevalence) if prevalence is not None else None
 

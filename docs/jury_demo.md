@@ -31,12 +31,17 @@ Das ist ein bereits verwendeter Entwicklungsdatensatz mit PolitMonitor-Proxynega
 kein unabhängiger Qualitätsnachweis. Die Zahlen gehören zu `hybrid_v3_actual_dev450.jsonl`
 und dessen Manifest, nicht zur späteren Themenkonfiguration aus PR #4.
 
-**Wichtiger Reproduzierbarkeitsbefund:** Die lokale Datei `hybrid_v3_validation1200.jsonl`
-enthält nur 57 Vorhersagen für 1’200 erwartete Affairs (4,75 % Coverage).
-Die selektive Macro-F1 von 0,9415 ist deshalb kein Beleg für die vollständige Testqualität.
-Die vollständigen im README gemeldeten PR-#4-Ergebnisse (F1 0,876, DVS 27/30,
-Ad-hoc F1 0,78–0,87) lassen sich aus den hier vorhandenen Vorhersagen nicht nachrechnen.
-Sie bleiben als dokumentierte historische Ergebnisse kenntlich; diese Ergänzung bestätigt sie nicht.
+**Vollständige Ergebnisse veröffentlicht und unabhängig nachgerechnet.** Alle Vorhersagedateien
+hinter README und technischem Bericht liegen im GitHub-Release
+[`results-2026-10-18`](https://github.com/Felipe3052/hackapertus-openparldata/releases/tag/results-2026-10-18)
+(30 Dateien inkl. Manifesten). `parltopic fetch-results` lädt sie nach `results/`,
+`parltopic claims` rechnet jede genannte Zahl nach (41 Aussagen, alle bestätigt). Der Prüfer
+`jury.py` bestätigt den eingefrorenen Testlauf (`results/ma_test.jsonl`) unabhängig:
+1’200 erwartet, 1’193 entschieden (Coverage 99,4 %), TP=349, FP=50, FN=49, TN=745,
+positive F1 0,876, Macro-F1 0,907.
+
+Die frühere lokale Datei `hybrid_v3_validation1200.jsonl` war ein abgebrochener Teillauf
+(57 von 1’200 Vorhersagen) und wird für keine Aussage verwendet.
 
 Aggregate mit Hashes, Gruppenmetriken, Konfusion, Coverage, Token und Originalmanifest:
 
@@ -57,9 +62,8 @@ Reproduktion im Projektordner (neue Ausgabepfade verwenden; vorhandene Dateien w
   --output results/jury-validation-reproduced.json
 ```
 
-Die Vorhersagedateien sind lokal vorhanden und Git-ignoriert. Ein frischer Clone benötigt das
-entsprechende Ergebnisarchiv vom Team. Die eingecheckten Aggregate allein ersetzen diese
-Eingaben nicht. Das CLI führt ausschliesslich Offline-Berechnungen aus.
+Ein frischer Clone holt die Vorhersagedateien mit `parltopic fetch-results` aus dem Release.
+Das CLI führt ausschliesslich Offline-Berechnungen aus.
 
 ## DVS und APS
 

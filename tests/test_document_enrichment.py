@@ -30,7 +30,7 @@ def test_enrichment_paginates_caches_and_preserves_labels_and_order(tmp_path: Pa
     source.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
     client = FakeClient()
     report = enrich_dataset(source, output, client, tmp_path / "cache", workers=1)
-    enriched = [json.loads(line) for line in output.read_text().splitlines()]
+    enriched = [json.loads(line) for line in output.read_text("utf-8").splitlines()]
     assert client.offsets == [0, 1]
     assert report["counts"] == {"enriched": 1, "already_has_text": 1}
     assert len(enriched[0]["documents"]) == 2
@@ -39,7 +39,7 @@ def test_enrichment_paginates_caches_and_preserves_labels_and_order(tmp_path: Pa
     assert enriched[0]["documents"][0]["text"] == "Software security"
     enrich_dataset(source, output, client, tmp_path / "cache", workers=1)
     assert client.offsets == [0, 1]
-    assert source.read_text().count("documents") == 0
+    assert source.read_text("utf-8").count("documents") == 0
 
 
 def test_document_language_and_empty_text_filters() -> None:

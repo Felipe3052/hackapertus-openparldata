@@ -1,0 +1,1476 @@
+{
+  "api_calls": 0,
+  "variants": {
+    "1": {
+      "expected": 30,
+      "received": 30,
+      "decisive": 30,
+      "coverage": 1.0,
+      "status_counts": {
+        "not_assigned": 22,
+        "assigned": 8
+      },
+      "metrics": {
+        "n": 30,
+        "tp": 8,
+        "fp": 0,
+        "fn": 2,
+        "tn": 20,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            20,
+            0
+          ],
+          [
+            2,
+            8
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9090909090909091,
+            "recall": 1.0,
+            "f1": 0.9523809523809523,
+            "support": 20
+          },
+          "positive": {
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "support": 10
+          },
+          "macro": {
+            "precision": 0.9545454545454546,
+            "recall": 0.9,
+            "f1": 0.9206349206349206,
+            "support": 30
+          },
+          "weighted": {
+            "precision": 0.9393939393939393,
+            "recall": 0.9333333333333333,
+            "f1": 0.9312169312169313,
+            "support": 30
+          },
+          "micro": {
+            "precision": 0.9333333333333333,
+            "recall": 0.9333333333333333,
+            "f1": 0.9333333333333333
+          },
+          "accuracy": 0.9333333333333333
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "cases": [
+        {
+          "affair_id": "271839",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Änderung der Verordnung zum Einführungsgesetz zum Gewässerschutzgesetz",
+          "date": "2022-06-14",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "63038",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "fr",
+          "title": "Fin des listes cantonales d'interventions qui doivent être menées en ambulatoire?",
+          "date": "2018-12-14",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 2284,
+          "document_count": 0
+        },
+        {
+          "affair_id": "155176",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Stand und Risiken klimaschädlicher Anlagen im SNB-Portfolio",
+          "date": "2019-12-20",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 1464,
+          "document_count": 0
+        },
+        {
+          "affair_id": "203164",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "fr",
+          "title": "Usage abusif d’herbicides",
+          "date": "2022-05-23",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "75349",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Klimawandel und dessen Integration in der Aus- und Weiterbildung des Lehrpersonals und der Studenten an der PHGR",
+          "date": "2022-09-03",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 168,
+          "document_count": 0
+        },
+        {
+          "affair_id": "229430",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "de",
+          "title": "Informatikunterricht an den Primar- und Sekundarschulen: Welches Ergebnis?",
+          "date": "2021-02-11",
+          "source_has_positive_tag": true,
+          "route": "rule",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "199791",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Faire Löhne für den Kanton Appenzell Ausserrhoden",
+          "date": "2021-12-06",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 81,
+          "document_count": 0
+        },
+        {
+          "affair_id": "181266",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Finanzielle Beiträge des Kantons an Babanews",
+          "date": "2023-10-30",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "68632",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "de",
+          "title": "Entwicklung und Regulierung von zivilen Drohnen in der Schweiz",
+          "date": "2022-12-16",
+          "source_has_positive_tag": true,
+          "route": "rule",
+          "body_chars": 2586,
+          "document_count": 0
+        },
+        {
+          "affair_id": "125432",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Unbefriedigende Situation bei unbesetzten Lehrstellen: Vorbildrolle des Kantons",
+          "date": "2018-09-13",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "67348",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "it",
+          "title": "Indennizzo delle vittime della tratta di esseri umani (art. 182 CP)",
+          "date": "2021-06-17",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 1800,
+          "document_count": 0
+        },
+        {
+          "affair_id": "240384",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "de",
+          "title": "Chancen und die Gefahren von generativer künstlicher Intelligenz für die Verwaltung, die Bildung und für weitere kantonale Institutionen",
+          "date": "2023-03-20",
+          "source_has_positive_tag": true,
+          "route": "llm",
+          "body_chars": 175,
+          "document_count": 0
+        },
+        {
+          "affair_id": "70149",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "fr",
+          "title": "À combien s’élèvent les dommages économiques engendrés par le déclin de la biodiversité ?",
+          "date": "2023-09-18",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 430,
+          "document_count": 0
+        },
+        {
+          "affair_id": "221249",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "de",
+          "title": "Teilrevision der Verordnung über Geoinformation im Kanton Zug",
+          "date": "2019-07-16",
+          "source_has_positive_tag": true,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "260106",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "BLKB Investition Swissquote",
+          "date": "2023-01-12",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "67783",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "it",
+          "title": "Perturbateurs endocriniens : la Confédération attend-elle de voir ce que fait l'UE ou examine-t-elle de manière proactive les substances approuvées pour les pesticides ?",
+          "date": "2021-09-15",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 499,
+          "document_count": 0
+        },
+        {
+          "affair_id": "154835",
+          "label": true,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "FN",
+          "language": "fr",
+          "title": "Titre suit",
+          "date": "2019-09-11",
+          "source_has_positive_tag": true,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "258733",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Schaffung eines Gesetzes über Pärke von nationaler Bedeutung im Kanton Schaffhausen (Kantonales Parkgesetz)",
+          "date": "2018-12-04",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "192609",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "fr",
+          "title": "Ouvrant un crédit au titre de subvention d'investissement de 3 956 000 F, pour les exercices 2018 à 2021, destiné à la digitalisation des services du système d'information au regard de l'évolution des prestations de l'institution de maintien, d'aide et de soins à domicile (imad)",
+          "date": "2018-04-26",
+          "source_has_positive_tag": true,
+          "route": "rule",
+          "body_chars": 311,
+          "document_count": 0
+        },
+        {
+          "affair_id": "87420",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "de",
+          "title": "Wie steht es um das elektronische Patientendossier?",
+          "date": "2022-11-13",
+          "source_has_positive_tag": true,
+          "route": "llm",
+          "body_chars": 131,
+          "document_count": 0
+        },
+        {
+          "affair_id": "130066",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Koppigen, Bern-Zürichstrasse 14, Gartenbauschule Oeschberg, Ersatzneubau Gewächshäuser, Heizungsersatz, betriebsspezifische Anpassungen und Umgebungsarbeiten",
+          "date": "2023-03-14",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "203517",
+          "label": true,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "FN",
+          "language": "it",
+          "title": "Tabella di marcia per un'integrazione efficiente della Svizzera nella rete ferroviaria europea ad alta velocità!",
+          "date": "2022-09-29",
+          "source_has_positive_tag": true,
+          "route": "llm",
+          "body_chars": 3195,
+          "document_count": 0
+        },
+        {
+          "affair_id": "64389",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "it",
+          "title": "Prezzi elevati per i pagamenti allo sportello",
+          "date": "2019-12-20",
+          "source_has_positive_tag": true,
+          "route": "rule",
+          "body_chars": 2459,
+          "document_count": 0
+        },
+        {
+          "affair_id": "65689",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Regionale Stellen für eine erste Hilfe für Opfer von Missbrauch und Diskriminierung am Arbeitsplatz",
+          "date": "2020-12-09",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 2372,
+          "document_count": 0
+        },
+        {
+          "affair_id": "84763",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "it",
+          "title": "DSS e mandati di prestazioni: ma non è servito a nulla il caso Argo 1?",
+          "date": "2022-10-07",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "50718",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Entschädigung für die Opfer von Impfstoff-Nebenwirkungen",
+          "date": "2023-02-15",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "69114",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Energiekrise: Gemeinsame Einkäufe wie während der Coronakrise?",
+          "date": "2022-11-29",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 446,
+          "document_count": 0
+        },
+        {
+          "affair_id": "136728",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP",
+          "language": "de",
+          "title": "Ausgabenbewilligung und Nachtragskredit zur Gegenfinanzierung der Projektkosten zur Digitalisierung einzelner wichtiger Sammlungsbestände des Naturhistorischen Museums Basel",
+          "date": "2021-11-08",
+          "source_has_positive_tag": true,
+          "route": "rule",
+          "body_chars": 0,
+          "document_count": 0
+        },
+        {
+          "affair_id": "240502",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "de",
+          "title": "Nutzung der Kinderbetreuung/Frühförderung von Kindern mit Asyl- und Flüchtlingsstatus",
+          "date": "2018-01-30",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 136,
+          "document_count": 0
+        },
+        {
+          "affair_id": "225121",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN",
+          "language": "fr",
+          "title": "Bradage des vins de la Ville de Lausanne : une concurrence déloyale assumée par l’ensemble des contribuables vaudois ?",
+          "date": "2020-10-06",
+          "source_has_positive_tag": false,
+          "route": "llm",
+          "body_chars": 151,
+          "document_count": 0
+        }
+      ]
+    },
+    "3": {
+      "expected": 30,
+      "received": 30,
+      "decisive": 25,
+      "coverage": 0.8333333333333334,
+      "status_counts": {
+        "failed": 3,
+        "not_assigned": 17,
+        "assigned": 8,
+        "not_evaluable": 2
+      },
+      "metrics": {
+        "n": 25,
+        "tp": 8,
+        "fp": 0,
+        "fn": 1,
+        "tn": 16,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            16,
+            0
+          ],
+          [
+            1,
+            8
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9411764705882353,
+            "recall": 1.0,
+            "f1": 0.9696969696969697,
+            "support": 16
+          },
+          "positive": {
+            "precision": 1.0,
+            "recall": 0.8888888888888888,
+            "f1": 0.9411764705882353,
+            "support": 9
+          },
+          "macro": {
+            "precision": 0.9705882352941176,
+            "recall": 0.9444444444444444,
+            "f1": 0.9554367201426025,
+            "support": 25
+          },
+          "weighted": {
+            "precision": 0.9623529411764706,
+            "recall": 0.96,
+            "f1": 0.9594295900178252,
+            "support": 25
+          },
+          "micro": {
+            "precision": 0.96,
+            "recall": 0.96,
+            "f1": 0.96
+          },
+          "accuracy": 0.96
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "cases": [
+        {
+          "affair_id": "271839",
+          "label": false,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "63038",
+          "label": false,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "155176",
+          "label": false,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "203164",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "75349",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "229430",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "199791",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "181266",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "68632",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "125432",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "67348",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "240384",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "70149",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "221249",
+          "label": true,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "FN"
+        },
+        {
+          "affair_id": "260106",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "67783",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "154835",
+          "label": true,
+          "status": "not_evaluable",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "258733",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "192609",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "87420",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "130066",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "203517",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "64389",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "65689",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "84763",
+          "label": false,
+          "status": "not_evaluable",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "50718",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "69114",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "136728",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "240502",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "225121",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        }
+      ]
+    },
+    "5": {
+      "expected": 30,
+      "received": 30,
+      "decisive": 24,
+      "coverage": 0.8,
+      "status_counts": {
+        "not_assigned": 17,
+        "assigned": 7,
+        "failed": 5,
+        "not_evaluable": 1
+      },
+      "metrics": {
+        "n": 24,
+        "tp": 7,
+        "fp": 0,
+        "fn": 1,
+        "tn": 16,
+        "matrix_actual_by_predicted_false_true": [
+          [
+            16,
+            0
+          ],
+          [
+            1,
+            7
+          ]
+        ],
+        "classification_report": {
+          "negative": {
+            "precision": 0.9411764705882353,
+            "recall": 1.0,
+            "f1": 0.9696969696969697,
+            "support": 16
+          },
+          "positive": {
+            "precision": 1.0,
+            "recall": 0.875,
+            "f1": 0.9333333333333333,
+            "support": 8
+          },
+          "macro": {
+            "precision": 0.9705882352941176,
+            "recall": 0.9375,
+            "f1": 0.9515151515151515,
+            "support": 24
+          },
+          "weighted": {
+            "precision": 0.9607843137254902,
+            "recall": 0.9583333333333334,
+            "f1": 0.9575757575757576,
+            "support": 24
+          },
+          "micro": {
+            "precision": 0.9583333333333334,
+            "recall": 0.9583333333333334,
+            "f1": 0.9583333333333334
+          },
+          "accuracy": 0.9583333333333334
+        },
+        "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+        "undefined": []
+      },
+      "cases": [
+        {
+          "affair_id": "271839",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "63038",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "155176",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "203164",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "75349",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "229430",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "199791",
+          "label": false,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "181266",
+          "label": false,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "68632",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "125432",
+          "label": false,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "67348",
+          "label": false,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "240384",
+          "label": true,
+          "status": "failed",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "70149",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "221249",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "260106",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "67783",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "154835",
+          "label": true,
+          "status": "not_evaluable",
+          "prediction": null,
+          "cell": null
+        },
+        {
+          "affair_id": "258733",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "192609",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "87420",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "130066",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "203517",
+          "label": true,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "FN"
+        },
+        {
+          "affair_id": "64389",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "65689",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "84763",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "50718",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "69114",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "136728",
+          "label": true,
+          "status": "assigned",
+          "prediction": true,
+          "cell": "TP"
+        },
+        {
+          "affair_id": "240502",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        },
+        {
+          "affair_id": "225121",
+          "label": false,
+          "status": "not_assigned",
+          "prediction": false,
+          "cell": "TN"
+        }
+      ]
+    }
+  },
+  "slices": {
+    "language=de": {
+      "n": 19,
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "tn": 13,
+      "matrix_actual_by_predicted_false_true": [
+        [
+          13,
+          0
+        ],
+        [
+          0,
+          6
+        ]
+      ],
+      "classification_report": {
+        "negative": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 13
+        },
+        "positive": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 6
+        },
+        "macro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 19
+        },
+        "weighted": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 19
+        },
+        "micro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "accuracy": 1.0
+      },
+      "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+      "undefined": []
+    },
+    "language=fr": {
+      "n": 6,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 4,
+      "matrix_actual_by_predicted_false_true": [
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "classification_report": {
+        "negative": {
+          "precision": 0.8,
+          "recall": 1.0,
+          "f1": 0.8888888888888888,
+          "support": 4
+        },
+        "positive": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "support": 2
+        },
+        "macro": {
+          "precision": 0.9,
+          "recall": 0.75,
+          "f1": 0.7777777777777777,
+          "support": 6
+        },
+        "weighted": {
+          "precision": 0.8666666666666667,
+          "recall": 0.8333333333333334,
+          "f1": 0.8148148148148148,
+          "support": 6
+        },
+        "micro": {
+          "precision": 0.8333333333333334,
+          "recall": 0.8333333333333334,
+          "f1": 0.8333333333333334
+        },
+        "accuracy": 0.8333333333333334
+      },
+      "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+      "undefined": []
+    },
+    "language=it": {
+      "n": 5,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 3,
+      "matrix_actual_by_predicted_false_true": [
+        [
+          3,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "classification_report": {
+        "negative": {
+          "precision": 0.75,
+          "recall": 1.0,
+          "f1": 0.8571428571428571,
+          "support": 3
+        },
+        "positive": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "support": 2
+        },
+        "macro": {
+          "precision": 0.875,
+          "recall": 0.75,
+          "f1": 0.7619047619047619,
+          "support": 5
+        },
+        "weighted": {
+          "precision": 0.85,
+          "recall": 0.8,
+          "f1": 0.7809523809523808,
+          "support": 5
+        },
+        "micro": {
+          "precision": 0.8,
+          "recall": 0.8,
+          "f1": 0.8
+        },
+        "accuracy": 0.8
+      },
+      "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+      "undefined": []
+    },
+    "route=rule": {
+      "n": 5,
+      "tp": 5,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "matrix_actual_by_predicted_false_true": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          5
+        ]
+      ],
+      "classification_report": {
+        "negative": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "positive": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 5
+        },
+        "macro": {
+          "precision": 0.5,
+          "recall": 0.5,
+          "f1": 0.5,
+          "support": 5
+        },
+        "weighted": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 5
+        },
+        "micro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "accuracy": 1.0
+      },
+      "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+      "undefined": [
+        "negative_precision",
+        "negative_recall"
+      ]
+    },
+    "route=llm": {
+      "n": 25,
+      "tp": 3,
+      "fp": 0,
+      "fn": 2,
+      "tn": 20,
+      "matrix_actual_by_predicted_false_true": [
+        [
+          20,
+          0
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "classification_report": {
+        "negative": {
+          "precision": 0.9090909090909091,
+          "recall": 1.0,
+          "f1": 0.9523809523809523,
+          "support": 20
+        },
+        "positive": {
+          "precision": 1.0,
+          "recall": 0.6,
+          "f1": 0.75,
+          "support": 5
+        },
+        "macro": {
+          "precision": 0.9545454545454546,
+          "recall": 0.8,
+          "f1": 0.8511904761904762,
+          "support": 25
+        },
+        "weighted": {
+          "precision": 0.9272727272727272,
+          "recall": 0.92,
+          "f1": 0.9119047619047619,
+          "support": 25
+        },
+        "micro": {
+          "precision": 0.92,
+          "recall": 0.92,
+          "f1": 0.92
+        },
+        "accuracy": 0.92
+      },
+      "zero_division_policy": "0 for undefined per-class divisions; both classes fixed",
+      "undefined": []
+    }
+  },
+  "legacy_input_validation_probes": {
+    "purpose": "Malformed-fixture diagnostics only; no real labels or predictions changed",
+    "null_label_treated_as_negative": {
+      "coverage": "1/1",
+      "all": {
+        "n": 1,
+        "positives": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "negative_f1": 1.0,
+        "macro_precision": 0.5,
+        "macro_recall": 0.5,
+        "macro_f1": 0.5,
+        "micro_f1": 1.0,
+        "accuracy": 1.0,
+        "confusion": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        }
+      }
+    },
+    "string_false_treated_as_positive": {
+      "coverage": "1/1",
+      "all": {
+        "n": 1,
+        "positives": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "negative_f1": 0.0,
+        "macro_precision": 0.5,
+        "macro_recall": 0.5,
+        "macro_f1": 0.5,
+        "micro_f1": 1.0,
+        "accuracy": 1.0,
+        "confusion": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0
+        }
+      }
+    },
+    "duplicate_gold_counted_twice": {
+      "coverage": "2/2",
+      "all": {
+        "n": 2,
+        "positives": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "negative_f1": 0.0,
+        "macro_precision": 0.5,
+        "macro_recall": 0.5,
+        "macro_f1": 0.5,
+        "micro_f1": 1.0,
+        "accuracy": 1.0,
+        "confusion": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0
+        }
+      }
+    },
+    "foreign_prediction_silently_ignored": {
+      "coverage": "0/1",
+      "all": null
+    },
+    "unknown_status_accepted_by_validator": true
+  },
+  "published_score_checks": {
+    "1": {
+      "macro_f1": true,
+      "positive_precision": true,
+      "positive_recall": true,
+      "coverage": true
+    },
+    "3": {
+      "macro_f1": true,
+      "positive_precision": true,
+      "positive_recall": true,
+      "coverage": true
+    },
+    "5": {
+      "macro_f1": true,
+      "positive_precision": true,
+      "positive_recall": true,
+      "coverage": true
+    }
+  },
+  "source_label_check": {
+    "tag_rows": 3433,
+    "unique_tagged_ids": 3433,
+    "positive_labels": 10,
+    "negative_proxy_labels": 20,
+    "panel_label_membership_mismatches": []
+  },
+  "overlap": {
+    "nested_parent100": 30,
+    "nested_dev450": 30,
+    "panel_vs_temporal1200_ids": [],
+    "dev450_vs_temporal1200_ids": [],
+    "exact_titles_dev450_vs_temporal1200": [],
+    "exact_titles_within_dev450": [],
+    "exact_titles_within_temporal1200": [
+      [
+        "334638",
+        "334635"
+      ],
+      [
+        "334842",
+        "334845"
+      ],
+      [
+        "246277",
+        "246479"
+      ]
+    ],
+    "linear_split_ids": {
+      "train": [],
+      "calibration": [],
+      "validation": []
+    },
+    "linear_split_translated_title_matches": [],
+    "exact_title_within30": [],
+    "exact_fulltext_within30": [],
+    "exact_body_within30": [],
+    "exact_titles_panel_vs_other_dev": [],
+    "exact_titles_panel_vs_temporal": [],
+    "near_titles_within30": [],
+    "near_titles_panel_vs_other_dev": [],
+    "near_titles_panel_vs_temporal": [
+      {
+        "left": "240384",
+        "right": "203605",
+        "ratio": 0.9333333333333333,
+        "left_title": "Chancen und die Gefahren von generativer künstlicher Intelligenz für die Verwaltung, die Bildung und für weitere kantonale Institutionen",
+        "right_title": "Chancen von generativer künstlicher Intelligenz für die Verwaltung, die Bildung und für weitere kantonale Institutionen",
+        "left_date": "2023-03-20",
+        "right_date": "2024-01-25",
+        "left_parliament": "LU",
+        "right_parliament": "NW"
+      }
+    ]
+  },
+  "wilson95_conditional_on_proxy_labels": {
+    "positive_precision": [
+      0.6755924351161198,
+      1
+    ],
+    "positive_recall": [
+      0.49016247153664183,
+      0.9433178485456247
+    ],
+    "accuracy": [
+      0.7867654163738308,
+      0.9815229762087295
+    ]
+  },
+  "source_sha256": {
+    "data/eval/e1_digitalisation_dev.jsonl": "5fb54735bc2d51045dbde3209004172987081e64870e81322118c853d682237b",
+    "data/eval/e1_digitalisation_test.jsonl": "2d8bf073d129a6ac72f0abb5f9679d059053707196299bcfb837e1e7e61e8951",
+    "data/raw/politmonitor_digitalisierung.csv": "3413c065e1aba4012a48776242ab234d3e201af6ba225da09b80b2495a0c3a3a",
+    "results/linear_baseline_v1/report.json": "eb980fe1a13c944d964c5ae7fa9957d230c425ad496d7c17d1e5ac516264d3d1",
+    "data/eval/meta.json": "d731f819473f6bb335ff4e1885a85152ebfa41458668ebb3fa0a187bd2114d09",
+    "/Users/josipjukic/hackapertus-openparldata/src/parltopic/evaluation/audit.py": "fca326afcee17563ee2bc37ba61fa4d32ee19c40ee457876f7bd77c75af6a171",
+    "results/batching-20261018/panel.jsonl": "3f62e064416733b14433d494773d56868cb801a0ac65ce8d95451043697ee26c",
+    "results/batching-20261018/batch1.jsonl": "00bcca796e63f8e53806085d73617c01519f89481be78dae48869b0215cebf57",
+    "results/batching-20261018/batch3.jsonl": "de944c759f50bbabb8422b5f99c9e05141b355e8ea6e298c96747f607a3ee4aa",
+    "results/batching-20261018/batch5.jsonl": "c8b0b0034e284a1b64c18a675cdad93ebc543d1d8ffe80d70ee9cdafc1f6bcc5",
+    "results/batching-20261018/manifest.json": "5e3a31c344eebbbcae22fff3674bde18486cbf22ab42392db1636b2aac28a2be",
+    "docs/results/batching-20261018-summary.json": "ea9e7d327091423a87c599f12b8b24e373ebde60123b64f118c4c2a4ba0dbbb8",
+    "data/raw/affairs.ndjson.gz": "fafacbd3bf230d3e884a25e1ab9f8b2818ec1227f8c7fa6f2b872b3beac29092"
+  }
+}

@@ -38,7 +38,7 @@ taxonomy version, context policy, segment counts and approximate token counts. I
 is found, the full context is retained and the result records the fallback reason.
 
 On the checked-in E1 digitalisation validation file (1,200 affairs), the shadow run with five
-context segments routed 577 affairs and fell back for 623. The approximate token reduction was
+context segments routed 1,131 affairs and fell back for 69. The approximate token reduction was
 0 % because the available affairs are short enough to fit within five selected segments. This is
 an observed offline result without Apertus calls, not evidence of a latency improvement. Use
 `--max-segments 2` or a long-text export for a controlled compression experiment, then compare
@@ -120,8 +120,8 @@ parltopic aps-benchmark \
 
 This compares identical Affairs with the same topic and retrieval implementation. It measures
 whitespace token approximations offline. On the checked-in E1 file with `max-segments 2`, the
-baseline context is approximately 152,141 tokens and the APS context approximately 111,197
-tokens, a 26.9 % reduction. This does not claim an Apertus latency or quality gain.
+baseline context is approximately 152,141 tokens and the APS context approximately 90,604
+tokens, a 40.4 % reduction. This does not claim an Apertus latency or quality gain.
 
 A controlled live smoke test used one German, one French and one Italian affair, each with a
 baseline and APS-context call to the same Apertus endpoint. All three paired statuses were

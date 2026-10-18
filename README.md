@@ -53,6 +53,11 @@ OpenParlData API / export
 See [docs/architecture.md](docs/architecture.md) and [technical_report.md](technical_report.md) for boundaries, decisions, and the production-oriented target design.
 Current development metrics and their limitations are recorded in
 [docs/benchmark.md](docs/benchmark.md).
+Comparisons against the pinned current main baseline, acceptance rules and measured usage are
+recorded in [docs/experiments.md](docs/experiments.md).
+An optional chronological, title-only TF-IDF baseline is available with
+`pip install -e '.[experiments]'` and
+`python -m parltopic.evaluation.linear_baseline --help`.
 
 ## Quick start
 
@@ -129,8 +134,25 @@ parltopic build-eval --raw-dir data/raw --out-dir data/processed/eval
 ```
 
 Join files using `openparldata_id`; bulk affair exports use `id` for the same identifier.
+For federal text ingestion, an available `data/raw/texts_CHE.ndjson.gz` is preferred. Its
+`affair_id` joins to `affairs.id`; the hackathon `che_affair_texts.ndjson.gz` schema remains a
+fallback using `openparldata_id`. Both are normalized to submitted text, reasoning and lead
+in a stable order before chunking. Existing evaluation files are not rewritten automatically.
 PolitMonitor and DVS lists contain positive examples only. The APS workbook defines the
 target hierarchy; these affairs do not have APS ground-truth labels.
+
+Add original document text to affairs that currently contain only a title:
+
+```bash
+parltopic enrich-documents \
+  --input data/eval/e1_digitalisation_dev.jsonl \
+  --output data/processed/enriched/e1_digitalisation_dev.jsonl
+```
+
+This preserves labels and order, caches API responses under `data/cache/documents`, and
+retains each document's ID and source URL. Explicitly different-language documents are skipped.
+The output is a separate contemporary snapshot; documents may postdate the affair's opening
+date, so results must not be presented as predictions made at that historical date.
 
 ## Repository structure
 

@@ -12,6 +12,7 @@ class BinaryMetrics:
     macro_precision: float
     macro_recall: float
     macro_f1: float
+    micro_f1: float
     accuracy: float
     count: int
     true_positive: int
@@ -56,6 +57,7 @@ def binary_metrics(expected: list[bool], predicted: list[bool]) -> BinaryMetrics
         macro_precision=macro_precision,
         macro_recall=macro_recall,
         macro_f1=macro_f1,
+        micro_f1=accuracy,
         accuracy=accuracy,
         count=len(expected),
         true_positive=true_positive,

@@ -52,8 +52,9 @@ The repository includes frozen E1 development and opened-validation data derived
 
 ## 5. Evaluation
 
-The current development result for hybrid-v3 with Apertus 70B is precision `0.931`, recall
-`0.813`, positive F1 `0.868`, and macro-F1 `0.904` on 450 examples. The keyword-only baseline
+The current full-inference development result for hybrid-v3 with Apertus 70B is precision
+`0.932`, recall `0.820`, positive F1 `0.872`, and macro-F1 `0.907` on all 450 examples.
+The keyword-only baseline
 has macro-F1 `0.733`. These are development figures; `docs/benchmark.md` records paired
 comparisons and uncertainty. Evaluation includes:
 

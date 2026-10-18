@@ -39,3 +39,51 @@ parltopic compare-runs \
 The production candidate is a cascade: exact configured multilingual terms are assigned by a
 deterministic rule, and only non-matches are sent through retrieval and Apertus. This rule must
 be evaluated as part of the complete classifier policy, not as an isolated model score.
+
+## Run provenance and selection bias
+
+New `run-eval` outputs have a sibling `.jsonl.manifest.json` file. It captures the dataset hash,
+full topic definition, system prompt, relevant inference/retrieval settings and source hashes.
+Resuming an output with different inputs is rejected; historical outputs without a manifest
+must be scored separately or replaced by a fresh run at a different output path.
+
+The v3 replay reused v2 model responses while changing deterministic rules. Additional topic
+examples also changed, so its replay score does not prove the current end-to-end configuration's
+performance. That configuration requires a new full inference run.
+
+Bootstrap intervals on this development set are conditional on the selected rules and examples.
+Because those rules were chosen after inspecting the same labels, the intervals do not account
+for model-selection bias. The reported fraction of bootstrap deltas above zero is a resampling
+frequency, not a posterior probability that the candidate is better in production.
+
+## Federal text source compatibility
+
+The normalizer accepts both the general `texts_CHE.ndjson.gz` export (`affair_id`) and the
+hackathon text file (`openparldata_id`). It prefers the general export if present and orders
+submitted text before reasoning and lead, with stable text-ID ordering within each type.
+The two local snapshots yielded identical normalized content for all 183 federal development
+affairs after this ordering rule (174 had usable text). Four affairs previously differed only
+in paragraph order. Future `build-eval` metadata records the chosen source and ordering rule;
+the checked-in evaluation sets and existing benchmark results remain unchanged.
+
+## Frozen temporal validation run
+
+The chosen hybrid-v3 policy is evaluated unchanged on all 1,200 existing E1 affairs from
+2024–2026. The result path is `results/hybrid_v3_validation1200.jsonl`; the sibling manifest
+freezes topic, prompt, dataset, model and implementation inputs. This benchmark was opened
+earlier, so it remains temporal validation rather than a sealed final holdout. Its results
+must not be used to select subsequent prompt or threshold changes.
+
+To report uncertainty after the run:
+
+```bash
+parltopic score-confidence \
+  --eval-set data/eval/e1_digitalisation_test.jsonl \
+  --results results/hybrid_v3_validation1200.jsonl --samples 5000
+```
+
+This command resamples within each proxy-label class, preserving the case-control sample ratio.
+It reports percentile intervals for precision, recall, positive F1 and macro-F1, together with
+coverage. Missing, failed and abstained predictions are excluded from selective metrics and
+remain visible in the coverage count. The intervals condition on the supplied proxy labels and
+do not include label uncertainty, source-family correlation or changes in class prevalence.

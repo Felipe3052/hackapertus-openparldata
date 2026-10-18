@@ -105,6 +105,11 @@ def build_eval_sets(
         ),
         "label_semantics": "positive_unlabeled_proxy",
         "benchmark_status": "opened_validation_not_sealed",
+        "text_source": (
+            "texts_CHE.ndjson.gz" if (raw / "texts_CHE.ndjson.gz").exists()
+            else "che_affair_texts.ndjson.gz"
+        ),
+        "text_order": "submitted text, reasoning, lead; stable text ID within type",
     }
     chosen: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for split in SPLITS:

@@ -1,11 +1,15 @@
 # Experiment log
 
+Two parts, one per line of work. Part A covers the eval sets, the ablations on the digitalisation topic, the frozen configuration and the checks across languages, levels, parliaments and topics. Part B covers the classifier-quality experiments run in isolation against `main` (title anchors, online spelling variants, document enrichment, supervised baseline, confirmation panel).
+
+# Part A — evaluation and ablations
+
 All runs use the frozen eval sets in `data/eval/` (seed 42, built by `parltopic build-eval`) and the
 CSCS endpoint. Prompts and topic definitions are tuned on the **dev split only**; the test split is
 run once per final configuration. Tables come from `parltopic compare`; raw results are in
 `results/` (not committed).
 
-## Eval sets
+## A · Eval sets
 
 | Set | Content | Size | Notes |
 |---|---|---|---|
@@ -24,7 +28,7 @@ are incomplete, so precision against them is a lower bound: all 3 "false positiv
 Federal affairs are randomly assigned one of DE/FR/IT (title and submitted text in that language),
 so the same pipeline is measured per language on official translations.
 
-## E1 — digitalisation (dev, 450 affairs)
+## A · E1 — digitalisation (dev, 450 affairs)
 
 | Run | P | R | F1 | F1 lang=de | F1 lang=fr | F1 lang=it | F1 level=federal | F1 level=cantonal | tokens in/out per affair |
 |---|---|---|---|---|---|---|---|---|---|
@@ -78,6 +82,12 @@ Apertus 70B (USD 0.82 / 2.92 per million tokens) that is about USD 0.92 per 1,00
 
 ### E1.8 — document excerpt for title-only affairs (dev)
 
+*Superseded:* this first implementation (`enrich-docs`, one best-matching document, first
+1,500 characters) was removed after the merge in favour of `enrich-documents` (Part B), which
+attaches all usable documents and gates the keyword rule inside them. Both lines reach the same
+conclusion under the hybrid classifier (A · M and B · document enrichment): documents do not
+significantly change the metrics.
+
 Cantonal parliaments publish the content of an affair in attached documents. `parltopic
 enrich-docs` fetches `/v1/affairs/{id}/docs` (extracted text, cached), keeps the document whose
 opening shares most words with the title and uses its first 1,500 characters as the affair text.
@@ -105,7 +115,7 @@ which also makes a party bias check possible. Not yet run on the test split.
 8 of 338 re-checks returned no parseable answer (reasoning ran into the 4,000-token limit); these
 keep the fast-pass label, so a failed re-check can never add a false positive.
 
-## M — after merging main (hybrid-v3 classifier, prompt v2) — frozen configuration
+## A · M — after merging main (hybrid-v3 classifier, prompt v2) — frozen configuration
 
 Same 450 dev affairs, merged code (`4d3372e`), Apertus v1.5 70B, topic v4 (side-aspect rule +
 main's scope examples and online/NFT terms). Paired bootstrap with 10,000 samples (`compare-runs`).
@@ -125,7 +135,7 @@ main's scope examples and online/NFT terms). Paired bootstrap with 10,000 sample
   useful as evidence for title-only affairs. No further prompt or rule tuning on this dev split.
 - 78 of 450 affairs are assigned by the keyword rule without a model call.
 
-## E3 — human agreement on APS topics (20 affairs, blind)
+## A · E3 — human agreement on APS topics (20 affairs, blind)
 
 Felipe and Josip labelled the first 20 affairs of `data/eval/e3_aps_sample.jsonl` independently
 (main topic, optional second topic, or "not classifiable"; FR/IT shown in German: official federal
@@ -147,7 +157,7 @@ version or Apertus translation). Labels: `data/eval/e3_aps_labels.jsonl`.
   and report it next to this human ceiling rather than against a single "gold" label. It also
   supports presenting topics as suggestions a person confirms.
 
-## E1 — test split (1,200 affairs, 2024–2026, run once)
+## A · E1 — test split (1,200 affairs, 2024–2026, run once)
 
 | Run | P | R | F1 | F1 lang=de | F1 lang=fr | F1 lang=it | F1 level=federal | F1 level=cantonal | tokens in/out per affair |
 |---|---|---|---|---|---|---|---|---|---|
@@ -203,3 +213,185 @@ cantonal structure-plan update on landfills).
 **Predeclared before the single test run (2026-10-18, ~13:30):** the test split (1,200 affairs,
 2024–2026) is run once with B0, E1.6 and E1.7, nothing is tuned afterwards. Expected: E1.7 beats B0
 by ≥ 0.15 F1 and E1.6 by ≥ 0.02 F1; per-language F1 of FR and IT within 0.10 of DE.
+
+
+# Part B — classifier-quality experiments against main
+
+Status: this experiment round is concluded. E02 is the best primary-validation candidate and
+remains explicitly selectable; main-compatible defaults and E01 are preserved. The secondary
+panel found identical predictions, so independent superiority is not established. Inspectable
+aggregate metrics, usage totals and artifact hashes are in [results/E02-summary.json](results/E02-summary.json).
+
+All experiment changes stay on `experiment/classifier-quality`. The pinned main commit is
+`1266c7ebfc1819c3c6c8d134699ebdfb138b204c`. No checkout, commit or merge changes main.
+
+## B · Fixed evaluation and acceptance
+
+The current validation set is `data/eval/e1_digitalisation_dev.jsonl`: 450 affairs, 150 tagged
+positives and 300 untagged proxy negatives, DE/FR/IT. SHA-256:
+`5fb54735bc2d51045dbde3209004172987081e64870e81322118c853d682237b`.
+It is not a final test. Apertus has no task-specific training here. The separate linear baseline
+excluded all these IDs and exact matching titles from training. Proxy-label noise, previous
+validation tuning and one-topic scope limit all performance claims below.
+
+Accept a candidate only when macro-F1 increases and neither macro-precision nor macro-recall
+drops by more than 0.01 absolute. An eligible development candidate remains optional until
+confirmed independently. Preserve baseline predictions, topic definition and original behavior.
+The final-test file is not used to select this change; the previously running test-file inference
+was terminated and its partial results are excluded from the table.
+
+Macro precision/recall below average the positive and negative classes of **one binary topic**.
+Micro-F1 includes both mutually exclusive classes and therefore equals accuracy. These results
+are not macro averages across the complete APS or Curia topic taxonomy.
+
+## B · Iteration table
+
+| Baseline | Experiment | Macro-F1 | Macro-Precision | Macro-Recall | Micro-F1 | Delta to main |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| main 1266c7e, Apertus 70B | Verified original main run | 0.9070 | 0.923 | 0.895 | 0.920 | 0 |
+| same main, same 450 affairs | E01: title-only disinformation/automated-trading anchors | 0.9098 | 0.925 | 0.898 | 0.922 | +0.0028 |
+| same main, same 450 affairs | E02: E01 + online spelling variants | 0.9125 | 0.927 | 0.902 | 0.924 | +0.0055 |
+
+Main confusion matrix: TP=123, FP=9, FN=27, TN=291. E01: TP=124, FP=9, FN=26, TN=291.
+The only changed decision is the French title “Importance du négoce à haute fréquence en Suisse”.
+French macro-F1 moves from 0.881 to 0.896; German (0.920) and Italian (0.893) are unchanged.
+Remaining proxy errors by language are DE: 15 FN / 4 FP; FR: 5 FN / 3 FP; IT: 6 FN / 2 FP.
+Several missing positives have insufficient title-only inputs; broad document enrichment previously
+reduced precision through incidental mentions. These are the largest observed failure sources.
+
+The paired 5,000-sample bootstrap interval for delta is [0.0000, 0.0087]. This small, validation-
+selected gain is not independently significant; no production or multi-topic quality claim follows.
+
+## B · Baseline verification, runtime and costs
+
+The original main run is `results/hybrid_v3_actual_dev450.jsonl`. Its manifest contains the full
+topic, settings, dataset hash and hashes of seven classification/retrieval/model source files.
+`title_experiment` verifies every source hash against the pinned main content and compares the
+baseline topic against main. This verifies an actual historical main run rather than attributing
+an earlier weaker prompt to the current baseline.
+
+E01 does not change the system/user prompt or retrieval query. For every required model call,
+the replay compares its exact prompt with the saved baseline request before returning that
+case's stored completion. Rule outputs cannot substitute for missing model completions.
+Additional deterministic title rules run through the real classification service. This is a
+prediction replay, not a new live model measurement or a model-accuracy estimate from invented
+completions. Apertus remains the central semantic classifier.
+
+| Measurement | main | E01 |
+| --- | ---: | ---: |
+| Recorded/required input tokens | 506,252 | 503,409 |
+| Recorded/required output tokens | 36,846 | 36,642 |
+| Sum of recorded request latencies, seconds | 1,387.185 | 1,379.545 |
+| Recorded per-case latency median, ms | 3,357.949 | 3,353.733 |
+| New API calls for this replay | 0 | 0 |
+
+Replay processing took 0.292 seconds on the local machine, excluding bootstrap comparison.
+Summed request latencies are not concurrent wall-clock runtime. No historical wall-clock run
+duration was captured. Currency cost of the original model calls is unknown without provider
+rates; actual incremental API cost of this replay is zero. Token totals provide an auditable cost
+basis without inventing a tariff. Retries and billed provider-side work may not be fully reflected.
+
+## B · Reproduce and use the optional candidate
+
+```bash
+python -m parltopic.evaluation.title_experiment \
+  --eval-set data/eval/e1_digitalisation_dev.jsonl \
+  --baseline results/hybrid_v3_actual_dev450.jsonl \
+  --overlay configs/experiments/digitalisation-title-candidate.yaml \
+  --output results/title_anchors_vs_main_dev450.jsonl
+```
+
+The command requires the original baseline results plus manifest, refuses an existing output,
+and writes a full report including per-language metrics, usage and acceptance outcome. Choose
+a new output filename when repeating. Raw prediction artifacts remain ignored by Git.
+
+To run live inference with the candidate, add
+`--title-rules configs/experiments/digitalisation-title-candidate.yaml` to `parltopic classify`
+or `parltopic run-eval`. The base topic remains `configs/topics/digitalisation.yaml`. The
+overlay changes only title matching, not taxonomy wording, prompt examples or generic body terms.
+
+## B · E02: opt-in online spelling normalization
+
+Only the configured `online` keyword gains additional spellings: `on line`, `on-line` and
+typographic dash variants, case-insensitively. Existing matches are preserved. Extra variants
+require token boundaries so `on linear systems` and `on-linearity` do not match. Source text,
+evidence quotations, retrieval query and Apertus prompts remain byte-for-byte unchanged.
+
+The feature defaults off. E01 remains available with its original overlay; E02 uses
+`configs/experiments/digitalisation-title-online-candidate.yaml` with
+`normalize_online_variants: true`. Using that overlay via `--title-rules` records policy
+`hybrid-title-online-v2` in live classification results.
+
+E02 changes one additional decision beyond E01: the Italian package-travel consumer-protection
+affair contains “prenotate on line”. Its existing positive tag is recovered without changing
+any negative decision. Against main: TP=125, FP=9, FN=25, TN=291. German macro-F1 remains
+0.920, French remains at E01's 0.896, Italian improves from main's 0.893 to 0.907. On the fixed
+validation set all acceptance metrics improve. No final-test prediction or label was used.
+
+Against main, the 5,000-sample paired bootstrap delta interval is [0.0000, 0.0140]. This is still
+a small gain selected on the development set, not an independent generalization claim.
+
+The controlled replay took 0.265 seconds excluding bootstrap and reused 369 validated model
+decisions. It issued zero new API calls. Required/reused token counts fall to 501,537 input and
+36,517 output; summed recorded request latency is 1,374.791 seconds. Those are reused baseline
+measurements, not fresh live endpoint timings or concurrent wall-clock duration. Currency cost
+of an equivalent live run still requires provider rates; this replay incurred no API cost.
+
+```bash
+python -m parltopic.evaluation.title_experiment \
+  --eval-set data/eval/e1_digitalisation_dev.jsonl \
+  --baseline results/hybrid_v3_actual_dev450.jsonl \
+  --overlay configs/experiments/digitalisation-title-online-candidate.yaml \
+  --experiment-id hybrid-title-online-v2 \
+  --output results/title_online_variants_controlled_vs_main_dev450.jsonl
+```
+
+The earlier uncontrolled local trial is superseded by this explicit opt-in configuration and
+is not an additional independent experiment. The E02 report and predictions live alongside the
+preserved main/E01 artifacts under `results/`; choose a fresh output filename to rerun.
+
+## B · Secondary validation and final selection
+
+A deterministic 2023 panel was frozen before running any inference: 90 distinct affairs,
+10 tagged positives and 20 untagged proxies per language (DE/FR/IT), seed 20261018. Dataset hash:
+`e6b039bba4dcb7c00adae91fc8c836db02e2913acf6d4a144b15975b36da6f7c`.
+All primary-validation IDs, supervised-baseline training/calibration IDs and their exact title
+duplicates were excluded. Near-duplicates can remain. Some 2023 labels were previously used
+only in a different model's aggregate validation report. This is secondary validation, not a
+sealed or manually adjudicated final test; it is not used to tune further rules.
+
+The baseline executed the actual `main` source from a temporary git archive, with package-path
+verification and all seven source hashes recorded. No branch checkout or main modification
+was performed. The fresh live baseline finished in 47.480 seconds with four workers and complete
+90/90 coverage. E02 then reused 78 exact validated model requests, requiring no new API calls;
+its replay took 0.104 seconds excluding bootstrap. Currency costs remain unknown without a tariff.
+
+| Panel | Baseline | Experiment | Macro-F1 | Macro-Precision | Macro-Recall | Micro-F1 | Delta to main |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Secondary 90 | main 1266c7e | Original | 0.9222 | 0.942 | 0.908 | 0.933 | 0 |
+| Secondary 90 | same main | Frozen E02 | 0.9222 | 0.942 | 0.908 | 0.933 | 0.0000 |
+
+Both confusion matrices are TP=25, FP=1, FN=5, TN=59. No decision changed; the panel neither
+shows a regression nor confirms the primary-panel improvement. E02 therefore remains optional
+and its primary score is not presented as a general production-quality guarantee. No new rule
+or prompt was selected from this secondary panel.
+
+Reproduce the completed sequence with fresh output names:
+
+```bash
+python -m parltopic.evaluation.confirmation build \
+  --dataset data/processed/confirmation/validation2023_90.jsonl
+python -m parltopic.evaluation.confirmation run-main \
+  --dataset data/processed/confirmation/validation2023_90.jsonl \
+  --output results/confirmation2023_main90.jsonl
+python -m parltopic.evaluation.title_experiment \
+  --eval-set data/processed/confirmation/validation2023_90.jsonl \
+  --baseline results/confirmation2023_main90.jsonl \
+  --overlay configs/experiments/digitalisation-title-online-candidate.yaml \
+  --experiment-id confirmation-hybrid-title-online-v2 \
+  --output results/confirmation2023_E02_90.jsonl
+```
+
+Panel creation refuses to overwrite an existing file. Its metadata captures exclusions and input
+hashes. Only the `run-main` step makes live inference requests. The API-free archive integration
+test uses a clearly synthetic keyword-only case and does not contribute to any reported metric.

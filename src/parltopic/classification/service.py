@@ -23,7 +23,10 @@ class ClassificationService:
         if not segments:
             return self._result(affair, topic, ClassificationStatus.NOT_EVALUABLE)
         if self.settings.keyword_rescue_enabled:
-            hit = first_keyword_hit(segments, topic)
+            gate_segments = segments if self.settings.keyword_document_gate_enabled else [
+                segment for segment in segments if segment.document_id is None
+            ]
+            hit = first_keyword_hit(gate_segments, topic)
             if hit:
                 segment, term = hit
                 return ClassificationResult(
@@ -50,6 +53,12 @@ class ClassificationService:
                     latency_ms=0,
                 )
         ranked = retrieve(segments, topic, self.settings.retrieval_top_k)
+        if self.settings.retrieval_pin_title and affair.title.strip():
+            title = segments[0]
+            title_rank = next((item for item in ranked if item[0] == title), (title, 0.0))
+            ranked = [title_rank, *(item for item in ranked if item[0] != title)][
+                :self.settings.retrieval_top_k
+            ]
         selected = [segment for segment, _ in ranked]
         score_by_id = {segment.segment_id: score for segment, score in ranked}
         try:

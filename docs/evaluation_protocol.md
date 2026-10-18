@@ -39,3 +39,19 @@ parltopic compare-runs \
 The production candidate is a cascade: exact configured multilingual terms are assigned by a
 deterministic rule, and only non-matches are sent through retrieval and Apertus. This rule must
 be evaluated as part of the complete classifier policy, not as an isolated model score.
+
+## Run provenance and selection bias
+
+New `run-eval` outputs have a sibling `.jsonl.manifest.json` file. It captures the dataset hash,
+full topic definition, system prompt, relevant inference/retrieval settings and source hashes.
+Resuming an output with different inputs is rejected; historical outputs without a manifest
+must be scored separately or replaced by a fresh run at a different output path.
+
+The v3 replay reused v2 model responses while changing deterministic rules. Additional topic
+examples also changed, so its replay score does not prove the current end-to-end configuration's
+performance. That configuration requires a new full inference run.
+
+Bootstrap intervals on this development set are conditional on the selected rules and examples.
+Because those rules were chosen after inspecting the same labels, the intervals do not account
+for model-selection bias. The reported fraction of bootstrap deltas above zero is a resampling
+frequency, not a posterior probability that the candidate is better in production.

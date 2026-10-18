@@ -73,6 +73,21 @@ def build_eval(
     typer.echo(json.dumps(build_eval_sets(raw_dir, out_dir, seed), indent=2))
 
 
+@app.command("enrich-documents")
+def enrich_documents(
+    input: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+    cache_dir: Path = Path("data/cache/documents"),
+    workers: Annotated[int, typer.Option(min=1, max=8)] = 4,
+) -> None:
+    """Add original documents to title-only inputs, preserving labels and row order."""
+    from parltopic.ingestion.enrich import enrich_dataset
+    from parltopic.ingestion.openparldata_client import OpenParlDataClient
+
+    report = enrich_dataset(input, output, OpenParlDataClient(get_settings()), cache_dir, workers)
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("run-eval")
 def run_eval(
     eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],

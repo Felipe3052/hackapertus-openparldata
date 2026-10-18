@@ -1,5 +1,6 @@
 """Run classifiers over a frozen eval set and score the results per language and level."""
 
+import hashlib
 import json
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -7,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from parltopic.classification.keyword import first_keyword_hit
+from parltopic.classification.prompts import system_prompt
 from parltopic.classification.service import ClassificationService
 from parltopic.config import Settings
 from parltopic.evaluation.metrics import binary_metrics, precision_at_prevalence
@@ -22,6 +24,35 @@ def read_rows(path: str | Path) -> list[dict[str, Any]]:
         return [json.loads(line) for line in file if line.strip()]
 
 
+def _run_manifest(eval_path: str | Path, topic: TopicDefinition, settings: Settings) -> dict:
+    """Capture prediction-affecting inputs without credentials or evaluation labels in prompts."""
+    source_root = Path(__file__).resolve().parents[1]
+    source_files = [
+        "classification/service.py", "classification/keyword.py", "classification/prompts.py",
+        "classification/apertus_client.py", "retrieval/chunker.py", "retrieval/bm25.py",
+        "models.py",
+    ]
+    return {
+        "schema_version": 1,
+        "dataset_sha256": hashlib.sha256(Path(eval_path).read_bytes()).hexdigest(),
+        "topic": topic.model_dump(mode="json"),
+        "system_prompt": system_prompt(settings.classifier_prompt_version),
+        "settings": {
+            key: getattr(settings, key)
+            for key in (
+                "llm_name", "llm_base_url", "classifier_prompt_version",
+                "classifier_policy_version", "keyword_rescue_enabled", "chunk_size",
+                "chunk_overlap", "retrieval_top_k",
+                "keyword_document_gate_enabled", "retrieval_pin_title",
+            )
+        },
+        "implementation_sha256": {
+            name: hashlib.sha256((source_root / name).read_bytes()).hexdigest()
+            for name in source_files
+        },
+    }
+
+
 def run_classifier(
     eval_path: str | Path,
     topic: TopicDefinition,
@@ -35,6 +66,14 @@ def run_classifier(
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     existing = read_rows(out) if out.exists() else []
+    manifest_path = out.with_suffix(out.suffix + ".manifest.json")
+    manifest = _run_manifest(eval_path, topic, settings)
+    if existing:
+        if not manifest_path.exists():
+            raise ValueError("Existing results have no provenance manifest; use a new output path")
+        if json.loads(manifest_path.read_text(encoding="utf-8")) != manifest:
+            raise ValueError("Run inputs changed; use a new output path to avoid mixing results")
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     if retry_failed:
         existing = [
             row for row in existing if row.get("status") != ClassificationStatus.FAILED.value
@@ -44,6 +83,8 @@ def run_classifier(
     if limit is not None:
         candidates = candidates[:limit]
     todo = [row for row in candidates if row["affair_id"] not in done]
+    if not todo and out.exists():
+        return out
     service = ClassificationService(settings)
     with out.open("w", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
         for row in existing:
@@ -200,7 +241,12 @@ def score_results(eval_path: str | Path, results_path: str | Path) -> dict[str, 
             deployment_prevalence,
         ),
         "assigned_or_uncertain": score_binary(
-            eval_path, {i: s in POSITIVE_OR_UNCERTAIN for i, s in statuses.items()}
+            eval_path,
+            {
+                i: s in POSITIVE_OR_UNCERTAIN
+                for i, s in statuses.items()
+                if s in POSITIVE_OR_UNCERTAIN | {ClassificationStatus.NOT_ASSIGNED.value}
+            },
         ),
         "usage_per_1000_affairs": {
             "input_tokens": round(tokens_in / len(results) * 1000) if results else 0,

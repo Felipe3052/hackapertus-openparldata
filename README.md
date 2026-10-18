@@ -132,6 +132,19 @@ Join files using `openparldata_id`; bulk affair exports use `id` for the same id
 PolitMonitor and DVS lists contain positive examples only. The APS workbook defines the
 target hierarchy; these affairs do not have APS ground-truth labels.
 
+Add original document text to affairs that currently contain only a title:
+
+```bash
+parltopic enrich-documents \
+  --input data/eval/e1_digitalisation_dev.jsonl \
+  --output data/processed/enriched/e1_digitalisation_dev.jsonl
+```
+
+This preserves labels and order, caches API responses under `data/cache/documents`, and
+retains each document's ID and source URL. Explicitly different-language documents are skipped.
+The output is a separate contemporary snapshot; documents may postdate the affair's opening
+date, so results must not be presented as predictions made at that historical date.
+
 ## Repository structure
 
 ```text

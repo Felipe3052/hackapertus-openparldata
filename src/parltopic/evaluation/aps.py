@@ -137,6 +137,68 @@ def make_annotation_template(
     }
 
 
+def build_consensus_labels(labels_path: Path, output_path: Path) -> dict[str, Any]:
+    """Write only unanimous double annotations as an evaluator-compatible APS gold file."""
+    rows = _load_jsonl(labels_path)
+    if not rows:
+        raise ValueError("APS labels file is empty")
+    output_rows: list[dict[str, Any]] = []
+    disputed: list[str] = []
+    for row in rows:
+        affair_id = str(row.get("affair_id", ""))
+        if not affair_id or "felipe" not in row or "josip" not in row:
+            raise ValueError("APS labels require affair_id, felipe, and josip fields")
+        left = row["felipe"]
+        right = row["josip"]
+        if not isinstance(left, dict) or not isinstance(right, dict):
+            raise ValueError(f"APS annotations for {affair_id} must be objects")
+        if _annotation_signature(left) != _annotation_signature(right):
+            disputed.append(affair_id)
+            continue
+        consensus = _canonical_annotation(left)
+        output_rows.append(
+            {
+                "affair_id": affair_id,
+                "consensus": consensus,
+                "felipe": consensus,
+                "josip": consensus,
+            }
+        )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in output_rows),
+        encoding="utf-8",
+    )
+    return {
+        "input": str(labels_path),
+        "output": str(output_path),
+        "input_labels": len(rows),
+        "consensus_labels": len(output_rows),
+        "disputed_labels": len(disputed),
+        "disputed_affair_ids": disputed,
+        "warning": "Consensus contains only unanimous labels; disputed affairs are excluded.",
+    }
+
+
+def _canonical_annotation(annotation: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "chapter": str(annotation.get("chapter", "")),
+        "topic": str(annotation.get("topic", "")),
+        "topic2": str(annotation.get("topic2", "")),
+        "none": bool(annotation.get("none", False)),
+    }
+
+
+def _annotation_signature(annotation: dict[str, Any]) -> tuple[str, str, str, bool]:
+    canonical = _canonical_annotation(annotation)
+    return (
+        canonical["chapter"],
+        canonical["topic"],
+        canonical["topic2"],
+        canonical["none"],
+    )
+
+
 def benchmark_context(
     sample_path: Path,
     topic_path: Path,
@@ -309,13 +371,19 @@ def evaluate_shadow(
         topic_total += bool(topics)
         chapter_hits += bool(chapters & predicted_chapters)
         topic_hits += bool(topics & predicted_topics)
-        other = row["josip" if annotator == "felipe" else "felipe"]
+        other = row.get("josip" if annotator == "felipe" else "felipe", expected)
         disagreements["chapter"] += bool(_codes(expected, "chapter") != _codes(other, "chapter"))
         disagreements["topic"] += bool(_codes(expected, "topic") != _codes(other, "topic"))
 
     def ratio(numerator: int, denominator: int) -> float | None:
         return round(numerator / denominator, 6) if denominator else None
 
+    warning = (
+        "Consensus labels are derived from unanimous double annotations; "
+        "router recall is diagnostic only."
+        if annotator == "consensus"
+        else "No consensus APS gold standard; diagnostic only."
+    )
     return {
         "mode": "shadow_router_diagnostic",
         "annotator": annotator,
@@ -335,5 +403,5 @@ def evaluate_shadow(
             "chapter": ratio(disagreements["chapter"], len(labels)),
             "topic": ratio(disagreements["topic"], len(labels)),
         },
-        "warning": "No consensus APS gold standard; diagnostic only.",
+        "warning": warning,
     }

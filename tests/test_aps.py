@@ -6,6 +6,7 @@ import pytest
 from parltopic.aps import ApsDecision, ApsRouter, ApsTaxonomy, build_aps_prompt, select_context
 from parltopic.evaluation.aps import (
     benchmark_context,
+    build_consensus_labels,
     check_disjoint_ids,
     evaluate_shadow,
     make_annotation_template,
@@ -136,6 +137,27 @@ def test_aps_shadow_evaluation_reports_diagnostic_warning() -> None:
     assert "gold standard" in report["warning"]
 
 
+def test_aps_shadow_evaluation_identifies_consensus_labels(tmp_path: Path) -> None:
+    labels = tmp_path / "labels.jsonl"
+    labels.write_text(
+        json.dumps(
+            {
+                "affair_id": "156860",
+                "consensus": {"chapter": "4.1", "topic": "4.1.6", "none": False},
+                "josip": {"chapter": "4.1", "topic": "4.1.6", "none": False},
+            }
+        )
+        + "\n"
+    )
+    report = evaluate_shadow(
+        ROOT / "data/eval/e3_aps_sample.jsonl",
+        labels,
+        ROOT / "configs/taxonomies/aps_topics.json",
+        annotator="consensus",
+    )
+    assert "unanimous double annotations" in report["warning"]
+
+
 def test_aps_leakage_checker_detects_overlap_and_duplicates(tmp_path: Path) -> None:
     left = tmp_path / "dev.jsonl"
     right = tmp_path / "holdout.jsonl"
@@ -197,3 +219,34 @@ def test_aps_annotation_template_is_stratified_and_excludes_ids(tmp_path: Path) 
     assert "0" not in {row["affair_id"] for row in selected}
     assert all(row["aps_annotation"]["topic_codes"] == [] for row in selected)
     assert {row["language"] for row in selected} == {"de", "fr", "it"}
+
+
+def test_aps_consensus_builder_excludes_disputes(tmp_path: Path) -> None:
+    labels = tmp_path / "labels.jsonl"
+    output = tmp_path / "consensus.jsonl"
+    labels.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "affair_id": "1",
+                        "felipe": {"chapter": "1.1", "topic": "1.1.1", "none": False},
+                        "josip": {"chapter": "1.1", "topic": "1.1.1", "none": False},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "affair_id": "2",
+                        "felipe": {"chapter": "1.1", "topic": "1.1.1", "none": False},
+                        "josip": {"chapter": "2.1", "topic": "2.1.1", "none": False},
+                    }
+                ),
+            ]
+        )
+        + "\n"
+    )
+    report = build_consensus_labels(labels, output)
+    assert report["consensus_labels"] == 1
+    assert report["disputed_affair_ids"] == ["2"]
+    row = json.loads(output.read_text().strip())
+    assert row["consensus"]["topic"] == "1.1.1"

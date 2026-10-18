@@ -91,6 +91,23 @@ The command stratifies by language and parliament level, leaves APS labels blank
 source hash and refuses duplicate source IDs. Two independent annotations and a documented
 consensus step are required before the file can be used as a quality benchmark.
 
+Build the evaluator-compatible unanimous subset after double annotation:
+
+```bash
+parltopic aps-consensus \
+  --labels data/eval/e3_aps_labels.jsonl \
+  --output data/eval/e3_aps_consensus.jsonl
+```
+
+Only exact agreement on chapter, topic, secondary topic and `none` is retained. The command
+reports and excludes disputed affairs instead of silently choosing one annotator.
+
+On the checked-in 20 double annotations, this produced 9 unanimous labels and excluded 11
+disputes. The offline router diagnostic on those 9 labels reached 14.3 % chapter recall and
+28.6 % topic recall at the configured candidate limits. This is evidence that the current
+deterministic label-overlap router is not yet suitable as a hard APS classifier; it remains a
+candidate/context pre-filter until its recall is improved and validated on a larger holdout.
+
 Compare the actual retrieval context sent to a future prompt:
 
 ```bash

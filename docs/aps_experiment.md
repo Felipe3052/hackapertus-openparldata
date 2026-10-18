@@ -60,6 +60,17 @@ The output reports candidate recall and annotator disagreement. It is intentiona
 diagnostic because 20 double annotations with 55 % chapter agreement do not establish an APS gold
 standard.
 
+Before creating a holdout, check all split IDs:
+
+```bash
+parltopic aps-check-leakage \
+  data/eval/aps_dev.jsonl data/eval/aps_tuning.jsonl data/eval/aps_holdout.jsonl
+```
+
+The command exits with status 1 for duplicate IDs within a split or overlaps between splits.
+As a current audit example, E1 digitalisation validation and E2 Curia Vista share 24 affair IDs;
+they must therefore not be presented as independent APS holdout evidence.
+
 The next experiment must add an independent, double-annotated APS holdout before using hard
 routing. It must support multiple topic codes, `not_classifiable`, taxonomy versions and a
 consensus rule. Any context-compression candidate must retain valid evidence IDs and pass the

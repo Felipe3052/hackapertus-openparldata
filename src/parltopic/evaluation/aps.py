@@ -27,6 +27,35 @@ def _codes(annotation: dict[str, Any], field: str) -> set[str]:
     return {value for key, value in annotation.items() if key.startswith(field) and value}
 
 
+def check_disjoint_ids(paths: dict[str, Path]) -> dict[str, Any]:
+    """Check that named JSONL splits contain unique and disjoint affair IDs."""
+    ids_by_name: dict[str, set[str]] = {}
+    duplicates: dict[str, list[str]] = {}
+    for name, path in paths.items():
+        ids: list[str] = []
+        for row in _load_jsonl(path):
+            identifier = row.get("affair_id", row.get("id"))
+            if identifier is None:
+                raise ValueError(f"{name} contains a row without affair_id or id")
+            ids.append(str(identifier))
+        ids_by_name[name] = set(ids)
+        duplicates[name] = sorted({identifier for identifier in ids if ids.count(identifier) > 1})
+
+    overlaps: dict[str, list[str]] = {}
+    names = list(ids_by_name)
+    for index, left in enumerate(names):
+        for right in names[index + 1:]:
+            shared = sorted(ids_by_name[left] & ids_by_name[right])
+            if shared:
+                overlaps[f"{left}∩{right}"] = shared
+    return {
+        "datasets": {name: len(ids) for name, ids in ids_by_name.items()},
+        "duplicates": {name: values for name, values in duplicates.items() if values},
+        "overlaps": overlaps,
+        "disjoint": not any(duplicates.values()) and not overlaps,
+    }
+
+
 def evaluate_shadow(
     sample_path: Path,
     labels_path: Path,

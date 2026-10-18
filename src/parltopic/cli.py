@@ -116,6 +116,19 @@ def aps_evaluate(
     typer.echo(json.dumps(evaluate_shadow(sample, labels, taxonomy, annotator), indent=2))
 
 
+@app.command("aps-check-leakage")
+def aps_check_leakage(
+    datasets: Annotated[list[Path], typer.Argument(exists=True, readable=True)],
+) -> None:
+    """Fail if JSONL datasets share affair IDs or contain duplicate IDs."""
+    from parltopic.evaluation.aps import check_disjoint_ids
+
+    report = check_disjoint_ids({path.stem: path for path in datasets})
+    typer.echo(json.dumps(report, indent=2))
+    if not report["disjoint"]:
+        raise typer.Exit(1)
+
+
 @app.command("compile-topic")
 def compile_topic_command(
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],

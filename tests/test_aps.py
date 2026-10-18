@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from parltopic.aps import ApsDecision, ApsRouter, ApsTaxonomy, build_aps_prompt, select_context
-from parltopic.evaluation.aps import evaluate_shadow
+from parltopic.evaluation.aps import check_disjoint_ids, evaluate_shadow
 from parltopic.models import Affair
 from parltopic.retrieval.chunker import chunk_affair
 
@@ -91,3 +91,14 @@ def test_aps_shadow_evaluation_reports_diagnostic_warning() -> None:
     assert report["labelled_size"] == 20
     assert report["chapter_recall_at_k"] is not None
     assert "gold standard" in report["warning"]
+
+
+def test_aps_leakage_checker_detects_overlap_and_duplicates(tmp_path: Path) -> None:
+    left = tmp_path / "dev.jsonl"
+    right = tmp_path / "holdout.jsonl"
+    left.write_text('{"affair_id":"1"}\n{"affair_id":"1"}\n')
+    right.write_text('{"affair_id":"1"}\n{"affair_id":"2"}\n')
+    report = check_disjoint_ids({"dev": left, "holdout": right})
+    assert report["disjoint"] is False
+    assert report["duplicates"]["dev"] == ["1"]
+    assert report["overlaps"]["dev∩holdout"] == ["1"]

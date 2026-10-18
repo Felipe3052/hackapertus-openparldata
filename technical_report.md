@@ -1,11 +1,11 @@
-# Technical report — `project name`, `team name`
+# Technical report — `project name`, Token Tell
 
 A deeper write-up than the README: what you built, how it works, and what the
 numbers say.
 
-- **Challenge:** `challenge name`
+- **Challenge:** 2 — OpenParlData: Topic classification for Swiss parliaments with Apertus
 - **Event:** On-site Liebefeld
-- **Team:** `team name` — `member`, `member`, `member`
+- **Team:** Token Tell — `member`, `member`, `member`
 - **Demo:** `link to video`
 
 ## 1. Summary

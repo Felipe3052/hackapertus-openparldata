@@ -1,8 +1,5 @@
 {
   "seed": 42,
-  "eligibility_source": "historical file; rebuild uses dev positives only",
-  "label_semantics": "positive_unlabeled_proxy",
-  "benchmark_status": "opened_validation_not_sealed",
   "positive_types": [
     "Consultation",
     "Government affairs",
@@ -16,6 +13,9 @@
     "Question time",
     "Report"
   ],
+  "eligibility_source": "all positives (historical)",
+  "label_semantics": "positive_unlabeled_proxy",
+  "benchmark_status": "opened_validation_not_sealed",
   "e1_dev": {
     "eligible": 72741,
     "eligible_positives": 2487,
@@ -65,5 +65,9 @@
       "cantonal": 25,
       "federal": 5
     }
+  },
+  "e1_fewshot_pool": {
+    "positives": 2337,
+    "negatives": 9348
   }
 }

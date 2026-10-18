@@ -1,0 +1,7 @@
+# Ad-hoc topic written once from the name only, no tuning (E5: does a short definition generalise?).
+topic_id: transport
+name: Verkehr
+description: >-
+  Geschäfte zu Verkehr und Mobilität: Strassen, Bahn und öffentlicher Verkehr, Luftfahrt,
+  Velo- und Fussverkehr, Güterverkehr und Verkehrsfinanzierung.
+synonyms: [Verkehr, Strasse, Bahn, SBB, öffentlicher Verkehr, Flughafen, transports, route, rail, CFF, transports publics, trasporti, strada, ferrovia, FFS, trasporti pubblici]

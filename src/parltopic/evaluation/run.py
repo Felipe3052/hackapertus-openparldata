@@ -3,6 +3,7 @@
 import hashlib
 import json
 from collections import Counter, defaultdict
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -61,8 +62,12 @@ def run_classifier(
     workers: int = 8,
     limit: int | None = None,
     retry_failed: bool = True,
+    topic_for: Callable[[Affair], TopicDefinition] | None = None,
 ) -> Path:
-    """Classify every affair of the eval set; resumes by skipping affairs already in out_path."""
+    """Classify every affair of the eval set; resumes by skipping affairs already in out_path.
+
+    `topic_for` builds a per-affair topic (e.g. with retrieved few-shot examples).
+    """
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     existing = read_rows(out) if out.exists() else []
@@ -86,13 +91,74 @@ def run_classifier(
     if not todo and out.exists():
         return out
     service = ClassificationService(settings)
+    affairs = [Affair.model_validate(row) for row in todo]
     with out.open("w", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
         for row in existing:
             file.write(json.dumps(row, ensure_ascii=False) + "\n")
-        futures = [pool.submit(service.classify, Affair.model_validate(row), topic) for row in todo]
+        futures = [
+            pool.submit(service.classify, affair, topic_for(affair) if topic_for else topic)
+            for affair in affairs
+        ]
         for future in as_completed(futures):
             file.write(future.result().model_dump_json() + "\n")
             file.flush()
+    return out
+
+
+def run_rethink(
+    eval_path: str | Path,
+    topic: TopicDefinition,
+    base_path: str | Path,
+    out_path: str | Path,
+    settings: Settings,
+    workers: int = 8,
+) -> Path:
+    """Re-check the fast pass's not_assigned answers with reasoning; write the merged results.
+
+    Raw reasoning answers go to `<out>.thinking.jsonl` (resumable). In the merged file a
+    re-checked affair takes the reasoning label, with the tokens and latency of both calls.
+    Every merged row carries the same model, prompt and classifier version (one run = one
+    configuration, as scoring requires).
+    """
+    from parltopic.classification.thinking import rethink
+
+    out = Path(out_path)
+    raw = out.with_suffix(".thinking.jsonl")
+    base = {row["affair_id"]: row for row in read_rows(base_path)}
+    affairs = {row["affair_id"]: row for row in read_rows(eval_path)}
+    done = {row["affair_id"] for row in read_rows(raw)} if raw.exists() else set()
+    todo = [
+        i
+        for i, row in base.items()
+        if row["status"] == ClassificationStatus.NOT_ASSIGNED.value and i not in done
+    ]
+    with raw.open("a", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
+        futures = [
+            pool.submit(rethink, Affair.model_validate(affairs[i]), topic, settings) for i in todo
+        ]
+        for future in as_completed(futures):
+            file.write(future.result().model_dump_json() + "\n")
+            file.flush()
+
+    from parltopic.classification.thinking import THINKING_MODEL
+
+    second = {row["affair_id"]: row for row in read_rows(raw)}
+    with out.open("w", encoding="utf-8") as file:
+        for affair_id, row in base.items():
+            merged = dict(row)
+            again = second.get(affair_id)
+            if again and again["status"] != ClassificationStatus.FAILED.value:
+                merged = {
+                    **again,
+                    "input_tokens": (row.get("input_tokens") or 0) + (again["input_tokens"] or 0),
+                    "output_tokens": (row.get("output_tokens") or 0)
+                    + (again["output_tokens"] or 0),
+                    "latency_ms": (row.get("latency_ms") or 0) + (again["latency_ms"] or 0),
+                }
+            merged["model"] = f"{row['model']} + {THINKING_MODEL}"
+            merged["prompt_version"] = row.get("prompt_version")
+            merged["classifier_version"] = f"{row.get('classifier_version')}+rethink"
+            file.write(json.dumps(merged, ensure_ascii=False) + "\n")
     return out
 
 
@@ -143,9 +209,7 @@ def _validated_results(
 ) -> tuple[dict[str, dict[str, Any]], set[str]]:
     eval_ids = {row["affair_id"] for row in eval_rows}
     result_ids = [row["affair_id"] for row in result_rows]
-    duplicates = sorted(
-        affair_id for affair_id, count in Counter(result_ids).items() if count > 1
-    )
+    duplicates = sorted(affair_id for affair_id, count in Counter(result_ids).items() if count > 1)
     if duplicates:
         raise ValueError(f"Duplicate result IDs: {duplicates[:10]}")
     unknown = sorted(set(result_ids) - eval_ids)
@@ -179,9 +243,7 @@ def score_binary(
         groups[f"lang={row['language']}"].append(pair)
         groups[f"level={row['level']}"].append(pair)
     report: dict[str, Any] = {
-        key: _metrics_row(
-            pairs, deployment_prevalence if key == "all" else None
-        )
+        key: _metrics_row(pairs, deployment_prevalence if key == "all" else None)
         for key, pairs in sorted(groups.items())
     }
     report["coverage"] = f"{len(groups['all'])}/{len(rows)}"

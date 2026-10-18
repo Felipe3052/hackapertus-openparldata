@@ -8,8 +8,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from parltopic.aps import ApsRouter, ApsTaxonomy
+from parltopic.aps import ApsRouter, ApsTaxonomy, select_context
 from parltopic.models import Affair
+from parltopic.retrieval.chunker import chunk_affair
 
 
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -50,9 +51,24 @@ def evaluate_shadow(
     chapter_hits = topic_hits = chapter_total = topic_total = 0
     routed = no_text = 0
     disagreements = {"chapter": 0, "topic": 0}
+    compression_ratios: list[float] = []
+    tokens_before = tokens_after = 0
     for affair_id, row in label_by_id.items():
         affair = affairs[affair_id]
         route = router.route(affair, max_chapters, max_topics)
+        segments = chunk_affair(affair)
+        if route.fallback_reason:
+            approximate_tokens = sum(len(segment.text.split()) for segment in segments)
+            context_report = {
+                "compression_ratio": 1.0,
+                "input_tokens_approx": approximate_tokens,
+                "selected_tokens_approx": approximate_tokens,
+            }
+        else:
+            _, context_report = select_context(segments, route, router.taxonomy)
+        compression_ratios.append(context_report["compression_ratio"])
+        tokens_before += context_report["input_tokens_approx"]
+        tokens_after += context_report["selected_tokens_approx"]
         if route.chapter_candidates:
             routed += 1
         if route.fallback_reason == "no_text":
@@ -82,6 +98,12 @@ def evaluate_shadow(
         "no_text": no_text,
         "chapter_recall_at_k": ratio(chapter_hits, chapter_total),
         "topic_recall_at_k": ratio(topic_hits, topic_total),
+        "context": {
+            "mean_compression_ratio": round(sum(compression_ratios) / len(compression_ratios), 6),
+            "token_reduction_ratio": ratio(tokens_before - tokens_after, tokens_before),
+            "tokens_before_approx": tokens_before,
+            "tokens_after_approx": tokens_after,
+        },
         "annotator_disagreement": {
             "chapter": ratio(disagreements["chapter"], len(labels)),
             "topic": ratio(disagreements["topic"], len(labels)),

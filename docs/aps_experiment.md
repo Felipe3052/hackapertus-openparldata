@@ -20,8 +20,14 @@ Affair → APS candidate router → bounded context selector → existing Apertu
 
 The router is deterministic and does not call Apertus. It ranks chapter and topic candidates by
 multilingual label overlap, preserves the title and stable segment order, and reports approximate
-token compression. It is intentionally not wired into the existing classifier yet. The baseline
-therefore remains unchanged while recall, token reduction and latency can be compared.
+token compression. It is wired into the existing classifier only as an opt-in experiment. The
+default baseline therefore remains unchanged while recall, token reduction and latency can be
+compared.
+
+The classifier now exposes the same router as an opt-in experiment through
+`APS_CONTEXT_ENABLED=true`. The default is `false`; with the flag enabled, the result records the
+taxonomy version, context policy, segment counts and approximate token counts. If no APS candidate
+is found, the full context is retained and the result records the fallback reason.
 
 Run the shadow router offline:
 

@@ -192,8 +192,10 @@ if "classification" in st.session_state:
         entry = {"affair_id": result.affair_id, "topic_id": result.topic_id,
                  "suggested_status": result.status.value, "review_decision": decision,
                  "reviewed_by": reviewer.strip(), "reviewed_at": datetime.now(UTC).isoformat(),
-                 "prediction_id": content_id(result.model_dump(mode="json")),
-                 "prediction": result.model_dump(mode="json"),
+                 "prediction_id": content_id(st.session_state["classification"]),
+                 # Preserve the exact displayed prediction, including historical snapshots
+                 # that predate optional APS context metadata.
+                 "prediction": st.session_state["classification"],
                  "context": st.session_state.get("classification_context"),
                  "review_note": review_note.strip() or None,
                  "corrected_status": corrected_status if decision == "rejected" else None}

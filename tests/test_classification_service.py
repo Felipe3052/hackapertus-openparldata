@@ -133,3 +133,28 @@ def test_topic_policy_overrides_settings() -> None:
     assert result.status == ClassificationStatus.NOT_ASSIGNED
     assert result.prompt_version == "topic-v1"
     assert client.system_prompts == [system_prompt("topic-v1")]
+
+
+def test_aps_context_is_opt_in_and_reports_reduction() -> None:
+    client = RecordingClient()
+    settings = Settings(
+        _env_file=None,
+        aps_context_enabled=True,
+        aps_context_max_segments=2,
+        keyword_rescue_enabled=False,
+        retrieval_top_k=2,
+    )
+    service = ClassificationService(settings, client=client)
+    affair = Affair(
+        affair_id="aps",
+        title="Verwaltung und Parlament",
+        text="Verwaltung und Parlament. " * 300,
+    )
+    topic = TopicDefinition(topic_id="test", name="Verwaltung", description="Verwaltung")
+    result = service.classify(affair, topic)
+    assert result.context_policy == "aps-shadow-context"
+    assert result.aps_taxonomy_version == "aps-2026-10-18"
+    assert result.context_segments_before is not None
+    assert result.context_segments_after == 2
+    assert result.context_segments_after < result.context_segments_before
+    assert result.context_tokens_approx_after < result.context_tokens_approx_before

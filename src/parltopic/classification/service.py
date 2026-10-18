@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from parltopic.aps import ApsRouter, ApsTaxonomy, select_context
 from parltopic.classification.apertus_client import ApertusClient, ApertusResponse
 from parltopic.classification.keyword import first_keyword_hit
 from parltopic.classification.prompts import build_user_prompt, system_prompt
@@ -22,12 +23,21 @@ class PreparedAffair:
     topic: TopicDefinition
     selected: list[TextSegment]
     score_by_id: dict[str, float]
+    context_policy: str = "full"
+    aps_taxonomy_version: str | None = None
+    context_segments_before: int | None = None
+    context_segments_after: int | None = None
+    context_tokens_approx_before: int | None = None
+    context_tokens_approx_after: int | None = None
 
 
 class ClassificationService:
     def __init__(self, settings: Settings, client: ApertusClient | None = None):
         self.settings = settings
         self.client = client or ApertusClient(settings)
+        self.aps_router = None
+        if settings.aps_context_enabled:
+            self.aps_router = ApsRouter(ApsTaxonomy.load(settings.aps_taxonomy_path))
 
     def classify(self, affair: Affair, topic: TopicDefinition) -> ClassificationResult:
         prepared = self.prepare(affair, topic)
@@ -100,7 +110,8 @@ class ClassificationService:
                     output_tokens=0,
                     latency_ms=0,
                 )
-        ranked = retrieve(segments, topic, self.settings.retrieval_top_k)
+        context = self._select_context(affair, segments)
+        ranked = retrieve(context["segments"], topic, self.settings.retrieval_top_k)
         if self.settings.retrieval_pin_title and affair.title.strip():
             title = segments[0]
             title_rank = next((item for item in ranked if item[0] == title), (title, 0.0))
@@ -109,7 +120,57 @@ class ClassificationService:
             ]
         selected = [segment for segment, _ in ranked]
         score_by_id = {segment.segment_id: score for segment, score in ranked}
-        return PreparedAffair(affair, topic, selected, score_by_id)
+        return PreparedAffair(
+            affair, topic, selected, score_by_id,
+            context_policy=context["policy"],
+            aps_taxonomy_version=context["taxonomy_version"],
+            context_segments_before=context["segments_before"],
+            context_segments_after=context["segments_after"],
+            context_tokens_approx_before=context["tokens_before"],
+            context_tokens_approx_after=context["tokens_after"],
+        )
+
+    def _select_context(self, affair: Affair, segments: list[TextSegment]) -> dict:
+        if self.aps_router is None:
+            return {
+                "segments": segments,
+                "policy": "full",
+                "taxonomy_version": None,
+                "segments_before": len(segments),
+                "segments_after": len(segments),
+                "tokens_before": None,
+                "tokens_after": None,
+            }
+        route = self.aps_router.route(
+            affair,
+            max_chapters=self.settings.aps_max_chapters,
+            max_topics=self.settings.aps_max_topics,
+        )
+        if route.fallback_reason:
+            return {
+                "segments": segments,
+                "policy": f"aps-fallback:{route.fallback_reason}",
+                "taxonomy_version": route.taxonomy_version,
+                "segments_before": len(segments),
+                "segments_after": len(segments),
+                "tokens_before": None,
+                "tokens_after": None,
+            }
+        selected, report = select_context(
+            segments,
+            route,
+            self.aps_router.taxonomy,
+            max_segments=self.settings.aps_context_max_segments,
+        )
+        return {
+            "segments": selected,
+            "policy": "aps-shadow-context",
+            "taxonomy_version": route.taxonomy_version,
+            "segments_before": report["input_segments"],
+            "segments_after": report["selected_segments"],
+            "tokens_before": report["input_tokens_approx"],
+            "tokens_after": report["selected_tokens_approx"],
+        }
 
     def finish(self, prepared: PreparedAffair, response: ApertusResponse) -> ClassificationResult:
         affair, topic = prepared.affair, prepared.topic
@@ -142,6 +203,12 @@ class ClassificationService:
             input_tokens=response.input_tokens,
             output_tokens=response.output_tokens,
             latency_ms=response.latency_ms,
+            context_policy=prepared.context_policy,
+            aps_taxonomy_version=prepared.aps_taxonomy_version,
+            context_segments_before=prepared.context_segments_before,
+            context_segments_after=prepared.context_segments_after,
+            context_tokens_approx_before=prepared.context_tokens_approx_before,
+            context_tokens_approx_after=prepared.context_tokens_approx_after,
         )
 
     @staticmethod

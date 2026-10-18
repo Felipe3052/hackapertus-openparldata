@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     keyword_rescue_enabled: bool = True
     keyword_document_gate_enabled: bool = True
     retrieval_pin_title: bool = False
+    # Shadow experiment: preserve the existing full-context path when disabled.
+    aps_context_enabled: bool = False
+    aps_taxonomy_path: Path = Path("configs/taxonomies/aps_topics.json")
+    aps_max_chapters: int = Field(default=4, ge=1, le=22)
+    aps_max_topics: int = Field(default=8, ge=1, le=165)
+    aps_context_max_segments: int = Field(default=8, ge=1, le=100)
 
 
 @lru_cache

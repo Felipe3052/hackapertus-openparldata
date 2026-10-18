@@ -117,3 +117,9 @@ class ClassificationResult(BaseModel):
     output_tokens: int | None = None
     latency_ms: float | None = None
     error: str | None = None
+    context_policy: str = "full"
+    aps_taxonomy_version: str | None = None
+    context_segments_before: int | None = None
+    context_segments_after: int | None = None
+    context_tokens_approx_before: int | None = None
+    context_tokens_approx_after: int | None = None

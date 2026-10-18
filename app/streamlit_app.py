@@ -5,7 +5,7 @@ import streamlit as st
 
 from parltopic.classification.service import ClassificationService
 from parltopic.config import get_settings
-from parltopic.integration import content_id, topic_version
+from parltopic.integration import content_id, record_review, topic_version
 from parltopic.models import Affair, TopicDefinition
 from parltopic.topics import load_topic
 
@@ -106,6 +106,9 @@ if selected and policy.startswith("Digitalisierung") and saved_path.exists():
                 ),
                 "topic_version": None,
                 "historical_snapshot": "data/demo/jury/manifest.json",
+                "historical_snapshot_id": content_id(json.loads(
+                    (ROOT / "data/demo/jury/manifest.json").read_text("utf-8")
+                )),
             }
             st.session_state["result_mode"] = (
                 "Historischer Dev-Lauf mit damaliger Themenkonfiguration; "
@@ -173,6 +176,9 @@ if "classification" in st.session_state:
     reviews = ROOT / "results/reviews.jsonl"
     reviewer = st.text_input("Kürzel der prüfenden Person", key="reviewer")
     review_note = st.text_input("Begründung oder Korrektur (optional)", key="review_note")
+    corrected_status = st.selectbox("Korrigierter Status bei Ablehnung (optional)",
+                                    [None, "assigned", "not_assigned", "uncertain"],
+                                    format_func=lambda value: value or "Keine Korrektur")
     left, right = st.columns(2)
     decision = None
     if left.button("Vorschlag bestätigen", disabled=not reviewer.strip()):
@@ -189,9 +195,13 @@ if "classification" in st.session_state:
                  "prediction_id": content_id(result.model_dump(mode="json")),
                  "prediction": result.model_dump(mode="json"),
                  "context": st.session_state.get("classification_context"),
-                 "review_note": review_note.strip() or None}
-        with reviews.open("a", encoding="utf-8") as file:  # appended, the suggestion is kept
-            file.write(json.dumps(entry, ensure_ascii=False) + "\n")
+                 "review_note": review_note.strip() or None,
+                 "corrected_status": corrected_status if decision == "rejected" else None}
+        st.session_state["last_review"] = record_review(entry, reviews)
         st.success(f"Gespeichert: {decision} durch {reviewer.strip()} ({reviews.name}). "
                    "Für OpenParlData: Spalten review_decision/reviewed_by in affair_topics.")
+    if "last_review" in st.session_state:
+        st.download_button("Prüfung als JSON sichern", json.dumps(
+            st.session_state["last_review"], ensure_ascii=False, indent=2,
+        ), file_name="review.json", mime="application/json")
 

@@ -16,6 +16,7 @@ from pathlib import Path
 import httpx
 from pydantic import BaseModel, Field
 
+from parltopic.classification.apertus_client import ApertusClient
 from parltopic.config import Settings
 from parltopic.models import TopicDefinition
 
@@ -98,10 +99,8 @@ def compile_topic(
         f"KNOWN TERMS: {', '.join(topic.synonyms) or 'none'}\nIN-SCOPE EXAMPLES:\n{examples}"
     )
     started = time.perf_counter()
-    response = httpx.post(
-        f"{settings.llm_base_url.rstrip('/')}/chat/completions",
-        headers={"Authorization": f"Bearer {settings.llm_api_key}"},
-        json={
+    with ApertusClient(settings) as client:
+        body = client.request({
             "model": settings.llm_name,
             "temperature": 0,
             "max_tokens": 6000,
@@ -110,12 +109,12 @@ def compile_topic(
                 {"role": "user", "content": user},
             ],
             "response_format": {"type": "json_object"},
-        },
-        timeout=max(settings.llm_timeout_seconds, 180),
-    )
-    response.raise_for_status()
-    body = response.json()
+        }, timeout=max(settings.llm_timeout_seconds, 180))
     payload = json.loads(body["choices"][0]["message"]["content"])
+    for lang in LANGUAGES:
+        terms = payload.get(lang)
+        if not isinstance(terms, list) or any(not isinstance(term, str) for term in terms):
+            raise ValueError(f"Compiler must return a string list for {lang}")
     # The user's own terms (often multilingual already) stay in every language's query.
     terms = {
         lang: list(dict.fromkeys([*topic.synonyms, *[str(t) for t in payload.get(lang, [])]]))
@@ -265,7 +264,9 @@ def newest_matches(
         for term in terms:
             df[term] = df.get(term, 0) + 1
     n = max(len(rows), 1)
-    weight = {t: (0.0 if c / n > 0.03 else math.log(n / c)) for t, c in df.items()}
+    # A single occurrence must remain eligible in small pools; otherwise every term in
+    # fewer than 34 hits gets discarded and the live demo can never check any candidate.
+    weight = {t: (0.0 if c > max(1, 0.03 * n) else math.log1p(n / c)) for t, c in df.items()}
     for i, row in rows.items():
         row["matched_terms"] = sorted(t for t in matched[i] if weight[t] > 0)
         row["score"] = round(sum(weight[t] for t in matched[i]), 2)

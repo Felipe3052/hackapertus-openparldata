@@ -77,13 +77,15 @@ def _claims() -> list[Claim]:
     return rows
 
 
-def _value(claim: Claim) -> float:
+def _value(claim: Claim, root: str | Path = ".") -> float:
+    root = Path(root)
+    eval_set = root / claim.eval_set
     if claim.source.startswith("keyword:"):
-        predictions = keyword_predictions(claim.eval_set, load_topic(claim.source[8:]))
-        report = {"assigned": score_binary(claim.eval_set, predictions)}
+        predictions = keyword_predictions(eval_set, load_topic(root / claim.source[8:]))
+        report = {"assigned": score_binary(eval_set, predictions)}
         assigned = sum(predictions.values())
     else:
-        report = score_results(claim.eval_set, claim.source)
+        report = score_results(eval_set, root / claim.source)
         assigned = report["assigned"].get("statuses", {}).get("assigned", 0)
     if claim.metric == "assigned_count":
         return assigned
@@ -98,7 +100,7 @@ def check(root: str | Path = ".", tolerance: float = 0.0005) -> dict:
         if not claim.source.startswith("keyword:") and not path.exists():
             results.append({**claim.__dict__, "value": None, "ok": False, "note": "missing file"})
             continue
-        value = _value(claim)
+        value = _value(claim, root)
         results.append({**claim.__dict__, "value": value,
                         "ok": abs(value - claim.stated) <= tolerance})
     return {"claims": results, "all_ok": all(r["ok"] for r in results),
@@ -129,25 +131,56 @@ if __name__ == "__main__":
     report = check()
     print(describe(report))
     print(json.dumps({"all_ok": report["all_ok"]}))
+    raise SystemExit(0 if report["all_ok"] else 1)
 
 
 RELEASE_URL = (
     "https://github.com/Felipe3052/hackapertus-openparldata/releases/download/"
     f"{RELEASE}/{RELEASE}.tar.gz"
 )
+RELEASE_SHA256 = "fbd69f15bf54c51104629e6f3629caca6722bb92323dbad752d98bdf450e38bd"
 
 
-def fetch_results(root: str | Path = ".", url: str = RELEASE_URL) -> list[str]:
+def fetch_results(root: str | Path = ".", url: str = RELEASE_URL,
+                  expected_sha256: str = RELEASE_SHA256) -> list[str]:
     """Download the published prediction files and unpack them under results/."""
+    import hashlib
     import io
+    import subprocess
     import tarfile
+    import urllib.error
     import urllib.request
 
-    with urllib.request.urlopen(url) as response:
-        archive = tarfile.open(fileobj=io.BytesIO(response.read()), mode="r:gz")
-    names = [m.name for m in archive.getmembers() if m.name.startswith("results/")]
-    archive.extractall(Path(root), members=[archive.getmember(n) for n in names], filter="data")
-    return names
+    try:
+        with urllib.request.urlopen(url, timeout=30) as response:
+            payload = response.read()
+    except urllib.error.HTTPError as error:
+        if url != RELEASE_URL or error.code not in {403, 404}:
+            raise
+        # Private repositories require the user's existing gh authentication; no key is logged.
+        payload = subprocess.run([
+            "gh", "api", "repos/Felipe3052/hackapertus-openparldata/releases/assets/653741007",
+            "-H", "Accept: application/octet-stream",
+        ], check=True, capture_output=True).stdout
+    if hashlib.sha256(payload).hexdigest() != expected_sha256:
+        raise ValueError("Published results archive SHA256 mismatch")
+    base = (Path(root) / "results").resolve()
+    pending = []
+    with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as archive:
+        for member in archive.getmembers():
+            target = (Path(root) / member.name).resolve()
+            if not member.isfile() or not target.is_relative_to(base):
+                raise ValueError(f"Unexpected archive entry: {member.name}")
+            contents = archive.extractfile(member).read()
+            if target.exists() and target.read_bytes() != contents:
+                raise FileExistsError(f"Existing local results differ: {target}")
+            pending.append((member.name, target, contents))
+    for _, target, contents in pending:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.exists():
+            with target.open("xb") as stream:
+                stream.write(contents)
+    return [name for name, _, _ in pending]
 
 
 def pack_results(target: str | Path) -> list[str]:

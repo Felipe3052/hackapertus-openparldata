@@ -20,6 +20,19 @@ def content_id(value: Any) -> str:
     ).encode()).hexdigest()
 
 
+def record_review(entry: dict, path: str | Path) -> dict:
+    """Append an exact review event under a writer lock; keep prediction data unchanged."""
+    from parltopic.evaluation.execution import exclusive_lock
+
+    record = {**entry, "review_id": content_id(entry)}
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with exclusive_lock(target.with_suffix(target.suffix + ".lock")):
+        with target.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return record
+
+
 def topic_version(topic: TopicDefinition, compiled: CompiledTopic | None = None) -> str:
     payload = {"topic": topic.model_dump(mode="json"),
                "terms": compiled.terms if compiled else None}

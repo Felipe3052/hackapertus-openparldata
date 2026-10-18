@@ -74,3 +74,29 @@ def test_offline_demo_replay_survives_without_network(monkeypatch):
     result = ClassificationResult.model_validate(demo.session_state["classification"])
     assert result.affair_id
     assert demo.get("download_button")
+
+
+def test_review_preserves_exact_prediction_and_can_be_downloaded(tmp_path, monkeypatch):
+    from streamlit.testing.v1 import AppTest
+
+    from parltopic import integration
+
+    record = integration.record_review
+    target = tmp_path / "reviews.jsonl"
+    monkeypatch.setattr(integration, "record_review", lambda entry, path: record(entry, target))
+    demo = AppTest.from_file(ROOT / "app/streamlit_app.py").run()
+    next(b for b in demo.button if b.label.startswith("Historisches Ergebnis")).click().run()
+    before = demo.session_state["classification"]
+    next(w for w in demo.text_input if w.label.startswith("Kürzel")).set_value("fixture").run()
+    next(w for w in demo.selectbox if w.label.startswith("Korrigierter Status")).select(
+        "not_assigned"
+    ).run()
+    next(b for b in demo.button if b.label == "Vorschlag ablehnen").click().run()
+    assert not demo.exception
+    saved = json.loads(target.read_text())
+    assert saved["prediction"] == before
+    assert saved["prediction_id"] == integration.content_id(before)
+    assert saved["corrected_status"] == "not_assigned"
+    assert saved["context"]["historical_snapshot_id"]
+    assert demo.session_state["classification"] == before
+    assert any(b.label == "Prüfung als JSON sichern" for b in demo.get("download_button"))

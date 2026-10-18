@@ -6,6 +6,7 @@ from typing import Any
 
 from parltopic.evaluation.metrics import binary_metrics
 from parltopic.evaluation.run import read_rows
+from parltopic.evaluation.validation import validate_gold, validate_results
 from parltopic.models import ClassificationStatus
 
 DECISIVE = {
@@ -44,9 +45,12 @@ def compare_runs(
     """Compare macro-F1 on identical, decisive examples with a paired bootstrap."""
     if samples < 1:
         raise ValueError("samples must be at least 1")
-    labels = {row["affair_id"]: bool(row["label"]) for row in read_rows(eval_path)}
-    baseline = _result_map(baseline_path)
-    candidate = _result_map(candidate_path)
+    gold_rows = read_rows(eval_path)
+    labels = {key: row["label"] for key, row in validate_gold(gold_rows).items()}
+    baseline, _ = validate_results(gold_rows, read_rows(baseline_path))
+    candidate, _ = validate_results(gold_rows, read_rows(candidate_path))
+    baseline_decisive = {key for key, row in baseline.items() if row["status"] in DECISIVE}
+    candidate_decisive = {key for key, row in candidate.items() if row["status"] in DECISIVE}
     shared_ids = sorted(
         affair_id
         for affair_id in labels.keys() & baseline.keys() & candidate.keys()
@@ -84,6 +88,13 @@ def compare_runs(
 
     return {
         "paired_examples": size,
+        "coverage": {"expected": len(labels), "baseline_decisive": len(baseline_decisive),
+                     "candidate_decisive": len(candidate_decisive),
+                     "lost_baseline_decisions": len(baseline_decisive - candidate_decisive)},
+        "coverage_non_regression": baseline_decisive <= candidate_decisive,
+        "interpretation": (
+            "Paired scores use the decisive intersection; coverage is a separate gate."
+        ),
         "excluded": {
             "eval_examples": len(labels),
             "not_shared_or_not_decisive": len(labels) - size,

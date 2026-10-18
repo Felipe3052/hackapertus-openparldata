@@ -221,12 +221,20 @@ def run_eval(
         )
         settings = settings.model_copy(update={"classifier_policy_version": policy})
     topic_for = None
+    topic_for_provenance = None
     if fewshot_pool:
+        import hashlib
+
         from parltopic.evaluation.fewshot import FewShotIndex
 
         index = FewShotIndex(fewshot_pool)
         topic_for = lambda affair: index.topic_for(definition, affair, fewshot_k)  # noqa: E731
-    run_classifier(eval_set, definition, output, settings, workers, limit, topic_for=topic_for)
+        topic_for_provenance = {
+            "pool_sha256": hashlib.sha256(fewshot_pool.read_bytes()).hexdigest(),
+            "fewshot_k": fewshot_k,
+        }
+    run_classifier(eval_set, definition, output, settings, workers, limit, topic_for=topic_for,
+                   topic_for_provenance=topic_for_provenance)
     typer.echo(json.dumps(score_results(eval_set, output), indent=2))
 
 

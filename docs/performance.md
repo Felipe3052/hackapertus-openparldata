@@ -1,5 +1,14 @@
 # Apertus performance: API time and request admission dominate
 
+Integration note: this report records the measured snapshots before the team's later topic
+configuration/experiment merge. The PR is now based on main commit `f55c5ab`; its topic
+configuration, few-shot support and optional thinking experiments are preserved. The numbers
+below apply to the frozen topic/settings in each measurement manifest, not a fresh benchmark
+of the subsequently merged topic configuration. No inference was rerun during PR preparation.
+Pooling and process-local admission apply to the regular `ApertusClient` path. The separately
+merged experimental `thinking.rethink` function retains its own HTTP path and is outside
+these pooling/rate-limit measurements and single-pass volume projections.
+
 ## Paired update: keep connection reuse, reject multi-affair batching
 
 The follow-up experiment used **the same 30 real affairs and labels for batch sizes 1, 3 and 5**,

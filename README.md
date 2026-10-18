@@ -62,6 +62,9 @@ The paired batch-size comparison recommends **one affair per request with connec
 Batch sizes 3/5 lost validated coverage and remain isolated in the research benchmark;
 production configuration accepts only `LLM_BATCH_SIZE=1`. HTTP clients share a process-local
 `LLM_REQUESTS_PER_MINUTE` limit (default 30); coordinate resource quotas across processes.
+The [evaluation audit](docs/evaluation_audit.md) independently verifies the reported metrics
+and records proxy-label limitations, coverage bias and leakage/duplicate checks. Reports refer
+to their frozen measurement snapshots; later topic changes need separate evaluation.
 An optional chronological, title-only TF-IDF baseline is available with
 `pip install -e '.[experiments]'` and
 `python -m parltopic.evaluation.linear_baseline --help`.

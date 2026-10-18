@@ -3,6 +3,14 @@
 Audit vom 18. Oktober 2026 auf `experiment/classifier-quality`. Keine neuen Inferenzaufrufe,
 keine Änderung von Labels, Vorhersagen oder Klassifikationslogik. `main` wurde nicht verändert.
 
+Versionshinweis zur PR-Integration: Der Audit und seine Quellen-Hashes dokumentieren den
+ursprünglichen Snapshot vor dem späteren Team-Merge. Der neue PR-Branch basiert auf
+`main`-Commit `f55c5ab` und erhält dessen geänderte Themenkonfiguration, Metadaten sowie
+Few-shot-/Thinking-Experimente. Die Audit-Zahlen bleiben ein Nachweis für die gespeicherten
+30 Vorhersagen; sie bescheinigen diesen späteren Experimentpfaden keine neue Modellqualität.
+Bei einer Reproduktion müssen die dokumentierten Eingabe-Snapshots verwendet werden;
+abweichende aktuelle Metadaten sind nicht rückwirkend Teil dieses Audits.
+
 ## Urteil
 
 Die gemeldeten Werte für den **30er-Einzelaufruf-Lauf sind rechnerisch korrekt**:

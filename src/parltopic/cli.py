@@ -30,7 +30,10 @@ def classify(
     settings = get_settings()
     definition = load_topic(topic, title_rules)
     if title_rules:
-        settings = settings.model_copy(update={"classifier_policy_version": "hybrid-title-v1"})
+        policy = (
+            "hybrid-title-online-v2" if definition.normalize_online_variants else "hybrid-title-v1"
+        )
+        settings = settings.model_copy(update={"classifier_policy_version": policy})
     service = ClassificationService(settings)
     rows = []
     for affair in read_affairs(input):
@@ -107,9 +110,13 @@ def run_eval(
     settings = get_settings()
     if model:
         settings = settings.model_copy(update={"llm_name": model})
+    definition = load_topic(topic, title_rules)
     if title_rules:
-        settings = settings.model_copy(update={"classifier_policy_version": "hybrid-title-v1"})
-    run_classifier(eval_set, load_topic(topic, title_rules), output, settings, workers, limit)
+        policy = (
+            "hybrid-title-online-v2" if definition.normalize_online_variants else "hybrid-title-v1"
+        )
+        settings = settings.model_copy(update={"classifier_policy_version": policy})
+    run_classifier(eval_set, definition, output, settings, workers, limit)
     typer.echo(json.dumps(score_results(eval_set, output), indent=2))
 
 

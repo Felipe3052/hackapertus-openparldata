@@ -28,6 +28,7 @@ are not macro averages across the complete APS or Curia topic taxonomy.
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | main 1266c7e, Apertus 70B | Verified original main run | 0.9070 | 0.923 | 0.895 | 0.920 | 0 |
 | same main, same 450 affairs | E01: title-only disinformation/automated-trading anchors | 0.9098 | 0.925 | 0.898 | 0.922 | +0.0028 |
+| same main, same 450 affairs | E02: E01 + online spelling variants | 0.9125 | 0.927 | 0.902 | 0.924 | +0.0055 |
 
 Main confusion matrix: TP=123, FP=9, FN=27, TN=291. E01: TP=124, FP=9, FN=26, TN=291.
 The only changed decision is the French title “Importance du négoce à haute fréquence en Suisse”.
@@ -86,3 +87,43 @@ To run live inference with the candidate, add
 `--title-rules configs/experiments/digitalisation-title-candidate.yaml` to `parltopic classify`
 or `parltopic run-eval`. The base topic remains `configs/topics/digitalisation.yaml`. The
 overlay changes only title matching, not taxonomy wording, prompt examples or generic body terms.
+
+## E02: opt-in online spelling normalization
+
+Only the configured `online` keyword gains additional spellings: `on line`, `on-line` and
+typographic dash variants, case-insensitively. Existing matches are preserved. Extra variants
+require token boundaries so `on linear systems` and `on-linearity` do not match. Source text,
+evidence quotations, retrieval query and Apertus prompts remain byte-for-byte unchanged.
+
+The feature defaults off. E01 remains available with its original overlay; E02 uses
+`configs/experiments/digitalisation-title-online-candidate.yaml` with
+`normalize_online_variants: true`. Using that overlay via `--title-rules` records policy
+`hybrid-title-online-v2` in live classification results.
+
+E02 changes one additional decision beyond E01: the Italian package-travel consumer-protection
+affair contains “prenotate on line”. Its existing positive tag is recovered without changing
+any negative decision. Against main: TP=125, FP=9, FN=25, TN=291. German macro-F1 remains
+0.920, French remains at E01's 0.896, Italian improves from main's 0.893 to 0.907. On the fixed
+validation set all acceptance metrics improve. No final-test prediction or label was used.
+
+Against main, the 5,000-sample paired bootstrap delta interval is [0.0000, 0.0140]. This is still
+a small gain selected on the development set, not an independent generalization claim.
+
+The controlled replay took 0.265 seconds excluding bootstrap and reused 369 validated model
+decisions. It issued zero new API calls. Required/reused token counts fall to 501,537 input and
+36,517 output; summed recorded request latency is 1,374.791 seconds. Those are reused baseline
+measurements, not fresh live endpoint timings or concurrent wall-clock duration. Currency cost
+of an equivalent live run still requires provider rates; this replay incurred no API cost.
+
+```bash
+python -m parltopic.evaluation.title_experiment \
+  --eval-set data/eval/e1_digitalisation_dev.jsonl \
+  --baseline results/hybrid_v3_actual_dev450.jsonl \
+  --overlay configs/experiments/digitalisation-title-online-candidate.yaml \
+  --experiment-id hybrid-title-online-v2 \
+  --output results/title_online_variants_controlled_vs_main_dev450.jsonl
+```
+
+The earlier uncontrolled local trial is superseded by this explicit opt-in configuration and
+is not an additional independent experiment. The E02 report and predictions live alongside the
+preserved main/E01 artifacts under `results/`; choose a fresh output filename to rerun.

@@ -1,4 +1,4 @@
-"""Verify a main baseline and replay identical Apertus requests for a title-only rule change."""
+"""Verify a main baseline and replay identical Apertus requests for lexical rule experiments."""
 
 import argparse
 import hashlib
@@ -20,7 +20,10 @@ from parltopic.retrieval.bm25 import retrieve
 from parltopic.retrieval.chunker import chunk_affair
 
 
-def run_experiment(eval_path: Path, baseline_path: Path, overlay: Path, output: Path) -> dict:
+def run_experiment(
+    eval_path: Path, baseline_path: Path, overlay: Path, output: Path,
+    experiment_id: str = "hybrid-title-v1",
+) -> dict:
     started = time.perf_counter()
     manifest = json.loads(baseline_path.with_suffix(".jsonl.manifest.json").read_text())
     main_ref = subprocess.check_output(["git", "rev-parse", "main"], text=True).strip()
@@ -32,7 +35,8 @@ def run_experiment(eval_path: Path, baseline_path: Path, overlay: Path, output: 
         "git", "show", f"{main_ref}:configs/topics/digitalisation.yaml",
     ], text=True)
     base_topic = TopicDefinition.model_validate(yaml.safe_load(topic_content))
-    if base_topic.model_dump(exclude={"title_synonyms"}) != manifest["topic"]:
+    original_topic = base_topic.model_dump(exclude={"title_synonyms", "normalize_online_variants"})
+    if original_topic != manifest["topic"]:
         raise ValueError("Baseline topic differs from main")
     if hashlib.sha256(eval_path.read_bytes()).hexdigest() != manifest["dataset_sha256"]:
         raise ValueError("Baseline dataset hash differs")
@@ -47,10 +51,14 @@ def run_experiment(eval_path: Path, baseline_path: Path, overlay: Path, output: 
     if missing or any(row["status"] not in {"assigned", "not_assigned"}
                       for row in baseline.values()):
         raise ValueError("A complete, decisive baseline is required")
-    title_terms = yaml.safe_load(overlay.read_text())["title_synonyms"]
-    candidate = base_topic.model_copy(update={"title_synonyms": title_terms})
+    overlay_data = yaml.safe_load(overlay.read_text())
+    allowed = {"title_synonyms", "normalize_online_variants"}
+    if not isinstance(overlay_data, dict) or set(overlay_data) - allowed:
+        raise ValueError("Unsupported experiment overlay fields")
+    title_terms = overlay_data["title_synonyms"]
+    candidate = TopicDefinition.model_validate({**base_topic.model_dump(), **overlay_data})
     settings = Settings(_env_file=None, **{
-        **manifest["settings"], "classifier_policy_version": "hybrid-title-v1",
+        **manifest["settings"], "classifier_policy_version": experiment_id,
         "keyword_document_gate_enabled": True, "retrieval_pin_title": False,
     })
 
@@ -92,10 +100,12 @@ def run_experiment(eval_path: Path, baseline_path: Path, overlay: Path, output: 
     base_score = score_results(eval_path, baseline_path)
     candidate_score = score_results(eval_path, output)
     report = {
+        "experiment_id": experiment_id,
         "main_commit": main_ref, "dataset_sha256": manifest["dataset_sha256"],
         "baseline_source_verified": True, "mode": "exact-request replay, no new inference",
         "topic_scope": "digitalisation binary proxy labels only",
         "candidate_title_terms": title_terms, "replayed_model_calls": client.calls,
+        "normalize_online_variants": candidate.normalize_online_variants,
         "new_api_calls": 0, "incremental_api_cost": 0,
         "replay_wall_seconds": round(time.perf_counter() - started, 3),
         "baseline": base_score, "experiment": candidate_score,
@@ -125,8 +135,10 @@ if __name__ == "__main__":
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--overlay", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--experiment-id", default="hybrid-title-v1")
     args = parser.parse_args()
-    report = run_experiment(args.eval_set, args.baseline, args.overlay, args.output)
+    report = run_experiment(args.eval_set, args.baseline, args.overlay, args.output,
+                            args.experiment_id)
     print(json.dumps({
         "main": report["main_commit"],
         "baseline": report["baseline"]["assigned"]["all"],

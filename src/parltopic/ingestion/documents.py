@@ -1,8 +1,9 @@
-"""Add a document excerpt to affairs that only have a title (most cantonal parliaments).
+"""Attach a document excerpt to affairs that only have a title (most cantonal parliaments).
 
 Cantonal parliaments publish the content of an affair in attached documents, whose extracted
 text the OpenParlData API serves at /v1/affairs/{id}/docs. We keep the document that best
-matches the title and use its opening as the affair text. Responses are cached on disk.
+matches the title and attach its opening as an `Affair.documents` entry, so evidence keeps
+the document ID and link. Responses are cached on disk.
 """
 
 import json
@@ -29,7 +30,8 @@ def fetch_docs(affair_id: str, cache_dir: Path, client: httpx.Client) -> list[di
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))
     response = client.get(
-        f"{API}/affairs/{affair_id}/docs", params={"limit": 20, "fields": "id,name,text"}
+        f"{API}/affairs/{affair_id}/docs",
+        params={"limit": 20, "fields": "id,name,text,url,url_oparl"},
     )
     response.raise_for_status()
     docs = response.json().get("data", [])
@@ -38,15 +40,25 @@ def fetch_docs(affair_id: str, cache_dir: Path, client: httpx.Client) -> list[di
     return docs
 
 
-def best_excerpt(title: str, docs: list[dict[str, Any]], max_chars: int = 1500) -> str:
-    """Opening of the document whose first 3,000 characters share the most words with the title."""
+def best_document(
+    title: str, docs: list[dict[str, Any]], max_chars: int = 1500
+) -> dict[str, Any] | None:
+    """The document whose opening shares most words with the title, cut to its first chars.
+
+    Returned in the shape of `parltopic.models.Document`.
+    """
     title_tokens = _tokens(title)
     candidates = [doc for doc in docs if (doc.get("text") or "").strip()]
     if not candidates:
-        return ""
+        return None
     best = max(candidates, key=lambda doc: len(title_tokens & _tokens(doc["text"][:3000])))
-    text = SPACE_RE.sub("\n", strip_html(best["text"]) if "<" in best["text"] else best["text"])
-    return text.strip()[:max_chars]
+    text = strip_html(best["text"]) if "<" in best["text"] else best["text"]
+    url = best.get("url_oparl") or best.get("url")
+    return {
+        "document_id": str(best["id"]),
+        "text": SPACE_RE.sub("\n", text).strip()[:max_chars],
+        "source_url": url if isinstance(url, str) and url.startswith("http") else None,
+    }
 
 
 def enrich_with_documents(
@@ -56,9 +68,13 @@ def enrich_with_documents(
     max_chars: int = 1500,
     workers: int = 8,
 ) -> dict[str, int]:
-    """Copy an eval set, filling `text` of title-only affairs with a document excerpt."""
+    """Copy an eval set, attaching a document excerpt to every title-only affair."""
     rows = [json.loads(line) for line in Path(eval_path).open(encoding="utf-8") if line.strip()]
-    todo = [row for row in rows if not row["text"] and row["parliament"] != "CHE"]
+    todo = [
+        row
+        for row in rows
+        if not row["text"] and not row.get("documents") and row["parliament"] != "CHE"
+    ]
     cache = Path(cache_dir)
     with httpx.Client(timeout=60) as client, ThreadPoolExecutor(workers) as pool:
         docs = dict(
@@ -70,9 +86,9 @@ def enrich_with_documents(
         )
     filled = 0
     for row in todo:
-        excerpt = best_excerpt(row["title"], docs[row["affair_id"]], max_chars)
-        if excerpt:
-            row["text"] = excerpt
+        document = best_document(row["title"], docs[row["affair_id"]], max_chars)
+        if document:
+            row["documents"] = [document]
             row["text_source"] = "document"
             filled += 1
     out = Path(out_path)

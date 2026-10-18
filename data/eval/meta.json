@@ -13,6 +13,9 @@
     "Question time",
     "Report"
   ],
+  "eligibility_source": "all positives (historical)",
+  "label_semantics": "positive_unlabeled_proxy",
+  "benchmark_status": "opened_validation_not_sealed",
   "e1_dev": {
     "eligible": 72741,
     "eligible_positives": 2487,

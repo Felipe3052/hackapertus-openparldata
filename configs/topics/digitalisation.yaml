@@ -2,7 +2,8 @@ topic_id: digitalisation
 name: Digitalisierung
 # Scope follows the PolitMonitor editorial tag behind the DVS list (see data/raw/README.md):
 # e-government, cybersecurity, AI, data protection, digital media and broadband.
-# v3: v2 plus side aspects count (E1.6, after dev error analysis only).
+# v4 (merge): Felipe's v3 side-aspect rule (E1.6) plus Josip's v3 multilingual scope examples
+# and the online/NFT terms. All changes come from error analysis on the dev split (2018-2023).
 description: >-
   Parlamentarische Geschäfte zur digitalen Transformation von Staat, Wirtschaft und
   Gesellschaft: digitale Verwaltung und E-Government, elektronische Identität,
@@ -43,6 +44,8 @@ synonyms:
   - cibersicurezza
   - intelligenza artificiale
   - protezione dei dati
+  - online
+  - NFT
 positive_examples:
   - Einführung einer elektronischen Identität für kantonale Dienstleistungen.
   - Digitale Einreichung und Verarbeitung von Behördengesuchen.
@@ -51,6 +54,14 @@ positive_examples:
   - Umgang mit KI-Werkzeugen wie ChatGPT an Schulen.
   - Ausbau von Glasfaser oder 5G-Mobilfunk.
   - Tätigkeitsbericht der Datenschutzaufsicht.
+  - Mobile Arbeit und Homeoffice, wenn digitale Arbeitsformen geregelt werden.
+  - Regulierung von Online-Buchungsplattformen und digitalem Konsum.
+  - Finanzierung oder Migration von SAP-, ERP-, Software- oder Verwaltungssystemen.
+  - Statistik, Geodaten oder Messindikatoren, wenn Datenerhebung und -verarbeitung zentral sind.
+  - Réglementation des plateformes en ligne, des contenus numériques ou de la désinformation.
+  - Regolamentazione di piattaforme online, commercio elettronico e servizi digitali.
+  - Applicazioni online come strumento per accedere ad alloggi o servizi pubblici.
+  - Incitamento all'odio e discriminazione su Internet o sulle piattaforme sociali.
 negative_examples:
   - Sanierung einer Kantonsstrasse ohne digitalen Bezug.
   - Finanzierung eines konventionellen Schulgebäudes.

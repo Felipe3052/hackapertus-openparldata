@@ -66,6 +66,7 @@ def build_eval_sets(
     seed: int = 42,
     sizes: dict[str, tuple[int, int]] | None = None,
     curia_size: int = 500,
+    eligibility: str = "historical",
 ) -> dict[str, Any]:
     raw, out = Path(raw_dir), Path(out_dir)
     rng = random.Random(seed)
@@ -83,11 +84,28 @@ def build_eval_sets(
 
     affairs = {record["id"]: record for record in read_ndjson(raw / "affairs.ndjson.gz")}
     positives = [affairs[i] for i in positive_ids if i in affairs]
-    positive_bodies = Counter(record["body_key"] for record in positives)
-    type_counts = Counter(record["type_harmonized_en"] for record in positives)
+    # "historical" reproduces the frozen files in data/eval byte for byte: eligible parliaments
+    # and affair types come from all positives. "dev" learns them from the development period
+    # only, so later positives cannot leak into the sampler; use it for new sealed holdouts.
+    if eligibility == "dev":
+        source = [r for r in positives if _in_split(r.get("begin_date"), "dev")]
+    elif eligibility == "historical":
+        source = positives
+    else:
+        raise ValueError(f"eligibility must be 'historical' or 'dev', not {eligibility!r}")
+    positive_bodies = Counter(record["body_key"] for record in source)
+    type_counts = Counter(record["type_harmonized_en"] for record in source)
     positive_types = {t for t, n in type_counts.items() if n >= MIN_TYPE_POSITIVES}
 
-    meta: dict[str, Any] = {"seed": seed, "positive_types": sorted(map(str, positive_types))}
+    meta: dict[str, Any] = {
+        "seed": seed,
+        "positive_types": sorted(map(str, positive_types)),
+        "eligibility_source": (
+            "dev positives only" if eligibility == "dev" else "all positives (historical)"
+        ),
+        "label_semantics": "positive_unlabeled_proxy",
+        "benchmark_status": "opened_validation_not_sealed",
+    }
     chosen: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for split in SPLITS:
         eligible = [

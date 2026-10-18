@@ -66,11 +66,15 @@ def build_eval(
     raw_dir: Annotated[Path, typer.Option(exists=True)] = Path("data/raw"),
     out_dir: Annotated[Path, typer.Option()] = Path("data/eval"),
     seed: int = 42,
+    eligibility: Annotated[
+        str, typer.Option(help="historical: reproduce data/eval; dev: no test-period leakage.")
+    ] = "historical",
 ) -> None:
     """Build the frozen eval sets E1 (digitalisation), E2 (Curia subject areas), E4 (DVS)."""
     from parltopic.evaluation.datasets import build_eval_sets
 
-    typer.echo(json.dumps(build_eval_sets(raw_dir, out_dir, seed), indent=2))
+    meta = build_eval_sets(raw_dir, out_dir, seed, eligibility=eligibility)
+    typer.echo(json.dumps(meta, indent=2))
 
 
 @app.command("enrich-docs")
@@ -111,7 +115,7 @@ def run_eval(
 
         index = FewShotIndex(fewshot_pool)
         topic_for = lambda affair: index.topic_for(definition, affair, fewshot_k)  # noqa: E731
-    run_classifier(eval_set, definition, output, settings, workers, limit, topic_for)
+    run_classifier(eval_set, definition, output, settings, workers, limit, topic_for=topic_for)
     typer.echo(json.dumps(score_results(eval_set, output), indent=2))
 
 
@@ -164,6 +168,23 @@ def score(
     from parltopic.evaluation.run import score_results
 
     typer.echo(json.dumps(score_results(eval_set, results), indent=2))
+
+
+@app.command("compare-runs")
+def compare_run_outputs(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    baseline_results: Annotated[Path, typer.Option(exists=True, readable=True)],
+    candidate_results: Annotated[Path, typer.Option(exists=True, readable=True)],
+    samples: Annotated[int, typer.Option(min=1)] = 2_000,
+    seed: int = 42,
+) -> None:
+    """Paired bootstrap comparison of macro-F1 for two runs on the same examples."""
+    from parltopic.evaluation.compare import compare_runs
+
+    report = compare_runs(
+        eval_set, baseline_results, candidate_results, samples=samples, seed=seed
+    )
+    typer.echo(json.dumps(report, indent=2))
 
 
 @app.command()

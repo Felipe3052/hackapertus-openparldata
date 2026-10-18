@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     llm_base_url: str = "https://api.inference.cscs.ch/v1"
     llm_api_key: str = ""
     llm_timeout_seconds: float = 60.0
+    llm_max_retries: int = 2
+    llm_retry_backoff_seconds: float = 0.5
     openparldata_base_url: str = "https://api.openparldata.ch"
     data_dir: Path = Path("data")
     database_path: Path = Path("data/parltopic.db")
@@ -18,6 +20,9 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 5
     chunk_size: int = 1400
     chunk_overlap: int = 200
+    classifier_prompt_version: str = "topic-v2"
+    classifier_policy_version: str = "hybrid-v3"
+    keyword_rescue_enabled: bool = True
 
 
 @lru_cache

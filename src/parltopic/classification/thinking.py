@@ -10,7 +10,7 @@ import time
 
 import httpx
 
-from parltopic.classification.prompts import SYSTEM_PROMPT, build_user_prompt
+from parltopic.classification.prompts import build_user_prompt, system_prompt
 from parltopic.config import Settings
 from parltopic.models import (
     Affair,
@@ -61,7 +61,10 @@ def rethink(
                 "temperature": 0,
                 "max_tokens": max_tokens,
                 "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {
+                        "role": "system",
+                        "content": system_prompt(settings.classifier_prompt_version),
+                    },
                     {"role": "user", "content": build_user_prompt(topic, [s for s, _ in ranked])},
                     {"role": "assistant", "content": PREFIX},
                 ],
@@ -95,7 +98,8 @@ def rethink(
             needs_review=status
             in {ClassificationStatus.UNCERTAIN, ClassificationStatus.NOT_EVALUABLE},
             model=model,
-            prompt_version="topic-v1-thinking",
+            prompt_version=settings.classifier_prompt_version,
+            classifier_version="thinking-rethink",
             input_tokens=usage.get("prompt_tokens"),
             output_tokens=usage.get("completion_tokens"),
             latency_ms=(time.perf_counter() - started) * 1000,

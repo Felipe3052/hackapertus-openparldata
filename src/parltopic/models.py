@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
 
 
 class ClassificationStatus(StrEnum):
@@ -9,6 +9,38 @@ class ClassificationStatus(StrEnum):
     UNCERTAIN = "uncertain"
     NOT_EVALUABLE = "not_evaluable"
     FAILED = "failed"
+
+
+class ModelDecision(BaseModel):
+    """Strict, source-grounded response expected from Apertus."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: ClassificationStatus
+    score: float = Field(ge=0.0, le=1.0)
+    explanation: str = Field(min_length=1, max_length=800)
+    evidence_ids: list[str] = Field(default_factory=list, max_length=8)
+
+    @field_validator("status")
+    @classmethod
+    def reject_internal_failure_status(cls, value: ClassificationStatus) -> ClassificationStatus:
+        if value == ClassificationStatus.FAILED:
+            raise ValueError("failed is application-owned and cannot be emitted by the model")
+        return value
+
+    @field_validator("evidence_ids")
+    @classmethod
+    def require_unique_evidence_ids(cls, values: list[str]) -> list[str]:
+        if len(values) != len(set(values)):
+            raise ValueError("evidence_ids must be unique")
+        return values
+
+    @model_validator(mode="after")
+    def require_evidence_for_positive_or_uncertain(self) -> "ModelDecision":
+        if self.status in {ClassificationStatus.ASSIGNED, ClassificationStatus.UNCERTAIN}:
+            if not self.evidence_ids:
+                raise ValueError(f"{self.status.value} requires at least one evidence ID")
+        return self
 
 
 class Document(BaseModel):
@@ -73,6 +105,7 @@ class ClassificationResult(BaseModel):
     needs_review: bool = False
     model: str
     prompt_version: str = "topic-v1"
+    classifier_version: str = "llm-only-v1"
     input_tokens: int | None = None
     output_tokens: int | None = None
     latency_ms: float | None = None

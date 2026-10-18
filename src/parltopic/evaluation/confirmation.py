@@ -138,7 +138,8 @@ manifest = {
     "implementation_sha256": {name:hashlib.sha256((root/name).read_bytes()).hexdigest()
                               for name in files},
 }
-path = Path(output + ".manifest.json")
+# Own file: run_classifier (main since PR #1) writes its manifest to output + ".manifest.json".
+path = Path(output + ".main.manifest.json")
 path.parent.mkdir(parents=True, exist_ok=True)
 if path.exists() and json.loads(path.read_text()) != manifest:
     raise ValueError("Run inputs changed; use a new output path")

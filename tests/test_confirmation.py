@@ -66,6 +66,6 @@ def test_archived_main_import_and_zero_api_smoke(tmp_path: Path):
     result = json.loads(output.read_text())
     assert result["status"] == "assigned"
     assert result["input_tokens"] == 0
-    manifest = json.loads(output.with_suffix(".jsonl.manifest.json").read_text())
+    manifest = json.loads(output.with_suffix(".jsonl.main.manifest.json").read_text())
     assert manifest["main_commit"] == before
     assert subprocess.check_output(["git", "rev-parse", "main"], text=True).strip() == before

@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from parltopic.aps import ApsDecision, ApsRouter, ApsTaxonomy, build_aps_prompt, select_context
-from parltopic.evaluation.aps import check_disjoint_ids, evaluate_shadow
+from parltopic.evaluation.aps import benchmark_context, check_disjoint_ids, evaluate_shadow
 from parltopic.models import Affair
 from parltopic.retrieval.chunker import chunk_affair
 
@@ -102,3 +102,15 @@ def test_aps_leakage_checker_detects_overlap_and_duplicates(tmp_path: Path) -> N
     assert report["disjoint"] is False
     assert report["duplicates"]["dev"] == ["1"]
     assert report["overlaps"]["dev∩holdout"] == ["1"]
+
+
+def test_aps_context_benchmark_compares_identical_affairs() -> None:
+    report = benchmark_context(
+        ROOT / "data/eval/e1_digitalisation_test.jsonl",
+        ROOT / "configs/topics/digitalisation.yaml",
+        ROOT / "configs/taxonomies/aps_topics.json",
+        max_segments=2,
+    )
+    assert report["affairs"] == 1200
+    assert report["aps_context"]["tokens_approx"] <= report["baseline"]["tokens_approx"]
+    assert "No Apertus calls" in report["warning"]

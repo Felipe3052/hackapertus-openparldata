@@ -129,6 +129,21 @@ def aps_check_leakage(
         raise typer.Exit(1)
 
 
+@app.command("aps-benchmark")
+def aps_benchmark(
+    input: Annotated[Path, typer.Option(exists=True, readable=True)],
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+    taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
+        "configs/taxonomies/aps_topics.json"
+    ),
+    max_segments: int = 2,
+) -> None:
+    """Compare baseline and APS prompt context sizes without model calls."""
+    from parltopic.evaluation.aps import benchmark_context
+
+    typer.echo(json.dumps(benchmark_context(input, topic, taxonomy, max_segments), indent=2))
+
+
 @app.command("compile-topic")
 def compile_topic_command(
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],

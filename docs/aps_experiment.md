@@ -71,6 +71,20 @@ The command exits with status 1 for duplicate IDs within a split or overlaps bet
 As a current audit example, E1 digitalisation validation and E2 Curia Vista share 24 affair IDs;
 they must therefore not be presented as independent APS holdout evidence.
 
+Compare the actual retrieval context sent to a future prompt:
+
+```bash
+parltopic aps-benchmark \
+  --input data/eval/e1_digitalisation_test.jsonl \
+  --topic configs/topics/digitalisation.yaml \
+  --max-segments 2
+```
+
+This compares identical Affairs with the same topic and retrieval implementation. It measures
+whitespace token approximations offline. On the checked-in E1 file with `max-segments 2`, the
+baseline context is approximately 152,141 tokens and the APS context approximately 111,197
+tokens, a 26.9 % reduction. This does not claim an Apertus latency or quality gain.
+
 The next experiment must add an independent, double-annotated APS holdout before using hard
 routing. It must support multiple topic codes, `not_classifiable`, taxonomy versions and a
 consensus rule. Any context-compression candidate must retain valid evidence IDs and pass the

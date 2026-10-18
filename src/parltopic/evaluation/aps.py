@@ -56,6 +56,64 @@ def check_disjoint_ids(paths: dict[str, Path]) -> dict[str, Any]:
     }
 
 
+def benchmark_context(
+    sample_path: Path,
+    topic_path: Path,
+    taxonomy_path: Path,
+    max_segments: int = 2,
+) -> dict[str, Any]:
+    """Compare actual prompt context sizes without making inference calls."""
+    from parltopic.classification.service import ClassificationService, PreparedAffair
+    from parltopic.config import Settings
+    from parltopic.topics import load_topic
+
+    affairs = [Affair.model_validate(row) for row in _load_jsonl(sample_path)]
+    topic = load_topic(topic_path)
+    baseline_settings = Settings(
+        _env_file=None, llm_api_key="offline", keyword_rescue_enabled=False
+    )
+    aps_settings = baseline_settings.model_copy(
+        update={
+            "aps_context_enabled": True,
+            "aps_taxonomy_path": taxonomy_path,
+            "aps_context_max_segments": max_segments,
+        }
+    )
+
+    def measure(settings: Settings) -> tuple[int, int, int]:
+        affairs_used = segments = tokens = 0
+        with ClassificationService(settings) as service:
+            for affair in affairs:
+                prepared = service.prepare(affair, topic)
+                if not isinstance(prepared, PreparedAffair):
+                    continue
+                affairs_used += 1
+                segments += len(prepared.selected)
+                tokens += sum(len(segment.text.split()) for segment in prepared.selected)
+        return affairs_used, segments, tokens
+
+    baseline_n, baseline_segments, baseline_tokens = measure(baseline_settings)
+    candidate_n, candidate_segments, candidate_tokens = measure(aps_settings)
+    if baseline_n != candidate_n:
+        raise ValueError("Baseline and APS context benchmark selected different affairs")
+    reduction = (baseline_tokens - candidate_tokens) / baseline_tokens if baseline_tokens else 0.0
+    return {
+        "mode": "offline_context_benchmark",
+        "affairs": baseline_n,
+        "max_segments": max_segments,
+        "baseline": {
+            "segments": baseline_segments,
+            "tokens_approx": baseline_tokens,
+        },
+        "aps_context": {
+            "segments": candidate_segments,
+            "tokens_approx": candidate_tokens,
+        },
+        "token_reduction_ratio": round(reduction, 6),
+        "warning": "No Apertus calls; token counts use whitespace approximation.",
+    }
+
+
 def evaluate_shadow(
     sample_path: Path,
     labels_path: Path,

@@ -37,7 +37,9 @@ class ClassificationService:
         self.client = client or ApertusClient(settings)
         self.aps_router = None
         if settings.aps_context_enabled:
-            self.aps_router = ApsRouter(ApsTaxonomy.load(settings.aps_taxonomy_path))
+            self.aps_router = ApsRouter(
+                ApsTaxonomy.load(settings.aps_taxonomy_path, aliases_path=settings.aps_aliases_path)
+            )
 
     def classify(self, affair: Affair, topic: TopicDefinition) -> ClassificationResult:
         prepared = self.prepare(affair, topic)

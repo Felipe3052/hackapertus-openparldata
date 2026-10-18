@@ -26,6 +26,34 @@ def test_aps_taxonomy_is_hierarchical_and_complete() -> None:
                for node in taxonomy.topics())
 
 
+def test_aps_taxonomy_supports_versioned_multilingual_aliases(tmp_path: Path) -> None:
+    aliases = tmp_path / "aliases.json"
+    aliases.write_text(
+        json.dumps(
+            {
+                "taxonomy_version": "aps-2026-10-18",
+                "aliases": {
+                    "1.2": {"it": ["amministrazione"]},
+                    "1.2.2": {"it": ["amministrazione", "servizi pubblici"]},
+                },
+            }
+        )
+    )
+    taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json", aliases_path=aliases)
+    assert taxonomy.node("1.2.2").labels["it"] == "amministrazione / servizi pubblici"
+    route = ApsRouter(taxonomy).route(
+        Affair(affair_id="it-1", title="Amministrazione", language="it")
+    )
+    assert "1.2.2" in {candidate.code for candidate in route.topic_candidates}
+
+
+def test_aps_aliases_must_match_taxonomy_version(tmp_path: Path) -> None:
+    aliases = tmp_path / "aliases.json"
+    aliases.write_text(json.dumps({"taxonomy_version": "old", "aliases": {}}))
+    with pytest.raises(ValueError, match="does not match"):
+        ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json", aliases_path=aliases)
+
+
 def test_aps_router_is_deterministic_and_returns_candidates() -> None:
     taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
     affair = Affair(affair_id="a", title="Bundesrat und Parlament", text="Verwaltung und Kantone")

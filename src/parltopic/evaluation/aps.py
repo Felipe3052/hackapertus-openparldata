@@ -142,6 +142,7 @@ def benchmark_context(
     topic_path: Path,
     taxonomy_path: Path,
     max_segments: int = 2,
+    aliases_path: Path | None = None,
 ) -> dict[str, Any]:
     """Compare actual prompt context sizes without making inference calls."""
     from parltopic.classification.service import ClassificationService, PreparedAffair
@@ -157,6 +158,7 @@ def benchmark_context(
         update={
             "aps_context_enabled": True,
             "aps_taxonomy_path": taxonomy_path,
+            "aps_aliases_path": aliases_path,
             "aps_context_max_segments": max_segments,
         }
     )
@@ -258,6 +260,7 @@ def evaluate_shadow(
     annotator: str = "felipe",
     max_chapters: int = 4,
     max_topics: int = 8,
+    aliases_path: Path | None = None,
 ) -> dict[str, Any]:
     sample = _load_jsonl(sample_path)
     labels = _load_jsonl(labels_path)
@@ -271,7 +274,7 @@ def evaluate_shadow(
     if missing:
         raise ValueError(f"APS labels reference affairs absent from sample: {missing[:3]}")
 
-    router = ApsRouter(ApsTaxonomy.load(taxonomy_path))
+    router = ApsRouter(ApsTaxonomy.load(taxonomy_path, aliases_path=aliases_path))
     chapter_hits = topic_hits = chapter_total = topic_total = 0
     routed = no_text = 0
     disagreements = {"chapter": 0, "topic": 0}

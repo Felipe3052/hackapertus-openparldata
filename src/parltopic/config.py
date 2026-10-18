@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     # Shadow experiment: preserve the existing full-context path when disabled.
     aps_context_enabled: bool = False
     aps_taxonomy_path: Path = Path("configs/taxonomies/aps_topics.json")
+    aps_aliases_path: Path | None = None
     aps_max_chapters: int = Field(default=4, ge=1, le=22)
     aps_max_topics: int = Field(default=8, ge=1, le=165)
     aps_context_max_segments: int = Field(default=8, ge=1, le=100)

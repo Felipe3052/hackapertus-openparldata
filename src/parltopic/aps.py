@@ -98,8 +98,23 @@ class ApsTaxonomy:
         self._validate()
 
     @classmethod
-    def load(cls, path: Path, version: str = TAXONOMY_VERSION) -> "ApsTaxonomy":
+    def load(
+        cls,
+        path: Path,
+        version: str = TAXONOMY_VERSION,
+        aliases_path: Path | None = None,
+    ) -> "ApsTaxonomy":
         raw = json.loads(path.read_text(encoding="utf-8"))
+        aliases = {}
+        if aliases_path is not None:
+            aliases_data = json.loads(aliases_path.read_text(encoding="utf-8"))
+            if not isinstance(aliases_data, dict):
+                raise ValueError("APS alias file must contain a JSON object")
+            if aliases_data.get("taxonomy_version") not in {None, version}:
+                raise ValueError("APS alias taxonomy version does not match the base taxonomy")
+            aliases = aliases_data.get("aliases", {})
+            if not isinstance(aliases, dict):
+                raise ValueError("APS aliases must be an object keyed by taxonomy code")
         nodes: list[ApsNode] = []
         chapter_labels: dict[str, dict[str, str]] = {}
         domain_labels: dict[str, dict[str, str]] = {}
@@ -109,7 +124,7 @@ class ApsTaxonomy:
             level = "topic" if len(parts) == 3 else "chapter"
             parent_code = str(item.get("chapter_code")) if level == "topic" else None
             labels = {
-                key[7:]: str(value)
+                key[6:]: str(value)
                 for key, value in item.items()
                 if key.startswith("topic_")
             }
@@ -120,6 +135,15 @@ class ApsTaxonomy:
                     if key.startswith("chapter_")
                 }
             labels = {key: value for key, value in labels.items() if value}
+            for language, values in aliases.get(code, {}).items():
+                if isinstance(values, str):
+                    values = [values]
+                if not isinstance(values, list) or not all(
+                    isinstance(value, str) for value in values
+                ):
+                    raise ValueError(f"APS aliases for {code}/{language} must be strings")
+                if values:
+                    labels[language] = " / ".join(values)
             nodes.append(ApsNode(code, parent_code, level, labels, item.get("url_de")))
             if parent_code:
                 chapter_labels[parent_code] = {
@@ -136,9 +160,29 @@ class ApsTaxonomy:
         # The source file contains topic rows and derives chapter/domain names from them.
         chapter_codes = {node.parent_code for node in nodes if node.parent_code}
         for code in sorted(chapter_codes):
-            nodes.append(ApsNode(code, code.split(".")[0], "chapter", chapter_labels.get(code, {})))
+            labels = dict(chapter_labels.get(code, {}))
+            for language, values in aliases.get(code, {}).items():
+                if isinstance(values, str):
+                    values = [values]
+                if not isinstance(values, list) or not all(
+                    isinstance(value, str) for value in values
+                ):
+                    raise ValueError(f"APS aliases for {code}/{language} must be strings")
+                if values:
+                    labels[language] = " / ".join(values)
+            nodes.append(ApsNode(code, code.split(".")[0], "chapter", labels))
         for code in sorted(domain_labels):
-            nodes.append(ApsNode(code, None, "domain", domain_labels[code]))
+            labels = dict(domain_labels[code])
+            for language, values in aliases.get(code, {}).items():
+                if isinstance(values, str):
+                    values = [values]
+                if not isinstance(values, list) or not all(
+                    isinstance(value, str) for value in values
+                ):
+                    raise ValueError(f"APS aliases for {code}/{language} must be strings")
+                if values:
+                    labels[language] = " / ".join(values)
+            nodes.append(ApsNode(code, None, "domain", labels))
         return cls(tuple(nodes), version)
 
     def _validate(self) -> None:

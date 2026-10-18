@@ -77,6 +77,7 @@ def aps_route(
     taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
         "configs/taxonomies/aps_topics.json"
     ),
+    aliases: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
     max_chapters: int = 4,
     max_topics: int = 8,
     max_segments: int = 5,
@@ -85,7 +86,7 @@ def aps_route(
     from parltopic.aps import ApsRouter, ApsTaxonomy, select_context
     from parltopic.retrieval.chunker import chunk_affair
 
-    router = ApsRouter(ApsTaxonomy.load(taxonomy))
+    router = ApsRouter(ApsTaxonomy.load(taxonomy, aliases_path=aliases))
     rows = []
     for affair in read_affairs(input):
         route = router.route(affair, max_chapters=max_chapters, max_topics=max_topics)
@@ -108,12 +109,17 @@ def aps_evaluate(
     taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
         "configs/taxonomies/aps_topics.json"
     ),
+    aliases: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
     annotator: str = "felipe",
 ) -> None:
     """Evaluate APS shadow routing diagnostically without model calls."""
     from parltopic.evaluation.aps import evaluate_shadow
 
-    typer.echo(json.dumps(evaluate_shadow(sample, labels, taxonomy, annotator), indent=2))
+    typer.echo(
+        json.dumps(
+            evaluate_shadow(sample, labels, taxonomy, annotator, aliases_path=aliases), indent=2
+        )
+    )
 
 
 @app.command("aps-check-leakage")
@@ -151,12 +157,15 @@ def aps_benchmark(
     taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
         "configs/taxonomies/aps_topics.json"
     ),
+    aliases: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
     max_segments: int = 2,
 ) -> None:
     """Compare baseline and APS prompt context sizes without model calls."""
     from parltopic.evaluation.aps import benchmark_context
 
-    typer.echo(json.dumps(benchmark_context(input, topic, taxonomy, max_segments), indent=2))
+    typer.echo(
+        json.dumps(benchmark_context(input, topic, taxonomy, max_segments, aliases), indent=2)
+    )
 
 
 @app.command("aps-regression-gate")

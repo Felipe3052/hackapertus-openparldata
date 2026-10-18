@@ -28,6 +28,10 @@ pipeline interface but its APS routing recall is not established. The router is 
 existing classifier only as an opt-in experiment. The default baseline therefore remains
 unchanged while recall, token reduction and latency can be compared.
 
+An optional, version-matched alias file can be supplied with `APS_ALIASES_PATH` or the CLI
+`--aliases` option. It is intended for reviewed Italian or domain-specific synonyms. Such aliases
+are project additions, not official APS translations, and must be evaluated before use.
+
 The classifier now exposes the same router as an opt-in experiment through
 `APS_CONTEXT_ENABLED=true`. The default is `false`; with the flag enabled, the result records the
 taxonomy version, context policy, segment counts and approximate token counts. If no APS candidate

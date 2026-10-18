@@ -2,6 +2,13 @@
 
 **Hack Apertus Liebefeld 2026 · Challenge 2: OpenParlData · Team Token Tell (Felipe Wüthrich, Josip Jukic)**
 
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Apertus v1.5 70B](https://img.shields.io/badge/Apertus-v1.5_70B-DC2626?style=for-the-badge)
+![PostgreSQL integration](https://img.shields.io/badge/PostgreSQL-Integration-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+
 ParlTopic tells you which Swiss parliamentary affairs belong to a topic, in German, French and
 Italian, across federal, cantonal and municipal parliaments. You describe a topic in a short YAML
 file; Apertus v1.5 decides for each affair and cites the passage that justifies the decision. New

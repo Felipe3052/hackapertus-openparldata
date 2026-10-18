@@ -35,8 +35,9 @@ class ClassificationService:
                     source_url=selected_by_id[segment_id].source_url,
                     retrieval_score=score_by_id[segment_id],
                 )
-                for segment_id in response.payload.get("evidence_ids", [])
-                if segment_id in selected_by_id
+                for segment_id in response.payload.get("evidence_ids") or []
+                # Smaller models sometimes return nested lists or numbers; keep only known IDs.
+                if isinstance(segment_id, str) and segment_id in selected_by_id
             ]
             model_score = float(response.payload.get("score", 0))
             return ClassificationResult(

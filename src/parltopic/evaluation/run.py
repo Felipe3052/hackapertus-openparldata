@@ -2,6 +2,7 @@
 
 import json
 from collections import defaultdict
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -27,18 +28,82 @@ def run_classifier(
     settings: Settings,
     workers: int = 8,
     limit: int | None = None,
+    topic_for: Callable[[Affair], TopicDefinition] | None = None,
 ) -> Path:
-    """Classify every affair of the eval set; resumes by skipping affairs already in out_path."""
+    """Classify every affair of the eval set; resumes by skipping affairs already in out_path.
+
+    `topic_for` builds a per-affair topic (e.g. with retrieved few-shot examples). Failed calls
+    are retried on the next run; the later line for an affair wins when scoring.
+    """
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
-    done = {row["affair_id"] for row in read_rows(out)} if out.exists() else set()
+    done = (
+        {r["affair_id"] for r in read_rows(out) if r["status"] != ClassificationStatus.FAILED.value}
+        if out.exists()
+        else set()
+    )
     todo = [row for row in read_rows(eval_path) if row["affair_id"] not in done][:limit]
     service = ClassificationService(settings)
+    affairs = [Affair.model_validate(row) for row in todo]
     with out.open("a", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
-        futures = [pool.submit(service.classify, Affair.model_validate(row), topic) for row in todo]
+        futures = [
+            pool.submit(service.classify, affair, topic_for(affair) if topic_for else topic)
+            for affair in affairs
+        ]
         for future in as_completed(futures):
             file.write(future.result().model_dump_json() + "\n")
             file.flush()
+    return out
+
+
+def run_rethink(
+    eval_path: str | Path,
+    topic: TopicDefinition,
+    base_path: str | Path,
+    out_path: str | Path,
+    settings: Settings,
+    workers: int = 8,
+) -> Path:
+    """Re-check the fast pass's not_assigned answers with reasoning; write the merged results.
+
+    Raw reasoning answers go to `<out>.thinking.jsonl` (resumable). In the merged file a
+    re-checked affair takes the reasoning label, with the tokens and latency of both calls.
+    """
+    from parltopic.classification.thinking import rethink
+
+    out = Path(out_path)
+    raw = out.with_suffix(".thinking.jsonl")
+    base = {row["affair_id"]: row for row in read_rows(base_path)}
+    affairs = {row["affair_id"]: row for row in read_rows(eval_path)}
+    done = {row["affair_id"] for row in read_rows(raw)} if raw.exists() else set()
+    todo = [
+        i
+        for i, row in base.items()
+        if row["status"] == ClassificationStatus.NOT_ASSIGNED.value and i not in done
+    ]
+    with raw.open("a", encoding="utf-8") as file, ThreadPoolExecutor(workers) as pool:
+        futures = [
+            pool.submit(rethink, Affair.model_validate(affairs[i]), topic, settings) for i in todo
+        ]
+        for future in as_completed(futures):
+            file.write(future.result().model_dump_json() + "\n")
+            file.flush()
+
+    second = {row["affair_id"]: row for row in read_rows(raw)}
+    with out.open("w", encoding="utf-8") as file:
+        for affair_id, row in base.items():
+            merged = dict(row)
+            again = second.get(affair_id)
+            if again and again["status"] != ClassificationStatus.FAILED.value:
+                merged = {
+                    **again,
+                    "model": f"{row['model']} + {again['model']}",
+                    "input_tokens": (row.get("input_tokens") or 0) + (again["input_tokens"] or 0),
+                    "output_tokens": (row.get("output_tokens") or 0)
+                    + (again["output_tokens"] or 0),
+                    "latency_ms": (row.get("latency_ms") or 0) + (again["latency_ms"] or 0),
+                }
+            file.write(json.dumps(merged, ensure_ascii=False) + "\n")
     return out
 
 

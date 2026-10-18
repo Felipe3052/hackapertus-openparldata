@@ -62,5 +62,9 @@
       "cantonal": 25,
       "federal": 5
     }
+  },
+  "e1_fewshot_pool": {
+    "positives": 2337,
+    "negatives": 9348
   }
 }

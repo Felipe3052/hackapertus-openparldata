@@ -114,6 +114,8 @@ def build_eval_sets(
             pool = neg_by_body[body_key]
             sample_neg.extend(rng.sample(pool, min(quota, len(pool))))
         chosen[split] = {"pos": sample_pos, "neg": sample_neg}
+        if split == "dev":
+            dev_pool = (split_pos, split_neg)
         meta[f"e1_{split}"] = {
             "eligible": len(eligible),
             "eligible_positives": len(split_pos),
@@ -171,6 +173,20 @@ def build_eval_sets(
         "affairs": len(dvs_rows),
         "levels": dict(Counter(r["level"] for r in dvs_rows)),
     }
+
+    # Few-shot pool: labelled affairs from the dev period that are NOT in the dev sample, so a
+    # dev or test affair never sees its own label. Own generator: the sets above stay identical.
+    pool_rng = random.Random(seed + 1)
+    dev_ids = {r["id"] for r in chosen["dev"]["pos"] + chosen["dev"]["neg"]}
+    pool_pos = [r for r in dev_pool[0] if r["id"] not in dev_ids]
+    pool_neg = pool_rng.sample(
+        [r for r in dev_pool[1] if r["id"] not in dev_ids], min(4 * len(pool_pos), len(dev_pool[1]))
+    )
+    pool_extra = {r["id"]: {"label": True, "split": "pool"} for r in pool_pos}
+    pool_extra |= {r["id"]: {"label": False, "split": "pool"} for r in pool_neg}
+    pool_rows = _rows(pool_pos + pool_neg, bodies, {}, pool_rng, pool_extra)
+    _write(out / "e1_fewshot_pool.jsonl", pool_rows)
+    meta["e1_fewshot_pool"] = {"positives": len(pool_pos), "negatives": len(pool_neg)}
 
     (out / "meta.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
     return meta

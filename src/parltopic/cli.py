@@ -81,6 +81,10 @@ def run_eval(
     model: Annotated[str | None, typer.Option(help="Override LLM_NAME.")] = None,
     workers: int = 8,
     limit: int | None = None,
+    fewshot_pool: Annotated[
+        Path | None, typer.Option(help="Add the k most similar labelled affairs as examples.")
+    ] = None,
+    fewshot_k: int = 3,
 ) -> None:
     """Classify an eval set with Apertus (resumable), then print the scores."""
     from parltopic.evaluation.run import run_classifier, score_results
@@ -88,8 +92,55 @@ def run_eval(
     settings = get_settings()
     if model:
         settings = settings.model_copy(update={"llm_name": model})
-    run_classifier(eval_set, load_topic(topic), output, settings, workers, limit)
+    definition = load_topic(topic)
+    topic_for = None
+    if fewshot_pool:
+        from parltopic.evaluation.fewshot import FewShotIndex
+
+        index = FewShotIndex(fewshot_pool)
+        topic_for = lambda affair: index.topic_for(definition, affair, fewshot_k)  # noqa: E731
+    run_classifier(eval_set, definition, output, settings, workers, limit, topic_for)
     typer.echo(json.dumps(score_results(eval_set, output), indent=2))
+
+
+@app.command()
+def rethink(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+    base: Annotated[Path, typer.Option(exists=True, readable=True, help="Fast-pass results.")],
+    output: Annotated[Path, typer.Option()],
+    workers: int = 8,
+) -> None:
+    """Re-check not_assigned answers with Apertus reasoning (thinking), then print the scores."""
+    from parltopic.evaluation.run import run_rethink, score_results
+
+    run_rethink(eval_set, load_topic(topic), base, output, get_settings(), workers)
+    typer.echo(json.dumps(score_results(eval_set, output), indent=2))
+
+
+@app.command()
+def compare(
+    eval_set: Annotated[Path, typer.Option(exists=True, readable=True)],
+    results: Annotated[list[Path], typer.Argument(exists=True, readable=True)],
+) -> None:
+    """Markdown table of several results files on one eval set (for docs/experiments.md)."""
+    from parltopic.evaluation.run import score_results
+
+    groups = ["all", "lang=de", "lang=fr", "lang=it", "level=federal", "level=cantonal"]
+    header = " | ".join(f"F1 {g}" for g in groups[1:])
+    typer.echo(f"| Run | P | R | F1 | {header} | tokens in/out per affair |")
+    typer.echo("|---" * (len(groups) + 4) + "|")
+    for path in results:
+        report = score_results(eval_set, path)
+        assigned, usage = report["assigned"], report["usage_per_1000_affairs"]
+        cells = [
+            f"{assigned['all']['precision']:.3f}",
+            f"{assigned['all']['recall']:.3f}",
+            f"**{assigned['all']['f1']:.3f}**",
+            *(f"{assigned[g]['f1']:.3f}" if g in assigned else "-" for g in groups[1:]),
+            f"{usage['input_tokens'] // 1000} / {usage['output_tokens'] // 1000}",
+        ]
+        typer.echo(f"| {path.stem} | " + " | ".join(cells) + " |")
 
 
 @app.command()

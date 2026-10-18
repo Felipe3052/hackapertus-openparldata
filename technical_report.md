@@ -1,104 +1,287 @@
-# Technical report — ParlTopic, Token Tell
+# Technical Report — ParlTopic: Topic Classification for Swiss Parliaments with Apertus
 
 - **Challenge:** 2 — OpenParlData: Topic classification for Swiss parliaments with Apertus
-- **Event:** Hack Apertus Liebefeld 2026
-- **Team:** Token Tell — team member list to complete
-- **Demo:** video link to add
-- **Repository:** https://github.com/Felipe3052/hackapertus-openparldata
+- **Event:** Hack Apertus Liebefeld, 18–19 October 2026
+- **Team:** Token Tell — Felipe Wüthrich, Josip Jukic
+- **Repository:** [GitHub](https://github.com/Felipe3052/hackapertus-openparldata) · **Experiment log:** [docs/experiments.md](docs/experiments.md) · **Benchmark notes:** [docs/benchmark.md](docs/benchmark.md)
+- **Demo:** video link to add · Streamlit app (`make web`) · API (`make api`) · CLI (`parltopic classify`)
+
+---
 
 ## 1. Summary
 
-ParlTopic is a multilingual annotation service that assigns standard or user-defined topics to Swiss parliamentary affairs. A deterministic multilingual term gate handles explicit cases; the remaining affairs use field-aware segmentation, BM25 retrieval, and Apertus v1.5. Every decision is tied back to original evidence. The first development benchmark covers 450 German, French, and Italian digitalisation affairs from OpenParlData.
+OpenParlData.ch holds more than 300,000 affairs from 90 Swiss parliaments in German, French,
+Italian and some Romansh, but they can only be searched by full text. A question such as *"What
+did Swiss parliaments decide on digitalisation?"* means guessing the wording in every language.
+ParlTopic is an open classification service on **Apertus v1.5 70B**: a user defines a topic in a
+short YAML file (name, description, terms, examples), and the service decides for each affair
+whether it belongs to that topic, citing the passage that justifies the decision. New topics need
+no training.
+
+We validated it on the challenge's real use case: Digital Administration Switzerland (DVS)
+identifies digitalisation affairs by hand, based on the PolitMonitor editorial tag (3,433 tagged
+affairs from 35 parliaments). On the 1,200 affairs of 2024–2026 (one third tagged), **Apertus finds
+88 % of the tagged affairs at 88 % precision (F1 0.876); keyword search over the same
+multilingual terms finds 51 % (F1 0.642)**. F1 is 0.90 in German and 0.85 in French and
+Italian, and 27 of the 30 affairs on the current DVS list are found. Three further topics written
+once from their name only (migration, health, transport) reach F1 0.78–0.87 against the Federal
+Assembly's official subject areas, where keyword search reaches 0.54–0.72. Because only 2.3 % of
+all affairs are digitalisation affairs, about one in four suggestions over the full corpus is
+PolitMonitor-tagged; keyword search has the same ratio at 63 % of our recall. ParlTopic is
+therefore a suggestion list for the editors, not an automatic label.
+
+Three findings shaped the system. **The topic definition is the cheapest lever:** an explicit
+inclusion rule ("side aspects count, a precise title is enough") raised dev F1 from 0.72 to 0.81
+without extra cost. **Apertus' own score is not a confidence:** 46 of 64 missed positives had a
+score ≤ 0.1, so we route by a deterministic multilingual term rule instead of a score threshold
+(78 of 450 affairs need no model call). **Two people agree on an Année Politique Suisse chapter
+only 55 % of the time** (κ 0.51, 20 affairs), so a fixed scheme is hard even for humans; user-defined
+topics are the stronger offer.
+
+---
 
 ## 2. Architecture
 
-The application is split into adapters, a reusable classification core, and delivery surfaces:
+```
+ OpenParlData export / API (affairs, bodies, federal texts, documents)
+        │
+        ▼
+ Normalise → Affair (title, text, language, parliament, level, documents)
+        │      segments with provenance: title · affair text · document (ID + link)
+        ▼
+ Multilingual term rule ── a configured term occurs ──► assigned, cites that segment (no LLM call)
+        │ no match
+        ▼
+ BM25 → top-5 passages ──► Apertus v1.5 70B (CSCS), prompt v2, JSON
+        │                   {status, score, explanation, evidence_ids}
+        ▼
+ Validation: strict schema, only known passage IDs, 'failed' kept apart from 'not_assigned'
+        │
+        ▼
+ Result: status · explanation · original evidence text and link · model · prompt · tokens · latency
+        │
+   CLI (JSONL) · FastAPI · Streamlit
+```
 
-1. **Ingestion** reads OpenParlData API responses or export files and normalises them into stable `Affair`, `Document`, and `TextSegment` records.
-2. **Deterministic gate** assigns explicit configured multilingual terms and cites the matching segment without an LLM call.
-3. **Retrieval and classification** use field-aware segments and BM25 for all remaining affairs, then ask Apertus for a constrained JSON decision and passage IDs.
-4. **Validation and evidence** reject unknown IDs, clamp invalid scores, preserve technical failures separately, and return original source text.
-5. **Delivery** exposes one service through JSONL CLI, FastAPI, and Streamlit.
-6. **Evaluation** measures precision, recall, F1, latency, tokens, review rate, language, and parliamentary level.
+1. **Ingestion.** `parltopic download-data` fetches the bulk exports (`affairs.ndjson.gz`, 326,396
+   affairs; `bodies.ndjson.gz`) and the hackathon label files. Federal affairs get their submitted
+   text and reasoning in the chosen language; the Federal Council's answer is left out so the
+   executive's framing does not decide the topic. `parltopic enrich-documents` attaches the
+   extracted text of an affair's documents from `/v1/affairs/{id}/docs` (cached).
+2. **Segmentation.** Title, affair text and each document become separate segments with stable
+   IDs, so evidence always points to its source field and document.
+3. **Term rule.** If the topic name or a configured term occurs (prefix match for words such as
+   *digital/digitale/digitalizzazione*, whole-token match for acronyms such as *NFT*), the affair is
+   assigned with that segment as evidence. Terms inside attached documents can be excluded.
+4. **Apertus.** All other affairs go to Apertus with the topic definition, in- and out-of-scope
+   examples and the five passages that BM25 ranks highest against the topic's terms.
+5. **Validation.** The answer must match a strict schema; `assigned` and `uncertain` must cite at
+   least one passage; unknown passage IDs are rejected. Technical errors become `failed`, never
+   a negative label. `uncertain` and `not_evaluable` are flagged for review.
+6. **Topic policy.** Each topic file can set its prompt version and switch the term rule off.
+   Curated topics with vetted terms (digitalisation) use the rule and prompt v2; topics written in
+   a minute use the generic prompt v1 without the rule (5.3).
+7. **Optional stages,** measured and off by default: a second look with Apertus reasoning for
+   rejected affairs (`parltopic rethink`), retrieved few-shot examples, title-only rules.
 
-The implementation diagram and trust boundaries are documented in `docs/architecture.md`.
-
-### Target architecture
-
-The target is deployable in two of the event's required environments:
-
-- **On-premise:** the Python service, indexes, cache, and Apertus serving endpoint can run inside the organisation's infrastructure.
-- **Sovereign Swiss cloud:** the same container can use a Swiss-hosted Apertus endpoint and Swiss-resident storage.
-
-An air-gapped runtime becomes possible when Apertus weights and all required OpenParlData exports are prepared before deployment. Runtime application code has no required proprietary AI dependency.
-
-Build-time dependencies are Python packages and the container base image. Runtime dependencies are an Apertus-compatible endpoint and either cached OpenParlData data or permitted API access. Credentials enter through environment variables and are excluded from images and Git.
+---
 
 ## 3. Use of Apertus
 
-- **Model:** `swiss-ai/Apertus-v1.5-8B` by default; 70B is a measured quality-mode candidate.
-- **Use:** zero-/few-shot structured topic classification.
-- **Serving:** OpenAI-compatible CSCS endpoint during the hackathon; local or sovereign hosting remains possible.
-- **Prompt:** a versioned topic definition, positive/negative examples, and a maximum of `RETRIEVAL_TOP_K` original passages.
-- **Output:** `status`, model assessment, short explanation, and evidence passage IDs.
+- **Model:** `swiss-ai/Apertus-v1.5-70B`, temperature 0, on the CSCS inference endpoint
+  (OpenAI-compatible, `response_format: json_object`), retries with exponential backoff. The
+  model is set by `LLM_NAME`; nothing else is hard-wired.
+- **Role:** Apertus is the semantic classifier and writes the explanation; it chooses the
+  evidence passages by ID, so every cited text is original source text. It also translated the
+  French and Italian cantonal titles into German for our human labelling page. No other model is
+  used for classification or evaluation; no proprietary model is called at runtime.
+- **8B vs. 70B (dev, same prompt):** 8B reaches F1 0.41 (recall 0.26) against 0.78 for 70B. It
+  rejects most affairs whose digital aspect is not in the title, and in 169 of 450 answers it
+  returned malformed evidence lists. 70B is the only viable size for this task.
+- **Determinism:** two identical 70B runs change 0 of 450 labels, so paired differences measure
+  the change, not noise.
+- **Scores are not confidences:** 46 of the 64 missed positives of the first run had a score ≤ 0.1
+  and only 16 of 450 answers lay between 0.1 and 0.9. A "send low-confidence cases to a second
+  model" cascade cannot find these errors.
+- **Reasoning:** Apertus only reasons before answering when the assistant turn is prefilled with
+  `<|inner_prefix|>`; the answer follows `<|inner_suffix|>`. Re-checking rejected affairs this
+  way raised dev F1 from 0.784 to 0.847 with the first prompt, but adds nothing once prompt v2 and
+  the term rule are in place (macro-F1 −0.0015, 95 % CI [−0.015, +0.012]) at 3× the input tokens.
+  It stays optional.
 
-Temperature is zero. Complete documents are not sent blindly: the earlier Fact Attack project showed that selecting relevant context can improve quality while reducing latency and tokens. Model scores are not treated as calibrated probabilities.
+---
 
-## 4. Data
+## 4. Data and evaluation protocol
 
-Primary data comes from the public OpenParlData REST API or data export. The internal schema preserves upstream identifiers, language, parliamentary level, dates, document identifiers, and source URLs. Source hashes and retrieval timestamps will be added when the first real API fixture is pinned.
+- **Sources:** OpenParlData bulk exports and the hackathon label directory, snapshot of
+  18 October 2026, CC BY 4.0.
+- **E1 digitalisation (main benchmark):** PolitMonitor-tagged affairs are positives. Negatives are
+  untagged affairs of the same parliaments, period and affair types, sampled per parliament in
+  proportion to its positives so the parliament alone does not reveal the label. **Dev:**
+  2018–2023, 150 + 300 affairs, used for all design decisions. **Test:** 2024–2026, 400 + 800
+  affairs (DE 670, FR 325, IT 205; federal 585, cantonal 609, municipal 6). Federal affairs are
+  assigned one of DE/FR/IT at random, so the official translations measure each language on
+  comparable content. Seed 42; `parltopic build-eval` reproduces the files byte for byte.
+- **Label caveat:** untagged affairs are positive-unlabelled proxies. Our error analysis found
+  digitalisation affairs among the "false positives" (e.g. *Digital Services Act per la Svizzera*,
+  the SIPAC IT system, the telecom surveillance ordinance), so precision is a lower bound.
+- **Protocol:** prompts and topic definitions were tuned on dev only. The test split was first
+  run once with predeclared expectations; since then it counts as opened validation, and the
+  frozen configuration was run on it once more with expectations declared beforehand
+  ([docs/experiments.md](docs/experiments.md)). Paired comparisons use a 10,000-sample bootstrap.
+- **Further checks:** E2 — 500 federal affairs with the Federal Assembly's subject areas, used as
+  ground truth for three ad-hoc topics; E3 — 20 affairs labelled blind by both team members with
+  APS chapter and topic; E4 — the 30 affairs on the DVS list on 18 October 2026.
 
-The repository includes frozen E1 development and opened-validation data derived from PolitMonitor tags, plus Curia and DVS evaluation resources. Untagged E1 affairs are positive-unlabeled proxies rather than adjudicated negatives. Results therefore measure agreement with available tags and are not a final production-quality claim.
+---
 
-## 5. Evaluation
+## 5. Results
 
-The current full-inference development result for hybrid-v3 with Apertus 70B is precision
-`0.932`, recall `0.820`, positive F1 `0.872`, and macro-F1 `0.907` on all 450 examples.
-The keyword-only baseline
-has macro-F1 `0.733`. These are development figures; `docs/benchmark.md` records paired
-comparisons and uncertainty. Evaluation includes:
+### 5.1 Digitalisation, test split (1,200 affairs, 2024–2026)
 
-- binary digitalisation precision, recall, F1, and accuracy;
-- review/abstention rate for `uncertain` and `not_evaluable`;
-- quality split by German, French, Italian, and where possible Romansh;
-- quality split by federal, cantonal, and municipal level;
-- inference latency, token use, and throughput;
-- evidence validity: every returned ID exists in the supplied context;
-- comparison against keyword-only and BM25-only baselines.
+| Configuration | Precision | Recall | F1 | Macro-F1 | F1 DE / FR / IT | Tokens in / out per affair |
+|---|---:|---:|---:|---:|---|---:|
+| Keyword search, same multilingual terms | 0.864 | 0.510 | 0.642 | | 0.60 / 0.68 / 0.72 | 0 / 0 |
+| Apertus 70B, topic v3, first prompt | 0.908 | 0.785 | 0.842 | | 0.85 / 0.82 / 0.86 | 855 / 87 |
+| … + reasoning re-check of rejections | 0.859 | 0.868 | 0.863 | | 0.87 / 0.86 / 0.85 | 1,434 / 635 |
+| **Frozen: term rule + Apertus 70B, prompt v2, topic v4** | **0.875** | **0.877** | **0.876** | **0.907** | 0.90 / 0.85 / 0.85 | 1,102 / 80 |
 
-The next defensible quality milestone is a newly sealed, manually adjudicated holdout because
-the existing nominal test labels have already been inspected.
+By level (frozen configuration): federal F1 0.854, cantonal 0.898. Municipal affairs are too
+few to report (6). 30 affairs on the DVS list: 27 found (keyword search: 19). The frozen run met
+two of its three predeclared expectations (F1 ≥ 0.84, DVS ≥ 27); the language spread of 0.051
+narrowly misses the 0.05 bar. 6 of 1,200 affairs have no decision (4 failed calls, 2 without text).
+
+**Precision at the real base rate.** The sample is one third positive; in the corpus 2.3 % of the
+eligible affairs are tagged. Re-weighting the false-positive rate to that base rate gives the share
+of suggestions that PolitMonitor tagged:
+
+| Configuration | Recall | Precision at 2.3 % base rate |
+|---|---:|---:|
+| Keyword search | 0.55 | 0.24 |
+| Apertus, topic v3, first prompt | 0.80 | 0.32 |
+| Apertus + reasoning re-check | 0.89 | 0.22 |
+| **Frozen** | **0.88** | **0.25** |
+
+All variants, keyword search included, return about three untagged affairs per tagged one;
+ParlTopic keeps that ratio at 1.6 times the recall. Part of the untagged suggestions are label gaps
+(4.1), so the true share is higher, but the editors still have to review the list.
+
+### 5.2 How we got there (dev split, 450 affairs)
+
+| Step | P | R | F1 |
+|---|---:|---:|---:|
+| Keyword search | 0.930 | 0.440 | 0.597 |
+| Apertus 70B, topic definition v1 | 0.966 | 0.573 | 0.720 |
+| + inclusion rule in the definition (v2) | 0.952 | 0.667 | 0.784 |
+| + side aspects count (v3) | 0.955 | 0.700 | 0.808 |
+| + term rule and prompt v2 (hybrid-v3, main) | 0.932 | 0.820 | 0.872 |
+| **+ topic v4 (frozen)** | **0.933** | **0.839** | **0.883** |
+| Rejected: 8B instead of 70B | 0.951 | 0.260 | 0.408 |
+| Rejected: 3 + 3 retrieved labelled examples | 0.952 | 0.660 | 0.780 |
+| Not significant: document text for title-only affairs | 0.914 | 0.859 | 0.886 |
+| Not significant: reasoning re-check on the frozen configuration | 0.908 | 0.859 | 0.883 |
+
+The frozen configuration's dev macro-F1 is 0.915; the documents and reasoning variants differ by
++0.0009 and −0.0015 with 95 % intervals spanning zero. A title-only TF-IDF classifier trained on
+2018–2021 reaches macro-F1 0.82–0.86, below Apertus (Part B of the experiment log).
+
+### 5.3 Ad-hoc topics beyond digitalisation
+
+Each topic was written once from its name (a two-line description and about 15 DE/FR/IT terms,
+`configs/topics/adhoc/`) and scored against the Federal Assembly's subject area on 500 federal
+affairs from 2024–2026.
+
+| Topic | Positives | Keyword search | Frozen digitalisation policy | Same, term rule off | **Generic prompt v1, no term rule (final)** |
+|---|---:|---:|---:|---:|---:|
+| Migration | 63 | 0.717 | 0.762 | 0.757 | **0.874** |
+| Health | 83 | 0.571 | 0.656 | 0.667 | **0.805** |
+| Transport | 55 | 0.540 | 0.642 | 0.690 | **0.784** |
+
+The policy tuned for digitalisation does not transfer. Prompt v2 names digital anchors
+(software, ERP, online platforms) and makes Apertus strict on other topics (precision 0.94–1.00,
+recall 0.52–0.62), and quickly chosen terms such as *Spital* or *Strasse* make the term rule fire
+on unrelated affairs (health precision 0.61). Each topic file therefore sets its own policy
+(`prompt_version`, `keyword_rule`): curated topics with vetted terms use the term rule and prompt
+v2, topics written in a minute use the generic prompt without the rule. This was found after the
+predeclared run (which expected F1 ≥ 0.80 and missed it with the frozen policy) and is reported as
+a diagnosis, not a tuned result. Coverage is 97–98 %: in 34 of 1,500 answers the generic prompt cited the
+affair ID instead of a passage ID, which the validator rejects rather than invent evidence.
+
+### 5.4 Bias and neutrality
+
+Languages: F1 DE 0.90, FR 0.85, IT 0.85 with the frozen configuration (0.87 / 0.86 / 0.85 with the
+first prompt); the term rule finds German affairs slightly more often. The following slices come
+from the run with the reasoning re-check (E1.7 in the log). Parliaments
+differ mainly by how much text they publish: affairs with only a title lose 13 recall points
+(0.78 vs. 0.91), which is why Bern (0.73) and Basel-Stadt (0.62) trail; their content sits in
+attached documents. Federal Council bills, with long legal titles, are recalled least (0.72). Author
+and party are not in the affairs export; a party check is open. The prompt instructs Apertus to
+classify subject matter only and never judge a position.
+
+### 5.5 Standard topics: how hard is APS?
+
+Both team members labelled 20 affairs (12 federal, 8 cantonal) blind with an APS chapter and topic,
+reading French and Italian affairs in German. They agree on 11 of 20 chapters (55 %, κ 0.51) and
+9 of 20 topics; most disagreements are multi-aspect affairs (*no transfer of tax data without
+anonymisation*: data protection or taxes). A model scored against one human label would therefore
+look worse than it is; standard topics should be multi-label and judged against this human
+ceiling. The APS scheme (8 domains, 22 chapters, 165 topics) is exported to
+`configs/taxonomies/aps_topics.json`.
+
+### 5.6 Cost and runtime
+
+The frozen configuration needs 1,102 / 80 tokens per affair on average; the term rule decides
+21 % of the test affairs without a model call. With 8 parallel requests the 1,200 test affairs took
+379 s (190 affairs per minute), i.e. about 28 hours for one topic over 325,000
+affairs. At the Public AI list price for Apertus 70B (USD 0.82 / 2.92 per million input / output
+tokens) one topic over the full corpus costs about USD 370; on CSCS or a Swiss provider the
+price depends on the contract. A pre-filter that sends only candidate affairs to Apertus is the
+next step to cut both numbers.
+
+---
 
 ## 6. Limitations
 
-- OpenParlData field mapping is not final until exact API fixtures are committed.
-- BM25 depends on surface terms and may underperform across languages.
-- Model assessments can be overconfident and require labelled calibration work.
-- Short source texts may not contain enough evidence for a reliable decision.
-- Topic definitions can encode hidden scope choices; they must be versioned and reviewed.
-- Performance on one topic cannot be generalised to the complete APS taxonomy.
-- Romansh data is expected to be sparse.
+- **Labels:** PolitMonitor tags are positives only; precision against them is a lower bound. One
+  topic is evaluated in depth; three more against official subject areas.
+- **Test split:** opened validation, not a sealed holdout; a later, manually adjudicated holdout is
+  needed for an independent quality claim.
+- **Coverage:** municipal affairs are too few in the labels (6 in the test split); Romansh is
+  supported by the schema but not evaluated.
+- **Title-only affairs** are recalled worse; document text did not help significantly yet because
+  long reports bring incidental mentions.
+- **Standard topics:** the APS scheme is available, but a multi-label APS mode is not evaluated.
+- **Full-corpus ad-hoc search:** each topic is classified affair by affair; a pre-filter for a fast
+  first pass over all 325,000 affairs is not built yet.
+- **Party bias** is not checked yet.
+- **Topic policy:** the term rule and prompt v2 suit curated topics only; quickly written topics
+  need the generic prompt (5.3), which in 2 % of answers cites an affair ID instead of a passage.
+
+---
 
 ## 7. Reproducibility
 
-Create a Python 3.11+ environment, install `.[dev]`, copy `.env.example` to `.env`, and run `make test`. `make demo` validates the demo records without an API call. Live classification requires `LLM_API_KEY`; `make web` and `make api` expose the two interactive surfaces.
+```bash
+python -m pip install -e '.[dev]'          # Python 3.11+; copy .env.example to .env, add LLM_API_KEY
+make test                                  # unit tests, no API calls
+parltopic download-data                    # exports and label files to data/raw (~350 MB)
+parltopic build-eval                       # rebuilds data/eval byte for byte (seed 42)
+parltopic baseline --eval-set data/eval/e1_digitalisation_test.jsonl --topic configs/topics/digitalisation.yaml
+parltopic run-eval --eval-set data/eval/e1_digitalisation_test.jsonl \
+  --topic configs/topics/digitalisation.yaml --output results/test.jsonl --workers 8
+parltopic compare-runs --eval-set … --baseline-results … --candidate-results …   # paired bootstrap
+```
 
-Final benchmark runs must record:
+Every `run-eval` output has a manifest with the dataset hash, topic, system prompt, settings and
+source-file hashes; resuming with changed inputs is refused. All settings are in `.env.example`.
 
-- exact Git commit;
-- model identifier and endpoint type;
-- prompt and topic configuration versions;
-- dataset hash and split definition;
-- Python and dependency versions;
-- machine/serving configuration;
-- full output JSONL and aggregate report.
+---
 
-## Licence
+## 8. Next steps
 
-Code: Apache-2.0. Report and documentation: CC-BY-4.0.
+1. Pre-filter over the full corpus and a stored, searchable result per topic (ad-hoc search in the UI).
+2. A correction button in the UI that stores human decisions as new labels.
+3. Multi-label APS chapters, evaluated against the human agreement in 5.5.
+4. Party bias check; a sealed, adjudicated holdout including municipal affairs.
 
-## References
-
-1. OpenParlData Challenge, Hack Apertus Liebefeld 2026.
-2. Swiss AI, Apertus v1.5 model family.
-3. OpenParlData API and data export documentation.
+**License:** code Apache-2.0 ([LICENSE](LICENSE)); report and documentation CC BY 4.0. Data: OpenParlData.ch, CC BY 4.0.

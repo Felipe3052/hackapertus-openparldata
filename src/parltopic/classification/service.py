@@ -22,10 +22,18 @@ class ClassificationService:
         segments = chunk_affair(affair, self.settings.chunk_size, self.settings.chunk_overlap)
         if not segments:
             return self._result(affair, topic, ClassificationStatus.NOT_EVALUABLE)
-        if self.settings.keyword_rescue_enabled:
-            gate_segments = segments if self.settings.keyword_document_gate_enabled else [
-                segment for segment in segments if segment.document_id is None
-            ]
+        keyword_rule = (
+            self.settings.keyword_rescue_enabled
+            if topic.keyword_rule is None
+            else topic.keyword_rule
+        )
+        prompt_version = topic.prompt_version or self.settings.classifier_prompt_version
+        if keyword_rule:
+            gate_segments = (
+                segments
+                if self.settings.keyword_document_gate_enabled
+                else [segment for segment in segments if segment.document_id is None]
+            )
             hit = first_keyword_hit(gate_segments, topic)
             if hit is None and affair.title.strip():
                 hit = first_keyword_hit([segments[0]], topic, terms=topic.title_synonyms)
@@ -48,7 +56,7 @@ class ClassificationService:
                     ],
                     needs_review=False,
                     model=self.settings.llm_name,
-                    prompt_version=self.settings.classifier_prompt_version,
+                    prompt_version=prompt_version,
                     classifier_version=self.settings.classifier_policy_version,
                     input_tokens=0,
                     output_tokens=0,
@@ -59,20 +67,17 @@ class ClassificationService:
             title = segments[0]
             title_rank = next((item for item in ranked if item[0] == title), (title, 0.0))
             ranked = [title_rank, *(item for item in ranked if item[0] != title)][
-                :self.settings.retrieval_top_k
+                : self.settings.retrieval_top_k
             ]
         selected = [segment for segment, _ in ranked]
         score_by_id = {segment.segment_id: score for segment, score in ranked}
         try:
-            prompt_version = self.settings.classifier_prompt_version
             response = self.client.classify(
                 system_prompt(prompt_version), build_user_prompt(topic, selected)
             )
             status = response.payload.status
             selected_by_id = {segment.segment_id: segment for segment in selected}
-            evidence_ids = self._resolve_evidence_ids(
-                response.payload.evidence_ids, selected_by_id
-            )
+            evidence_ids = self._resolve_evidence_ids(response.payload.evidence_ids, selected_by_id)
             evidence = [
                 Evidence(
                     segment_id=segment_id,
@@ -105,9 +110,7 @@ class ClassificationService:
             return self._result(affair, topic, ClassificationStatus.FAILED, str(error))
 
     @staticmethod
-    def _resolve_evidence_ids(
-        requested: list[str], selected_by_id: dict[str, object]
-    ) -> list[str]:
+    def _resolve_evidence_ids(requested: list[str], selected_by_id: dict[str, object]) -> list[str]:
         """Repair only unambiguous prefix typos when the content hash still matches exactly."""
         resolved = []
         for segment_id in requested:
@@ -141,8 +144,7 @@ class ClassificationService:
             language=affair.language,
             needs_review=True,
             model=self.settings.llm_name,
-            prompt_version=self.settings.classifier_prompt_version,
+            prompt_version=topic.prompt_version or self.settings.classifier_prompt_version,
             classifier_version=self.settings.classifier_policy_version,
             error=error,
         )
-

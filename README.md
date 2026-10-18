@@ -1,167 +1,156 @@
-# ParlTopic — OpenParlData topic classification with Apertus
+# ParlTopic — topic classification for Swiss parliaments with Apertus
 
-ParlTopic is an open, multilingual topic-classification service for Swiss parliamentary affairs. It combines retrieval over OpenParlData texts with Apertus v1.5 and returns a topic decision together with verifiable source passages.
+**Hack Apertus Liebefeld 2026 · Challenge 2: OpenParlData · Team Token Tell (Felipe Wüthrich, Josip Jukic)**
 
-**Challenge:** [Topic classification for Swiss parliaments with Apertus](https://app.sprintd.org/events/hack-apertus-liebefeld/cases/topic-classification-for-swiss-parliaments-with-apertus)
+ParlTopic tells you which Swiss parliamentary affairs belong to a topic, in German, French and
+Italian, across federal, cantonal and municipal parliaments. You describe a topic in a short YAML
+file; Apertus v1.5 decides for each affair and cites the passage that justifies the decision. New
+topics need no training.
 
-**Team:** Token Tell
+- **Challenge:** [Topic classification for Swiss parliaments with Apertus](https://app.sprintd.org/events/hack-apertus-liebefeld/cases/topic-classification-for-swiss-parliaments-with-apertus)
+- **Technical report:** [technical_report.md](technical_report.md) · **Experiment log:** [docs/experiments.md](docs/experiments.md) · **Benchmark notes:** [docs/benchmark.md](docs/benchmark.md)
+- **Demo video:** link to add
 
-**Status:** Working hackathon MVP with OpenParlData ingestion, frozen validation data, a
-hybrid classifier, and reproducible evaluation commands.
+> Topic labels are suggestions about subject matter. They do not judge political positions, and a
+> person should confirm them before they are published.
 
-## What the MVP does
+---
 
-- accepts parliamentary affairs in a small, versioned JSONL contract;
-- defines standard or ad-hoc topics as YAML, without retraining;
-- splits long affairs into stable text segments;
-- retrieves the most relevant passages before inference;
-- assigns explicit multilingual topic terms with a deterministic evidence-backed rule;
-- sends the remaining semantic cases to Apertus v1.5 for neutral topic classification;
-- returns evidence IDs that are resolved to original source text;
-- distinguishes `uncertain`, `not_evaluable`, and technical `failed` results;
-- exposes the same core through a CLI, FastAPI endpoint, and Streamlit demo.
+## Results
 
-The first validation use case is **digitalisation**. The architecture is designed for German, French, Italian, and Romansh; the initial quality report must publish results separately by language.
+Use case of the challenge: Digital Administration Switzerland (DVS) lists digitalisation affairs
+by hand, based on the PolitMonitor editorial tag. Model: `swiss-ai/Apertus-v1.5-70B` on CSCS.
 
-## Architecture
+| Evaluation set | Keyword search | **ParlTopic** | Notes |
+|---|---:|---:|---|
+| Digitalisation, 1,200 affairs 2024–2026, F1 | 0.642 | **0.876** | precision 0.875, recall 0.877 |
+| … F1 German / French / Italian | 0.60 / 0.68 / 0.72 | **0.90 / 0.85 / 0.85** | official translations of federal affairs |
+| Current DVS list (30 affairs), found | 19 | **27** | federal and cantonal |
+| Ad-hoc topic *migration*, F1 | 0.717 | **0.874** | topic written once, no tuning; |
+| Ad-hoc topic *health*, F1 | 0.571 | **0.805** | scored against the Federal Assembly's |
+| Ad-hoc topic *transport*, F1 | 0.540 | **0.784** | official subject areas (500 affairs) |
+
+Keyword search uses the same multilingual terms as the topic file. The digitalisation labels are
+editorial tags without checked negatives, so precision is a lower bound. The sample is one third
+positive; in the whole corpus only 2.3 % of the affairs are tagged, so about one in four
+suggestions is a tagged affair (keyword search: the same ratio at 63 % of our recall). ParlTopic is
+a suggestion list for editors to review. Configuration and prompts were chosen on a separate
+2018–2023 split; see the [technical report](technical_report.md) for the protocol, the ablations,
+the bias check and costs.
+
+---
+
+## How it works
 
 ```text
-OpenParlData API / export
-          │
-          ▼
- ingestion + normalisation
-          │
-          ▼
- stable affairs and text segments
-          │
-          ▼
- deterministic keyword gate ── clear match ──┐
-          │ no match                         │
-          ▼                                  │
- BM25 retrieval → Apertus classifier         │
-          │                                  │
-          └──────────────────────────────────┘
-          │
-          ▼
- validated result + original evidence
-          │
-     ┌────┼────┐
-     ▼    ▼    ▼
-    CLI  API   Streamlit
+OpenParlData export / API ─► normalise affair (title, text, documents, language, level)
+        │
+        ▼
+ multilingual term rule ── term found ──► assigned, cites the segment (no model call)
+        │ no match
+        ▼
+ BM25 → 5 passages ─► Apertus v1.5 70B → {status, score, explanation, evidence_ids}
+        │
+        ▼
+ strict validation → result with original evidence text and link
+        │
+   CLI · FastAPI · Streamlit
 ```
 
-See [docs/architecture.md](docs/architecture.md) and [technical_report.md](technical_report.md) for boundaries, decisions, and the production-oriented target design.
-Current development metrics and their limitations are recorded in
-[docs/benchmark.md](docs/benchmark.md).
-Comparisons against the pinned current main baseline, acceptance rules and measured usage are
-recorded in [docs/experiments.md](docs/experiments.md).
-An optional chronological, title-only TF-IDF baseline is available with
-`pip install -e '.[experiments]'` and
-`python -m parltopic.evaluation.linear_baseline --help`.
+- **Topics as YAML** (`configs/topics/`): name, description with an inclusion rule, DE/FR/IT terms,
+  in- and out-of-scope examples, and the topic's own policy. `digitalisation.yaml` is the curated,
+  validated topic (term rule on, prompt v2); `adhoc/` has three topics written without tuning
+  (`prompt_version: topic-v1`, `keyword_rule: false`, because quickly chosen terms are too broad).
+- **Evidence first:** Apertus returns passage IDs, the service returns the original text, its
+  document ID and link.
+- **Explicit states:** `assigned`, `not_assigned`, `uncertain` and `not_evaluable` are model
+  decisions; `failed` is a technical error and never counts as a negative.
+- **Every result** carries model, prompt and policy version, tokens and latency; every evaluation
+  run has a manifest with dataset, topic, prompt and source hashes.
+
+---
 
 ## Quick start
 
 Requires Python 3.11 or newer.
 
 ```bash
-cp .env.example .env
+cp .env.example .env          # add LLM_API_KEY for the CSCS endpoint
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate     # Windows: .venv\Scripts\activate
 python -m pip install -e '.[dev]'
-make test
-make demo
+make test                     # unit tests, no API calls
+make demo                     # validates the demo records offline
 ```
 
-Add the CSCS API key to `.env`, then start the user interface:
+Classify affairs:
 
 ```bash
-make web
+parltopic classify --input data/demo/affairs.jsonl \
+  --topic configs/topics/digitalisation.yaml --output results/digitalisation.jsonl
 ```
 
-Or run the API:
+User interface and API:
 
 ```bash
-make api
-curl http://localhost:8000/health
+make web                      # Streamlit
+make api                      # FastAPI, then: curl http://localhost:8000/health
+docker compose up --build     # both in containers
 ```
 
-Docker:
+---
+
+## Reproduce the evaluation
 
 ```bash
-cp .env.example .env
-docker compose up --build
+parltopic download-data                       # OpenParlData exports + hackathon labels, ~350 MB
+parltopic build-eval --out-dir data/processed/eval   # same files as data/eval, byte for byte
+parltopic baseline --eval-set data/eval/e1_digitalisation_test.jsonl \
+  --topic configs/topics/digitalisation.yaml  # keyword search
+parltopic run-eval --eval-set data/eval/e1_digitalisation_test.jsonl \
+  --topic configs/topics/digitalisation.yaml --output results/test.jsonl --workers 8
+parltopic score --eval-set data/eval/e1_digitalisation_test.jsonl --results results/test.jsonl
+parltopic compare-runs --eval-set data/eval/e1_digitalisation_dev.jsonl \
+  --baseline-results results/a.jsonl --candidate-results results/b.jsonl   # paired bootstrap
 ```
 
-## CLI contract
+The frozen eval sets are in `data/eval/` (`meta.json` describes them). `build-eval
+--eligibility dev` uses a stricter sampling rule for a new sealed holdout and produces different
+files. Optional experiments: `parltopic rethink` (second look with Apertus reasoning),
+`--fewshot-pool`, `--title-rules`, `parltopic enrich-documents`, and a title-only TF-IDF baseline
+(`pip install -e '.[experiments]'`, `python -m parltopic.evaluation.linear_baseline --help`).
 
-Offline validation, without an Apertus request:
+---
 
-```bash
-parltopic classify \
-  --input data/demo/affairs.jsonl \
-  --topic configs/topics/digitalisation.yaml \
-  --offline
-```
+## Data
 
-Live classification:
+Source: [OpenParlData](https://openparldata.ch) bulk exports ([files.openparldata.ch](https://files.openparldata.ch/))
+and the [hackathon label directory](https://files.openparldata.ch/hackapertus/), CC BY 4.0. The
+REST API ([documentation](https://api.openparldata.ch/documentation)) serves document text.
 
-```bash
-parltopic classify \
-  --input data/demo/affairs.jsonl \
-  --topic configs/topics/digitalisation.yaml \
-  --output results/digitalisation.jsonl
-```
+- **Affairs:** 326,396 records; join key `id` in the exports, `openparldata_id` in the label files.
+- **Federal texts:** submitted text, reasoning and lead in DE/FR/IT (`texts_CHE.ndjson.gz` if
+  present, else the hackathon file), in a stable order. The Federal Council's answer is not used.
+- **Labels:** PolitMonitor and DVS digitalisation lists (positives only), Curia Vista subject areas
+  for federal affairs, the APS scheme (no affair has an APS label).
+- **Documents:** `parltopic enrich-documents --input … --output …` attaches the extracted text of
+  an affair's documents from `/v1/affairs/{id}/docs`, cached under `data/cache/documents`. Documents
+  can postdate the affair.
 
-## OpenParlData source data
+Raw data, caches and results are excluded from Git.
 
-Download the hackathon snapshot and the complementary affair/body exports:
-
-```bash
-parltopic download-data --raw-dir data/raw
-```
-
-The source is [the OpenParlData hackathon directory](https://files.openparldata.ch/hackapertus/).
-The importer downloads the JSONL versions of federal and cantonal labels, multilingual federal
-texts, both keyword vocabularies, the PolitMonitor and DVS digitalisation lists, and the APS
-taxonomy workbook. Equivalent CSV/long-format label copies are available upstream. The source
-documentation is saved as `data/raw/SOURCE_README.md`. Existing files are retained; downloads
-are promoted from `.part` files only after completion. Raw data is excluded from Git.
-
-Build a separate evaluation snapshot without replacing the checked-in evaluation sets:
-
-```bash
-parltopic build-eval --raw-dir data/raw --out-dir data/processed/eval
-```
-
-Join files using `openparldata_id`; bulk affair exports use `id` for the same identifier.
-For federal text ingestion, an available `data/raw/texts_CHE.ndjson.gz` is preferred. Its
-`affair_id` joins to `affairs.id`; the hackathon `che_affair_texts.ndjson.gz` schema remains a
-fallback using `openparldata_id`. Both are normalized to submitted text, reasoning and lead
-in a stable order before chunking. Existing evaluation files are not rewritten automatically.
-PolitMonitor and DVS lists contain positive examples only. The APS workbook defines the
-target hierarchy; these affairs do not have APS ground-truth labels.
-
-Add original document text to affairs that currently contain only a title:
-
-```bash
-parltopic enrich-documents \
-  --input data/eval/e1_digitalisation_dev.jsonl \
-  --output data/processed/enriched/e1_digitalisation_dev.jsonl
-```
-
-This preserves labels and order, caches API responses under `data/cache/documents`, and
-retains each document's ID and source URL. Explicitly different-language documents are skipped.
-The output is a separate contemporary snapshot; documents may postdate the affair's opening
-date, so results must not be presented as predictions made at that historical date.
+---
 
 ## Repository structure
 
 ```text
 app/                    Streamlit demo
-configs/topics/         Ad-hoc and standard topic definitions
-data/demo/              Small redistributable demo inputs
-docs/                   Architecture and implementation decisions
-src/parltopic/          Reusable application core
+configs/topics/         Topic definitions (digitalisation, adhoc/, experiments/)
+configs/taxonomies/     APS scheme as JSON (22 chapters, 165 topics)
+data/eval/              Frozen eval sets and the human APS labels
+data/demo/              Small synthetic demo inputs
+docs/                   Architecture, evaluation protocol, benchmark notes, experiment log
+src/parltopic/          Ingestion, classification, retrieval, evaluation, CLI, API
 tests/                  Offline unit tests
 technical_report.md     Hackathon technical report
 ```
@@ -170,40 +159,32 @@ technical_report.md     Hackathon technical report
 
 | Variable | Purpose |
 | --- | --- |
-| `LLM_NAME` | Apertus model identifier |
-| `LLM_BASE_URL` | OpenAI-compatible inference endpoint |
-| `LLM_API_KEY` | Runtime API credential; never committed |
-| `OPENPARLDATA_BASE_URL` | OpenParlData API root |
-| `RETRIEVAL_TOP_K` | Maximum passages sent to Apertus |
-| `CHUNK_SIZE` | Approximate passage size in characters |
-| `CLASSIFIER_PROMPT_VERSION` | Versioned Apertus decision prompt |
-| `CLASSIFIER_POLICY_VERSION` | Versioned end-to-end classifier policy |
-| `KEYWORD_RESCUE_ENABLED` | Enable the deterministic high-precision gate |
+| `LLM_NAME` | Apertus model, default `swiss-ai/Apertus-v1.5-70B` |
+| `LLM_BASE_URL` | OpenAI-compatible endpoint, default CSCS |
+| `LLM_API_KEY` | API key; never committed |
+| `RETRIEVAL_TOP_K` | Passages sent to Apertus (5) |
+| `CLASSIFIER_PROMPT_VERSION` | Prompt version (`topic-v2`) |
+| `KEYWORD_RESCUE_ENABLED` | Multilingual term rule on or off |
+| `KEYWORD_DOCUMENT_GATE_ENABLED` | Term rule also inside attached documents |
 
-All settings and safe defaults are documented in [.env.example](.env.example).
+All settings and defaults are listed in [.env.example](.env.example).
 
-## Design principles
+## Sovereign deployment
 
-- **Evidence first:** the model selects passage IDs; the application returns the original text.
-- **Neutrality:** the service classifies subject matter, not political merit or truth.
-- **Explicit failure states:** infrastructure failures never become negative topic labels.
-- **Reproducibility:** model, prompt version, token usage, and latency belong to every result.
-- **Sovereign deployment:** application code and data processing can run on-premise or in a Swiss cloud with Apertus.
-
-## Evaluation
-
-Evaluation reports positive-class precision/recall/F1, macro-F1, confusion counts, coverage,
-language and parliamentary-level slices, latency, and token use. Paired prompt/policy comparisons
-include a bootstrap confidence interval. See [docs/evaluation_protocol.md](docs/evaluation_protocol.md)
-for the important positive-unlabeled label limitation.
+The service is a Python package and container with no proprietary AI dependency. It runs against
+any OpenAI-compatible Apertus endpoint: CSCS during the hackathon, a Swiss provider, or a local
+vLLM server with the open weights. With the exports cached, it runs without internet access.
 
 ## Current limitations
 
-- The checked-in OpenParlData client is deliberately thin until the exact API response contract is pinned with fixtures.
-- BM25 is the reproducible baseline; multilingual embeddings remain a measured follow-up experiment.
-- The included demo data is synthetic and cannot be used as evidence of classification quality.
-- Romansh support is part of the schema but requires a dedicated labelled evaluation sample.
+- The digitalisation labels have no checked negatives; the test split has been opened and is not a
+  sealed holdout.
+- Each topic is classified affair by affair; a pre-filter for a fast pass over all 325,000 affairs
+  and a stored, searchable result per topic are next.
+- The UI has no correction button yet; the APS scheme is exported but no multi-label APS mode is
+  evaluated; party bias is not checked; Romansh is not evaluated.
+- Apertus 8B is not suitable for this task (dev F1 0.41 vs. 0.78 for 70B).
 
 ## Licence
 
-Code is released under the [Apache License 2.0](LICENSE). Documentation is intended for CC-BY-4.0 as required by the event template.
+Code: [Apache License 2.0](LICENSE). Documentation: CC BY 4.0. Data: OpenParlData.ch, CC BY 4.0.

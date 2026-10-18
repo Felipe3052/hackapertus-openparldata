@@ -74,6 +74,11 @@ class TopicDefinition(BaseModel):
     synonyms: list[str] = Field(default_factory=list)
     title_synonyms: list[str] = Field(default_factory=list)
     normalize_online_variants: bool = False
+    # Per-topic policy; None falls back to the settings. A curated topic with vetted terms can
+    # use the term rule and prompt v2; a topic written in a minute should use topic-v1 without
+    # the rule, because quickly chosen terms are too broad (see docs/experiments.md, A · M-A).
+    prompt_version: str | None = None
+    keyword_rule: bool | None = None
     positive_examples: list[str] = Field(default_factory=list)
     negative_examples: list[str] = Field(default_factory=list)
 
@@ -112,4 +117,3 @@ class ClassificationResult(BaseModel):
     output_tokens: int | None = None
     latency_ms: float | None = None
     error: str | None = None
-

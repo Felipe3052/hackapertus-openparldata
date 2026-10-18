@@ -70,6 +70,49 @@ def classify_affair(
     typer.echo(result.model_dump_json(indent=2))
 
 
+@app.command("aps-route")
+def aps_route(
+    input: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path | None, typer.Option()] = None,
+    taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
+        "configs/taxonomies/aps_topics.json"
+    ),
+    max_chapters: int = 4,
+    max_topics: int = 8,
+) -> None:
+    """Route affairs to APS candidates without calling Apertus (shadow experiment)."""
+    from parltopic.aps import ApsRouter, ApsTaxonomy, select_context
+    from parltopic.retrieval.chunker import chunk_affair
+
+    router = ApsRouter(ApsTaxonomy.load(taxonomy))
+    rows = []
+    for affair in read_affairs(input):
+        route = router.route(affair, max_chapters=max_chapters, max_topics=max_topics)
+        _, context = select_context(chunk_affair(affair), route, router.taxonomy, max_segments=5)
+        rows.append({"affair_id": affair.affair_id, **route.model_dump(), "context": context})
+    rendered = "\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n"
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(rendered, encoding="utf-8")
+    else:
+        typer.echo(rendered, nl=False)
+
+
+@app.command("aps-evaluate")
+def aps_evaluate(
+    sample: Annotated[Path, typer.Option(exists=True, readable=True)],
+    labels: Annotated[Path, typer.Option(exists=True, readable=True)],
+    taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
+        "configs/taxonomies/aps_topics.json"
+    ),
+    annotator: str = "felipe",
+) -> None:
+    """Evaluate APS shadow routing diagnostically without model calls."""
+    from parltopic.evaluation.aps import evaluate_shadow
+
+    typer.echo(json.dumps(evaluate_shadow(sample, labels, taxonomy, annotator), indent=2))
+
+
 @app.command("compile-topic")
 def compile_topic_command(
     topic: Annotated[Path, typer.Option(exists=True, readable=True)],

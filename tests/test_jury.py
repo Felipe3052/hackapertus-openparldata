@@ -80,3 +80,14 @@ def test_real_demo_loads_without_api(monkeypatch):
     assert seen[0].keyword_rule is False
     assert ClassificationResult.model_validate(demo.session_state["classification"])
     assert demo.get("download_button")
+
+
+def test_search_mode_renders_without_api():
+    from streamlit.testing.v1 import AppTest
+
+    demo = AppTest.from_file(Path(__file__).resolve().parents[1] / "app/streamlit_app.py",
+                             default_timeout=10)
+    demo.run()
+    demo.radio[0].set_value("Thema über Parlamente suchen").run()
+    assert not demo.exception
+    assert any("Suchbegriffe" in button.label for button in demo.button)

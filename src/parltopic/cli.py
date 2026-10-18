@@ -55,6 +55,99 @@ def classify(
         typer.echo(rendered, nl=False)
 
 
+@app.command("classify-affair")
+def classify_affair(
+    affair_id: Annotated[int, typer.Argument(help="OpenParlData affair ID")],
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+    language: Annotated[str | None, typer.Option(help="de/fr/it for federal affairs")] = None,
+) -> None:
+    """Fetch one affair live from the OpenParlData API and classify it."""
+    from parltopic.ingestion.live import fetch_affair
+
+    affair = fetch_affair(affair_id, language=language)
+    with ClassificationService(get_settings()) as service:
+        result = service.classify(affair, load_topic(topic))
+    typer.echo(result.model_dump_json(indent=2))
+
+
+@app.command("compile-topic")
+def compile_topic_command(
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+) -> None:
+    """Apertus writes the topic's search terms in DE/FR/IT/RM (editable JSON)."""
+    from parltopic.compiler import compile_topic, save
+
+    compiled = compile_topic(load_topic(topic), get_settings())
+    save(compiled, output)
+    for language in ("de", "fr", "it", "rm"):
+        typer.echo(f"{language}: {compiled.query(language)}")
+
+
+@app.command()
+def find(
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+    compiled: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+    bodies: Annotated[str, typer.Option(help="Comma-separated body keys, e.g. CHE,BE,ZH")] = "CHE",
+    date_from: Annotated[str, typer.Option("--from")] = "2025-01-01",
+    scope: Annotated[str, typer.Option(help="metadata, docs, texts or all")] = "all",
+    max_candidates: int = 200,
+    workers: int = 8,
+) -> None:
+    """Ad-hoc topic search: compiled query on OpenParlData's search, Apertus on the candidates."""
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+
+    from parltopic.compiler import CompiledTopic, search_candidates
+    from parltopic.ingestion.live import fetch_affair
+
+    definition = load_topic(topic)
+    query = CompiledTopic.model_validate_json(compiled.read_text("utf-8"))
+    started = time.perf_counter()
+    found = search_candidates(query, scope=scope, bodies=bodies.split(","))
+    candidates = list(dict.fromkeys(i for ids in found.values() for i in ids))
+    searched = time.perf_counter() - started
+    typer.echo(f"{len(candidates)} candidates in {searched:.1f} s "
+               f"({', '.join(f'{k} {len(v)}' for k, v in found.items())})")
+    # The search ignores dates: newest IDs first, then the date filter on the fetched affair.
+    selected = sorted(candidates, reverse=True)[:max_candidates]
+
+    def run(affair_id: int):
+        try:
+            affair = fetch_affair(affair_id)
+            if affair.date and affair.date < date_from:
+                return None
+            return service.classify(affair, definition)
+        except Exception as error:  # an affair the API cannot serve is reported, not dropped
+            return {"affair_id": str(affair_id), "status": "failed", "error": str(error)}
+
+    with ClassificationService(get_settings()) as service, ThreadPoolExecutor(workers) as pool:
+        results = list(pool.map(run, selected))
+    rows = [r if isinstance(r, dict) else r.model_dump(mode="json") for r in results if r]
+    output.parent.mkdir(parents=True, exist_ok=True)
+    lines = [json.dumps(row, ensure_ascii=False) for row in rows]
+    output.write_text("\n".join(lines) + "\n", "utf-8")
+    assigned = sum(r["status"] == "assigned" for r in rows)
+    typer.echo(f"{assigned} of {len(rows)} candidates assigned in "
+               f"{time.perf_counter() - started:.0f} s; results in {output}")
+
+
+@app.command("export-opd")
+def export_opd(
+    results: Annotated[Path, typer.Option(exists=True, readable=True)],
+    topic: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+    compiled: Annotated[Path | None, typer.Option(exists=True, readable=True)] = None,
+) -> None:
+    """Rows for OpenParlData's affair_topics table (integration/opd/001_affair_topics.sql)."""
+    from parltopic.compiler import CompiledTopic
+    from parltopic.integration import export
+
+    query = CompiledTopic.model_validate_json(compiled.read_text("utf-8")) if compiled else None
+    typer.echo(json.dumps(export(results, load_topic(topic), output, query)))
+
+
 @app.command("download-data")
 def download_data(
     raw_dir: Annotated[Path, typer.Option()] = Path("data/raw"),

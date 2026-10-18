@@ -251,6 +251,35 @@ million input / output tokens) one topic over the full corpus costs about USD 37
 Swiss provider the price depends on the contract. Reading every affair for every new topic does
 not scale; sending only candidate affairs to Apertus is the next step.
 
+### 5.7 Can a compiled query replace reading every affair? (negative result)
+
+Idea: Apertus reads the topic once and writes search terms per language (`parltopic
+compile-topic`: 18–26 s, about 1,900 tokens, 40–56 terms per language; editable JSON); a cheap
+search returns candidates, and Apertus verifies only those (`parltopic find`). Measured on the
+full population behind E1, not on the balanced sample: every affair of the 35 PolitMonitor
+parliaments and the same affair types.
+
+| Period | Affairs | Tagged | Pre-filter | Candidates (share) | Tagged among candidates |
+|---|---:|---:|---|---:|---:|
+| 2018–2023 (dev) | 72,741 | 2,487 | local, word-prefix, terms v1 | 4,703 (6.5 %) | 61.0 % |
+| 2018–2023 (dev) | 72,741 | 2,487 | local, word-prefix, terms v2 (stems) | 2,932 (4.0 %) | 59.5 % |
+| 2024–2026 (test) | 37,258 | 853 | OpenParlData search, titles | 6,073 (16.3 %) | 59.1 % |
+| 2024–2026 (test) | 37,258 | 853 | local, word-prefix, terms v1 | 2,982 (8.0 %) | 67.6 % |
+
+On the test sample, the frozen classifier restricted to the local candidates reaches F1
+0.749 (precision 0.873, recall 0.656) against 0.876 when every affair is read. We set the bar
+before measuring (≥ 85 % of the tagged affairs among the candidates) and stopped: about 40 % of
+the tagged affairs contain no predictable search term ("Nevo/Rialto – Wie weiter?", "Handyfreie
+Schulen?!", smart glasses, robotaxis, a pension affair with a digital side aspect). High recall
+needs Apertus to read every affair, which is what the main configuration does. The compiler is
+still useful as a fast first pass — 60–68 % of the hits sit in 4–8 % of the affairs and arrive
+in minutes, the complete pass follows — and its terms are a readable, editable description of a
+topic. The demo's live search view uses it this way: the newest search hits per parliament,
+ranked by the compiled terms in the title, are checked first (experiment log, A · D).
+OpenParlData's own search would serve it if it supported prefixes (`digital:*` returns
+nothing, so compounds such as "Digitalisierungsstrategie" are missed) and date filters
+(`date_from`/`date_to` are ignored; deep offsets take about 60 s per page).
+
 ---
 
 ## 6. Limitations
@@ -264,8 +293,8 @@ not scale; sending only candidate affairs to Apertus is the next step.
 - **Title-only affairs** are recalled worse; document text did not help significantly yet because
   long reports bring incidental mentions.
 - **Standard topics:** the APS scheme is available, but a multi-label APS mode is not evaluated.
-- **Full-corpus ad-hoc search:** each topic is classified affair by affair; a pre-filter for a fast
-  first pass over all 325,000 affairs is not built yet.
+- **Full-corpus runtime:** high recall needs every affair read (28–67 h per topic over 325,000
+  affairs on one key); a lexical pre-filter keeps only about 60 % of the hits (5.7).
 - **Party bias** is not checked yet.
 - **Topic policy:** the term rule and prompt v2 suit curated topics only; quickly written topics
   need the generic prompt (5.3), which in 2 % of answers cites an affair ID instead of a passage.
@@ -293,8 +322,10 @@ source-file hashes; resuming with changed inputs is refused. All settings are in
 
 ## 8. Next steps
 
-1. Pre-filter over the full corpus and a stored, searchable result per topic (ad-hoc search in the UI).
-2. A correction button in the UI that stores human decisions as new labels.
+1. A semantic pre-filter (multilingual embeddings, e.g. bge-m3 hosted in Switzerland) measured
+   against the 85 % recall bar that the lexical one missed; nightly runs only for new affairs.
+2. Feed reviewer decisions (the demo stores confirm / reject; `affair_topics.review_decision`)
+   back as labels and as in-scope / out-of-scope examples of the topic.
 3. Multi-label APS chapters, evaluated against the human agreement in 5.5.
 4. Party bias check; a sealed, adjudicated holdout including municipal affairs.
 

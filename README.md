@@ -96,7 +96,24 @@ parltopic classify --input data/demo/affairs.jsonl \
   --topic configs/topics/digitalisation.yaml --output results/digitalisation.jsonl
 ```
 
-User interface and API:
+Classify one affair live from the OpenParlData API (title, federal texts, first documents):
+
+```bash
+parltopic classify-affair 303044 --topic configs/topics/digitalisation.yaml
+```
+
+Rows for OpenParlData's `affair_topics` table (schema, review fields and Apache Hop pipeline:
+[docs/integration.md](docs/integration.md)):
+
+```bash
+parltopic export-opd --results results/digitalisation.jsonl   --topic configs/topics/digitalisation.yaml --output out/affair_topics.ndjson
+```
+
+User interface and API. The demo has two modes: *Einzelnes Geschäft* loads an affair by its
+OpenParlData ID, classifies it and stores a reviewer's confirm / reject decision; *Thema über
+Parlamente suchen* turns one sentence into search terms in four languages (Apertus), takes the
+newest matches from OpenParlData's search per parliament and lets Apertus check them, with the
+original passage for every hit. Pitch and demo script: [docs/pitch.md](docs/pitch.md).
 
 ```bash
 make web                      # Streamlit
@@ -164,7 +181,8 @@ configs/topics/         Topic definitions (digitalisation, adhoc/, experiments/)
 configs/taxonomies/     APS scheme as JSON (22 chapters, 165 topics)
 data/eval/              Frozen eval sets and the human APS labels
 data/demo/              Small synthetic demo inputs
-docs/                   Architecture, evaluation protocol, benchmark notes, experiment log
+docs/                   Architecture, integration, evaluation protocol, benchmark notes, log
+integration/opd/        SQL schema for OpenParlData's affair_topics table
 src/parltopic/          Ingestion, classification, retrieval, evaluation, CLI, API
 tests/                  Offline unit tests
 technical_report.md     Hackathon technical report
@@ -196,9 +214,10 @@ vLLM server with the open weights. With the exports cached, it runs without inte
 
 - The digitalisation labels have no checked negatives; the test split has been opened and is not a
   sealed holdout.
-- Each topic is classified affair by affair; a pre-filter for a fast pass over all 325,000 affairs
-  and a stored, searchable result per topic are next.
-- The UI has no correction button yet; the APS scheme is exported but no multi-label APS mode is
+- High recall needs every affair read (28–67 h per topic over 325,000 affairs on one key). A
+  compiled-query pre-filter (`parltopic compile-topic`, `find`) finds about 60 % of the hits in
+  4–8 % of the affairs; it is a fast first pass, not a replacement (report 5.7).
+- The APS scheme is exported but no multi-label APS mode is
   evaluated; party bias is not checked; Romansh is not evaluated.
 - Apertus 8B is not suitable for this task (dev F1 0.43 vs. 0.80 for 70B).
 

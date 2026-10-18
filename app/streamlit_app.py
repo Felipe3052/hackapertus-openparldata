@@ -14,6 +14,16 @@ st.set_page_config(page_title="ParlTopic", page_icon="🏛️", layout="wide")
 st.title("ParlTopic")
 st.caption("Mehrsprachige Themenklassifikation für Schweizer Parlamentsdaten mit Apertus")
 
+mode = st.radio("Modus", ["Einzelnes Geschäft", "Thema über Parlamente suchen"], horizontal=True)
+if mode == "Thema über Parlamente suchen":
+    import sys
+
+    sys.path.insert(0, str(ROOT / "app"))
+    from search_page import render
+
+    render()
+    st.stop()
+
 with st.sidebar:
     st.header("Thema")
     policy = st.selectbox("Konfiguration", ["Digitalisierung (validiert)", "Eigenes Thema"])
@@ -37,8 +47,23 @@ with st.sidebar:
             "prompt_version": "topic-v1", "keyword_rule": False,
         }, allow_unicode=True), file_name="topic.yaml", mime="application/yaml")
 
-source = st.radio("Eingabe", ["Echtes Geschäft", "Manuelle Eingabe"], horizontal=True)
+source = st.radio("Eingabe", ["Echtes Geschäft", "OpenParlData-ID (live)", "Manuelle Eingabe"],
+                  horizontal=True)
 selected = None
+if source == "OpenParlData-ID (live)":
+    affair_key = st.text_input("Affair-ID aus OpenParlData", "303044",
+                               help="z. B. 303044 (BE, eBau), 235308 (Bund), 329562 (TI)")
+    if st.button("Von der OpenParlData-API laden") and affair_key.strip().isdigit():
+        from parltopic.ingestion.live import fetch_affair
+
+        with st.spinner("Geschäft, Texte und Dokumente werden geladen …"):
+            st.session_state["live_affair"] = fetch_affair(int(affair_key)).model_dump(
+                mode="json")
+    selected = st.session_state.get("live_affair")
+    if selected:
+        st.caption(f"Live von api.openparldata.ch: {selected['parliament']}, "
+                   f"{selected['level']}, {selected['date']}, "
+                   f"{len(selected.get('documents') or [])} Dokument(e).")
 if source == "Echtes Geschäft":
     rows = [json.loads(line) for line in
             (ROOT / "data/eval/e1_digitalisation_dev.jsonl")
@@ -126,4 +151,25 @@ if "classification" in st.session_state:
     with st.expander("Vollständiges Integrationsergebnis"):
         st.json(result.model_dump(mode="json"))
     st.caption("Die Klassifikation bewertet nur Themenzugehörigkeit und keine politische Position.")
+
+    st.subheader("Prüfung durch eine Person")
+    reviews = ROOT / "results/reviews.jsonl"
+    reviewer = st.text_input("Kürzel der prüfenden Person", key="reviewer")
+    left, right = st.columns(2)
+    decision = None
+    if left.button("Vorschlag bestätigen", disabled=not reviewer.strip()):
+        decision = "confirmed"
+    if right.button("Vorschlag ablehnen", disabled=not reviewer.strip()):
+        decision = "rejected"
+    if decision:
+        from datetime import UTC, datetime
+
+        reviews.parent.mkdir(parents=True, exist_ok=True)
+        entry = {"affair_id": result.affair_id, "topic_id": result.topic_id,
+                 "suggested_status": result.status.value, "review_decision": decision,
+                 "reviewed_by": reviewer.strip(), "reviewed_at": datetime.now(UTC).isoformat()}
+        with reviews.open("a", encoding="utf-8") as file:  # appended, the suggestion is kept
+            file.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        st.success(f"Gespeichert: {decision} durch {reviewer.strip()} ({reviews.name}). "
+                   "Für OpenParlData: Spalten review_decision/reviewed_by in affair_topics.")
 

@@ -93,6 +93,12 @@ bundled. Select **Historisches Ergebnis anzeigen** for offline replay. Live sear
 candidate lists, not complete corpus classifications. The current submission scope uses short
 functional checks; 300k runtimes remain projections, not a completed full-corpus run.
 
+For live classification with an existing `parltopic-jury` image and a configured `.env`, use
+`make run-live` after installing the Python dependencies below. Stop the offline container
+first to free port 8501. This command parses quoted dotenv values correctly and passes secrets
+through environment variables. Docker's raw `--env-file .env` preserves surrounding quotes,
+which can cause authentication failures when keys or model names are quoted.
+
 ```bash
 cp .env.example .env          # add LLM_API_KEY for the CSCS endpoint
 python -m venv .venv

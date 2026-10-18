@@ -96,7 +96,21 @@ parltopic classify --input data/demo/affairs.jsonl \
   --topic configs/topics/digitalisation.yaml --output results/digitalisation.jsonl
 ```
 
-User interface and API:
+Classify one affair live from the OpenParlData API (title, federal texts, first documents):
+
+```bash
+parltopic classify-affair 303044 --topic configs/topics/digitalisation.yaml
+```
+
+Rows for OpenParlData's `affair_topics` table (schema, review fields and Apache Hop pipeline:
+[docs/integration.md](docs/integration.md)):
+
+```bash
+parltopic export-opd --results results/digitalisation.jsonl   --topic configs/topics/digitalisation.yaml --output out/affair_topics.ndjson
+```
+
+User interface and API (the demo loads an affair by its OpenParlData ID and stores a reviewer's
+confirm / reject decision):
 
 ```bash
 make web                      # Streamlit
@@ -164,7 +178,8 @@ configs/topics/         Topic definitions (digitalisation, adhoc/, experiments/)
 configs/taxonomies/     APS scheme as JSON (22 chapters, 165 topics)
 data/eval/              Frozen eval sets and the human APS labels
 data/demo/              Small synthetic demo inputs
-docs/                   Architecture, evaluation protocol, benchmark notes, experiment log
+docs/                   Architecture, integration, evaluation protocol, benchmark notes, log
+integration/opd/        SQL schema for OpenParlData's affair_topics table
 src/parltopic/          Ingestion, classification, retrieval, evaluation, CLI, API
 tests/                  Offline unit tests
 technical_report.md     Hackathon technical report
@@ -198,7 +213,7 @@ vLLM server with the open weights. With the exports cached, it runs without inte
   sealed holdout.
 - Each topic is classified affair by affair; a pre-filter for a fast pass over all 325,000 affairs
   and a stored, searchable result per topic are next.
-- The UI has no correction button yet; the APS scheme is exported but no multi-label APS mode is
+- The APS scheme is exported but no multi-label APS mode is
   evaluated; party bias is not checked; Romansh is not evaluated.
 - Apertus 8B is not suitable for this task (dev F1 0.43 vs. 0.80 for 70B).
 

@@ -54,6 +54,15 @@ def test_aps_aliases_must_match_taxonomy_version(tmp_path: Path) -> None:
         ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json", aliases_path=aliases)
 
 
+def test_aps_aliases_must_reference_known_codes(tmp_path: Path) -> None:
+    aliases = tmp_path / "aliases.json"
+    aliases.write_text(
+        json.dumps({"taxonomy_version": "aps-2026-10-18", "aliases": {"99.9.9": {"it": "x"}}})
+    )
+    with pytest.raises(ValueError, match="unknown codes"):
+        ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json", aliases_path=aliases)
+
+
 def test_aps_router_is_deterministic_and_returns_candidates() -> None:
     taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
     affair = Affair(affair_id="a", title="Bundesrat und Parlament", text="Verwaltung und Kantone")

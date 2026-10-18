@@ -25,6 +25,24 @@ def _tokens(text: str) -> set[str]:
     return {token for token in TOKEN_RE.findall(normalized) if len(token) > 2}
 
 
+def _with_aliases(labels: dict[str, str], code: str, aliases: dict[str, object]) -> dict[str, str]:
+    merged = dict(labels)
+    values_by_language = aliases.get(code, {})
+    if not isinstance(values_by_language, dict):
+        raise ValueError(f"APS aliases for {code} must be an object keyed by language")
+    for language, values in values_by_language.items():
+        if not isinstance(language, str) or not language:
+            raise ValueError(f"APS aliases for {code} must use non-empty language codes")
+        if isinstance(values, str):
+            values = [values]
+        if not isinstance(values, list) or not values or not all(
+            isinstance(value, str) and value.strip() for value in values
+        ):
+            raise ValueError(f"APS aliases for {code}/{language} must be non-empty strings")
+        merged[language] = " / ".join(value.strip() for value in values)
+    return merged
+
+
 @dataclass(frozen=True)
 class ApsNode:
     code: str
@@ -135,15 +153,7 @@ class ApsTaxonomy:
                     if key.startswith("chapter_")
                 }
             labels = {key: value for key, value in labels.items() if value}
-            for language, values in aliases.get(code, {}).items():
-                if isinstance(values, str):
-                    values = [values]
-                if not isinstance(values, list) or not all(
-                    isinstance(value, str) for value in values
-                ):
-                    raise ValueError(f"APS aliases for {code}/{language} must be strings")
-                if values:
-                    labels[language] = " / ".join(values)
+            labels = _with_aliases(labels, code, aliases)
             nodes.append(ApsNode(code, parent_code, level, labels, item.get("url_de")))
             if parent_code:
                 chapter_labels[parent_code] = {
@@ -160,29 +170,15 @@ class ApsTaxonomy:
         # The source file contains topic rows and derives chapter/domain names from them.
         chapter_codes = {node.parent_code for node in nodes if node.parent_code}
         for code in sorted(chapter_codes):
-            labels = dict(chapter_labels.get(code, {}))
-            for language, values in aliases.get(code, {}).items():
-                if isinstance(values, str):
-                    values = [values]
-                if not isinstance(values, list) or not all(
-                    isinstance(value, str) for value in values
-                ):
-                    raise ValueError(f"APS aliases for {code}/{language} must be strings")
-                if values:
-                    labels[language] = " / ".join(values)
+            labels = _with_aliases(chapter_labels.get(code, {}), code, aliases)
             nodes.append(ApsNode(code, code.split(".")[0], "chapter", labels))
         for code in sorted(domain_labels):
-            labels = dict(domain_labels[code])
-            for language, values in aliases.get(code, {}).items():
-                if isinstance(values, str):
-                    values = [values]
-                if not isinstance(values, list) or not all(
-                    isinstance(value, str) for value in values
-                ):
-                    raise ValueError(f"APS aliases for {code}/{language} must be strings")
-                if values:
-                    labels[language] = " / ".join(values)
+            labels = _with_aliases(domain_labels[code], code, aliases)
             nodes.append(ApsNode(code, None, "domain", labels))
+        known_codes = {node.code for node in nodes}
+        unknown_codes = sorted(set(aliases) - known_codes)
+        if unknown_codes:
+            raise ValueError(f"APS aliases reference unknown codes: {unknown_codes[:3]}")
         return cls(tuple(nodes), version)
 
     def _validate(self) -> None:

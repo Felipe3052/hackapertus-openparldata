@@ -1,0 +1,19 @@
+{
+  "source": "data/eval/e1_fewshot_pool.jsonl",
+  "source_sha256": "e1c57aa06771c4d82a45445a83a8fcc4b9796125ff985faa23cc1c77da7863e3",
+  "eligible": 11685,
+  "excluded_ids": 0,
+  "pool_disjoint_to_e1_e2": true,
+  "sample_size": 100,
+  "seed": 42,
+  "strata": {
+    "de|cantonal": 15,
+    "de|federal": 15,
+    "de|municipal": 14,
+    "fr|cantonal": 14,
+    "fr|federal": 14,
+    "it|cantonal": 14,
+    "it|federal": 14
+  },
+  "status": "blank_template_requires_two_independent_annotations_and_adjudication"
+}

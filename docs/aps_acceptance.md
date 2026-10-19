@@ -21,6 +21,14 @@ can be promoted from an opt-in shadow/context component to a hard classifier.
 | APS model quality | 9 unanimous labels only; 42.9 % recall, 11.1 % chapter precision, 5.8 % topic precision | Not sufficient |
 | Independent APS gold standard | No larger adjudicated holdout exists in the repository | Required |
 
+## Holdout preparation
+
+On 2026-10-19, the existing 11,685-row `e1_fewshot_pool.jsonl` produced a 100-row blank
+annotation template with seed 42. It contains 15 DE/cantonal, 15 DE/federal, 14 DE/municipal,
+14 FR/cantonal, 14 FR/federal, 14 IT/cantonal and 14 IT/federal Affairs. The pool has no ID
+overlap with E1 or E2; the existing E3 APS sample does overlap E1/E2 and is therefore not used as
+an independent holdout. The reproducible command is documented in `docs/aps_experiment.md`.
+
 ## Current promotion decision
 
 Do not enable APS as a hard filter or claim APS classification quality. It is suitable for a

@@ -87,18 +87,18 @@ cd /Users/josipjukic/hackapertus-openparldata
 .venv/bin/python -m streamlit run app/streamlit_app.py
 ```
 
-1. «Echtes Geschäft» und «Digitalisierung (validiert)» wählen. DE/FR/IT sowie Bund/Kanton
+1. «Real affair» und «Digitalisation (validated)» wählen. DE/FR/IT sowie Bund/Kanton
    durchwechseln. Affair-ID, Originaltitel und Text zeigen; Titel allein sind zulässig.
-2. «Historisches Ergebnis (ohne API)» lädt den vorhandenen Dev-Lauf ohne API-Aufruf.
+2. «Historical result (no API)» lädt den vorhandenen Dev-Lauf ohne API-Aufruf.
    Der Hinweis nennt ausdrücklich den historischen Konfigurationsstand. Auswahl erfolgt
    nach Sprache/Ebene und ID, ohne Filter auf erfolgreiche oder korrekte Klassifikationen.
 3. Evidenz und Originalquelle zeigen, strukturiertes JSON herunterladen. Der Status `failed`
    bleibt als technischer Fehler sichtbar; `uncertain` verlangt menschliche Prüfung.
-4. «Eigenes Thema» wählen, z.B. Name «Wohnungsbau», Beschreibung
+4. «Custom topic» wählen, z.B. Name «Wohnungsbau», Beschreibung
    «Schaffung, Finanzierung und Regulierung von Wohnraum; Strassenbau ohne Wohnbezug ausschliessen».
    YAML herunterladen. Das Thema verwendet den generischen Prompt v1 ohne Keyword-Regel;
    es braucht kein Training. Für beliebige Themen ist Qualität noch nicht nachgewiesen.
-5. Optional bewusst «Mit Apertus klassifizieren» auslösen: aktueller echter API-Lauf mit
+5. Optional bewusst «Classify with Apertus» auslösen: aktueller echter API-Lauf mit
    konfiguriertem Modell/Rate-Limit. Ergebnis bleibt beim JSON-Download erhalten.
    Pro Klick kann ein logischer Modellaufruf mit konfigurierten Retries entstehen.
 

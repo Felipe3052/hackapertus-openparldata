@@ -207,7 +207,7 @@ page), `search_scope=all` returned HTTP 500 for one parliament (city of Zurich).
 
 ## A · D — live search view (demo, not an evaluated configuration)
 
-The Streamlit mode *Thema über Parlamente suchen* compiles a topic with the prompt
+The Streamlit mode *Search a topic across parliaments* compiles a topic with the prompt
 `compiler-core` (only terms that indicate the topic on their own), takes the newest 100 search
 hits per parliament and language from OpenParlData (`sort_by=-begin_date`, one page, about
 2–30 s depending on load) and ranks them by the compiled terms in the title, weighted by rarity in

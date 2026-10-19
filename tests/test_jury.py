@@ -67,14 +67,14 @@ def test_real_demo_loads_without_api(monkeypatch):
     monkeypatch.setattr(ClassificationService, "classify", offline_classify)
     demo = AppTest.from_file(Path(__file__).resolve().parents[1] / "app/streamlit_app.py").run()
     assert not demo.exception
-    assert next(w for w in demo.text_input if w.label.startswith("Titel")).value
+    assert next(w for w in demo.text_input if w.label.startswith("Title")).value
     for language in ["fr", "it"]:
-        next(w for w in demo.selectbox if w.label == "Beispielsprache").select(language).run()
+        next(w for w in demo.selectbox if w.label == "Example language").select(language).run()
         assert not demo.exception
-        assert next(w for w in demo.selectbox if w.label == "Sprache").value == language
-    demo.sidebar.selectbox[0].select("Eigenes Thema").run()
+        assert next(w for w in demo.selectbox if w.label == "Language").value == language
+    demo.sidebar.selectbox[0].select("Custom topic").run()
     assert not demo.exception
-    next(w for w in demo.button if w.label == "Mit Apertus klassifizieren").click().run()
+    next(w for w in demo.button if w.label == "Classify with Apertus").click().run()
     assert not demo.exception
     assert seen[0].prompt_version == "topic-v1"
     assert seen[0].keyword_rule is False
@@ -88,6 +88,6 @@ def test_search_mode_renders_without_api():
     demo = AppTest.from_file(Path(__file__).resolve().parents[1] / "app/streamlit_app.py",
                              default_timeout=10)
     demo.run()
-    demo.radio[0].set_value("Thema über Parlamente suchen").run()
+    demo.radio[0].set_value("Search a topic across parliaments").run()
     assert not demo.exception
-    assert any("Suchbegriffe" in button.label for button in demo.button)
+    assert any("search terms" in button.label for button in demo.button)

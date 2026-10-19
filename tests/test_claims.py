@@ -48,4 +48,4 @@ def test_archive_digest_and_existing_results_are_protected(tmp_path):
         target.write_text("local user output")
         with pytest.raises(FileExistsError):
             fetch_results(tmp_path, expected_sha256=digest)
-        assert target.read_text() == "local user output"
+        assert target.read_text("utf-8") == "local user output"

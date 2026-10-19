@@ -1,7 +1,7 @@
 # Pitch und Demo-Drehbuch (Team Token Tell)
 
 Stand 18.10.2026. Die 41 Qualitätsaussagen sind mit `parltopic claims` nachrechenbar (Release
-`results-2026-10-18`).
+`results-2026-10-19`).
 
 ## Kernbotschaft (ein Satz)
 

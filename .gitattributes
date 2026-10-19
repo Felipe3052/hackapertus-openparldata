@@ -1,0 +1,9 @@
+# Byte-identical files on every OS: data files are hashed in run manifests and fixtures,
+# and Windows' autocrlf would otherwise check them out with CRLF.
+* text=auto eol=lf
+*.pdf binary
+*.png binary
+*.jpg binary
+*.xlsx binary
+*.gz binary
+*.sqlite binary

@@ -153,6 +153,24 @@ def test_aps_context_selection_preserves_title_and_reports_compression() -> None
     assert report["input_tokens_approx"] >= report["selected_tokens_approx"]
 
 
+def test_aps_context_selection_honors_optional_token_budget() -> None:
+    taxonomy = ApsTaxonomy.load(ROOT / "configs/taxonomies/aps_topics.json")
+    affair = Affair(
+        affair_id="budget",
+        title="Verwaltung",
+        text="Verwaltung und Parlament. " * 300,
+    )
+    selected, report = select_context(
+        chunk_affair(affair, size=100, overlap=10),
+        ApsRouter(taxonomy).route(affair),
+        taxonomy,
+        max_segments=8,
+        max_tokens=25,
+    )
+    assert selected[0].text == affair.title
+    assert report["selected_tokens_approx"] <= 25
+
+
 def test_aps_sample_has_expected_shape() -> None:
     sample = ROOT / "data/eval/e3_aps_sample.jsonl"
     rows = [json.loads(line) for line in sample.read_text().splitlines()]

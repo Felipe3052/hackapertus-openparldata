@@ -81,6 +81,7 @@ def aps_route(
     max_chapters: int = 4,
     max_topics: int = 8,
     max_segments: int = 5,
+    max_tokens: int | None = None,
 ) -> None:
     """Route affairs to APS candidates without calling Apertus (shadow experiment)."""
     from parltopic.aps import ApsRouter, ApsTaxonomy, select_context
@@ -91,7 +92,11 @@ def aps_route(
     for affair in read_affairs(input):
         route = router.route(affair, max_chapters=max_chapters, max_topics=max_topics)
         _, context = select_context(
-            chunk_affair(affair), route, router.taxonomy, max_segments=max_segments
+            chunk_affair(affair),
+            route,
+            router.taxonomy,
+            max_segments=max_segments,
+            max_tokens=max_tokens,
         )
         rows.append({"affair_id": affair.affair_id, **route.model_dump(), "context": context})
     rendered = "\n".join(json.dumps(row, ensure_ascii=False) for row in rows) + "\n"

@@ -164,6 +164,7 @@ class ClassificationService:
             route,
             self.aps_router.taxonomy,
             max_segments=self.settings.aps_context_max_segments,
+            max_tokens=self.settings.aps_context_max_tokens,
         )
         return {
             "segments": selected,

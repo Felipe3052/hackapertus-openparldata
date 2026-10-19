@@ -53,12 +53,23 @@ is found, or if no topic-level candidate is available, the full context is retai
 records the fallback reason. This guard prevents chapter-only or cross-language matches from
 silently truncating evidence.
 
+For stricter latency and cost control, set `APS_CONTEXT_MAX_TOKENS` in addition to the segment
+limit. The title remains protected; additional segments are admitted only while the approximate
+token budget is respected. The default is unset to preserve the prior opt-in behavior.
+
 On the checked-in E1 digitalisation validation file (1,200 affairs), the shadow run with five
 context segments routed 922 affairs and fell back for 278. The approximate token reduction was
 0 % because the available affairs are short enough to fit within five selected segments. This is
 an observed offline result without Apertus calls, not evidence of a latency improvement. Use
 `--max-segments 2` or a long-text export for a controlled compression experiment, then compare
 quality and latency on identical IDs before enabling it for production.
+
+Completion check on 2026-10-19: the reproducible `--max-segments 2` benchmark over the same 1,200
+affairs measured 152,141 baseline context tokens versus 112,450 APS context tokens, a 26.1 %
+reduction. A second run with `--max-segments 8 --max-tokens 1800` produced 94,479 selected
+tokens, with a maximum of 419 per affair and zero budget violations; the cap did not further
+reduce this dataset because the segment limit already selected shorter contexts. No API calls were
+made, so this result does not establish Macro-F1, precision, recall or production latency.
 
 Run the shadow router offline:
 

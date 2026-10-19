@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     aps_max_chapters: int = Field(default=4, ge=1, le=22)
     aps_max_topics: int = Field(default=8, ge=1, le=165)
     aps_context_max_segments: int = Field(default=8, ge=1, le=100)
+    aps_context_max_tokens: int | None = Field(default=None, ge=1, le=100_000)
 
 
 @lru_cache

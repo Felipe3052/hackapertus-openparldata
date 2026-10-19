@@ -350,10 +350,13 @@ def select_context(
     route: ApsRoute,
     taxonomy: ApsTaxonomy,
     max_segments: int = 5,
+    max_tokens: int | None = None,
 ) -> tuple[list[TextSegment], dict]:
     """Select a bounded, evidence-preserving context for a shadow experiment."""
     if max_segments < 1:
         raise ValueError("max_segments must be positive")
+    if max_tokens is not None and max_tokens < 1:
+        raise ValueError("max_tokens must be positive when supplied")
     candidate_codes = {
         candidate.code
         for candidate in (
@@ -373,8 +376,15 @@ def select_context(
         ranked.append((len(overlap) + title_bonus, -segment.position, segment))
     ranked.sort(key=lambda item: (-item[0], item[1]))
     selected = title_segments[:1]
-    selected.extend(item[2] for item in ranked if item[2] not in selected)
-    selected = selected[:max_segments]
+    selected_tokens = sum(len(_tokens(segment.text)) for segment in selected)
+    for _, _, segment in ranked:
+        if segment in selected or len(selected) >= max_segments:
+            continue
+        segment_tokens = len(_tokens(segment.text))
+        if max_tokens is not None and selected and selected_tokens + segment_tokens > max_tokens:
+            continue
+        selected.append(segment)
+        selected_tokens += segment_tokens
     selected.sort(key=lambda segment: segment.position)
     before = sum(len(_tokens(segment.text)) for segment in segments)
     after = sum(len(_tokens(segment.text)) for segment in selected)

@@ -1,6 +1,6 @@
 # APS-Experiment: Acceptance Matrix
 
-Branch: `experiment/aps-context-pipeline`  
+Branch: `experiment/aps-context-pipeline`
 Baseline: existing classifier with `APS_CONTEXT_ENABLED=false`
 
 This matrix records what is proven on the current branch and what is still required before APS

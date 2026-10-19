@@ -44,7 +44,7 @@ jobs:
           assert not Path("data/eval").exists()
           app = AppTest.from_file("/app/app/streamlit_app.py").run()
           assert not app.exception
-          next(b for b in app.button if b.label.startswith("Historisches Ergebnis")).click().run()
+          next(b for b in app.button if b.label.startswith("Historical result")).click().run()
           assert not app.exception
           assert app.session_state["classification"]["affair_id"]
           '

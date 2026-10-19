@@ -28,29 +28,35 @@ OpenParlData-Suche (keine Präfixe, Datumsfilter ignoriert, tiefe Seiten langsam
 Vorbereitung: `make run`. Sechs echte DE/FR/IT-Originalfälle samt historischen Ergebnissen
 sind mitgeliefert. Der sichere Fünf-Minuten-Pitch zeigt zuerst diesen kurzen Offline-Pfad.
 Live-Modus nur mit vorbereitetem Key und vereinbartem API-Budget; kein Vollbestand-Lauf.
+Die Oberfläche ist englisch; Titel, Texte und Belegstellen bleiben in der Originalsprache.
 
-1. Modus **Einzelnes Geschäft** → Eingabe **Echtes Geschäft**. Start ist ein französisches
+1. Modus **Single affair** → Eingabe **Real affair**. Start ist ein französisches
    Genfer Geschäft (LIPAD); Apertus begründet auf Deutsch. Sprache und Ebene wählbar.
    Sechs Originalfälle sind im Container vorhanden; Titel, ID und Quelle zeigen.
-2. Konfiguration **Digitalisierung (validiert)** → *Historisches Ergebnis (ohne API)* → Status,
+2. Konfiguration **Digitalisation (validated)** → *Historical result (no API)* → Status,
    Erklärung, Belegstelle und historische Kennzeichnung. Optional mit vorbereitetem Budget
-   einen Live-Abruf per ID statt des historischen Ergebnisses zeigen.
-3. Kürzel eintragen → **Vorschlag bestätigen** → «Gespeichert».
+   einen Live-Abruf per ID statt des historischen Ergebnisses zeigen: Eingabe **OpenParlData ID
+   (live)** → *Digitalisation example (verified live)* → *Load* → *Classify with Apertus*. Die zehn
+   Beispiele (`data/demo/live_examples.json`, DE/FR/IT, Bund und Kantone) wurden am 19.10.2026
+   je zweimal live klassifiziert, beide Male zugeordnet; acht entscheidet Apertus, zwei die
+   Stichwort-Regel ohne Modellaufruf. Sicherster Einstieg: GE «Usage de l'IA dans l'administration
+   publique» (französisch, Belegstelle aus dem Originaldokument) oder SG «Palantir».
+3. *Reviewer initials* eintragen → **Confirm suggestion** → «Suggestion confirmed … saved».
 4. Die mitgelieferten französischen/italienischen Fälle wechseln. Eigene Themendefinition und
    YAML-Download zeigen: kein Training erforderlich, Qualität neuer Themen separat prüfen.
-5. Modus **Thema über Parlamente suchen** → Thema eingeben **mit 2–3 spezifischen eigenen
-   Begriffen** (z. B. «KI, ChatGPT, künstliche Intelligenz») → *Suchbegriffe schreiben lassen*
+5. Modus **Search a topic across parliaments** → Thema eingeben **mit 2–3 spezifischen eigenen
+   Begriffen** (z. B. «KI, ChatGPT, künstliche Intelligenz») → *1 · Let Apertus write the search terms*
    (≈ 20–40 s) → Begriffe kurz zeigen und allgemeine Wörter (z. B. «Verwaltung») löschen →
-   Parlamente Bund, Bern, Tessin → *Kandidaten suchen und prüfen* (10 Kandidaten, ≈ 1–2 min).
+   Parlamente Federal, Bern, Ticino → *2 · Search and check candidates* (10 Kandidaten, ≈ 1–2 min).
    Die Rangfolge hängt an der Qualität der Begriffe; das live zu zeigen (Begriffe sind lesbar und
    editierbar) ist Teil der Botschaft «Mensch behält die Kontrolle».
 
 **Fallback, falls der Endpoint langsam ist** (nachmittags bis 70 s pro Anfrage gemessen):
-Schritt 1–2 mit *Historisches Ergebnis (ohne API)* im Modus «Echtes Geschäft».
-Schritt 5 ohne Netz oder bei langsamem Endpoint: *Ohne Netz: aufgezeichneten Suchlauf zeigen*
-→ *Aufzeichnung abspielen* (Live-Lauf vom 19.10.2026, `data/demo/search/`: 6 Parlamente, 7 geprüft,
+Schritt 1–2 mit *Historical result (no API)* im Modus «Real affair».
+Schritt 5 ohne Netz oder bei langsamem Endpoint: *Offline: show a recorded search run*
+→ *Play recording* (Live-Lauf vom 19.10.2026, `data/demo/search/`: 6 Parlamente, 7 geprüft,
 6 passen, 24 s; Apertus-Begriffe von Hand auf Kernbegriffe gekürzt). Treffer lassen sich auch dort
-mit 👍/👎 prüfen.
+mit 👍 Match / 👎 No match prüfen.
 Keine lokal vorhandenen, aber nicht ausgelieferten Suchläufe als Fallback voraussetzen.
 
 ## Wahrscheinliche Fragen

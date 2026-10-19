@@ -1,0 +1,25 @@
+{
+  "note": "Live demo picks for the digitalisation topic. Each was fetched live from api.openparldata.ch and classified twice with Apertus v1.5 70B on 2026-10-19; both runs gave the status below. A shortlist chosen to succeed in a live demo, not an evaluation sample.",
+  "examples": [
+    {"affair_id": 303044, "parliament": "BE", "language": "de", "status": "assigned", "path": "apertus",
+     "title": "eBau – elektronisches Baubewilligungsverfahren im Kanton Bern"},
+    {"affair_id": 339527, "parliament": "CHE", "language": "de", "status": "assigned", "path": "apertus",
+     "title": "ChatGPT, Claude und weitere LLMs KI-Agents in der Bundesverwaltung"},
+    {"affair_id": 335188, "parliament": "GE", "language": "fr", "status": "assigned", "path": "apertus",
+     "title": "Usage de l'IA dans l'administration publique"},
+    {"affair_id": 339349, "parliament": "BS", "language": "de", "status": "assigned", "path": "apertus",
+     "title": "Gesichtserkennungs-Software für Kantonspolizei und Staatsanwaltschaft"},
+    {"affair_id": 289540, "parliament": "SG", "language": "de", "status": "assigned", "path": "apertus",
+     "title": "Nutzung der Software Palantir durch den Kanton St.Gallen – heute und morgen"},
+    {"affair_id": 339859, "parliament": "NE", "language": "fr", "status": "assigned", "path": "apertus",
+     "title": "Logiciel EPIC pour les hôpitaux vaudois : et dans le canton de Neuchâtel ?"},
+    {"affair_id": 307347, "parliament": "BS", "language": "de", "status": "assigned", "path": "apertus",
+     "title": "Ausdehnung von E-Voting auf 30 Prozent der Stimmberechtigten in Basel-Stadt"},
+    {"affair_id": 272738, "parliament": "FR", "language": "de", "status": "assigned", "path": "apertus",
+     "title": "Glasfasererschliessung – Wo steht der Kanton Freiburg?"},
+    {"affair_id": 338579, "parliament": "TI", "language": "it", "status": "assigned", "path": "keyword",
+     "title": "Digitalizzazione e IA: non lasciamo indietro le nostre PMI"},
+    {"affair_id": 249799, "parliament": "ZH", "language": "de", "status": "assigned", "path": "keyword",
+     "title": "Verbot von 5G Mobilfunkfrequenzen bis zur definitiven Festlegung der Grenzwerte"}
+  ]
+}

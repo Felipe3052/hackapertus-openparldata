@@ -1,4 +1,4 @@
-"""Shared presentation for both views: status cards, quoted evidence, headline numbers."""
+"""Shared presentation for both views: status cards and quoted evidence."""
 
 import html
 import re
@@ -6,13 +6,13 @@ import re
 import streamlit as st
 
 STATUS = {
-    "assigned": ("✅", "Passt zum Thema", "ok"),
-    "not_assigned": ("⚪", "Kein Bezug zum Thema", "no"),
-    "uncertain": ("⚠️", "Unsicher – bitte prüfen", "warn"),
-    "not_evaluable": ("❔", "Nicht beurteilbar", "warn"),
-    "failed": ("🛑", "Technischer Fehler", "err"),
+    "assigned": ("✅", "Matches the topic", "ok"),
+    "not_assigned": ("⚪", "Not related to the topic", "no"),
+    "uncertain": ("⚠️", "Uncertain – please review", "warn"),
+    "not_evaluable": ("❔", "Cannot be assessed", "warn"),
+    "failed": ("🛑", "Technical error", "err"),
 }
-STATUS_DE = {key: label for key, (_, label, _) in STATUS.items()}
+STATUS_EN = {key: label for key, (_, label, _) in STATUS.items()}
 
 CSS = """
 <style>
@@ -36,16 +36,6 @@ CSS = """
 
 def style() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
-
-
-def headline() -> None:
-    """The numbers the jury should remember; all reproducible with `parltopic claims`."""
-    cols = st.columns(4)
-    cols[0].metric("Treffsicherheit Digitalisierung (F1)", "0,876", "+0,20 ggü. Volltextsuche")
-    cols[1].metric("Deutsch · Französisch · Italienisch", "0,90 · 0,85 · 0,85")
-    cols[2].metric("Aktuelle DVS-Liste gefunden", "27 / 30", "+8 ggü. Volltextsuche")
-    cols[3].metric("Neue Themen ohne Training (F1)", "0,78 – 0,87")
-    cols[3].caption("Migration 0,87 · Gesundheit 0,81 · Verkehr 0,78")
 
 
 def status_card(status: str, detail: str = "") -> None:
@@ -80,9 +70,9 @@ def quote(text: str, terms: list[str] | None = None, source: str = "", limit: in
 def decision_path(result: dict) -> str:
     """How the decision was reached, in one line a non-expert can read."""
     if result.get("input_tokens") == 0 and not result.get("latency_ms"):
-        return "Entscheidungsweg: Stichwort-Regel des Themas – ohne Modellaufruf"
+        return "Decision path: the topic's keyword rule – no model call"
     seconds = (result.get("latency_ms") or 0) / 1000
     tokens = (result.get("input_tokens") or 0) + (result.get("output_tokens") or 0)
     model = (result.get("model") or "Apertus").split("/")[-1]
-    return (f"Entscheidungsweg: {model} liest die relevantesten Passagen · "
-            f"{seconds:.1f} s · {tokens:,} Tokens".replace(",", "'"))
+    return (f"Decision path: {model} reads the most relevant passages · "
+            f"{seconds:.1f} s · {tokens:,} tokens")

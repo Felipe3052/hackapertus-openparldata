@@ -96,7 +96,7 @@ Requires Python 3.11 or newer.
 
 For a short jury walkthrough without a key, local datasets or inference charges, run
 `make run` (Docker, port 8501). Six original DE/FR/IT examples and historical predictions are
-bundled. Select **Historisches Ergebnis (ohne API)** for offline replay. Live searches are bounded
+bundled. Select **Historical result (no API)** for offline replay. Live searches are bounded
 candidate lists, not complete corpus classifications. The current submission scope uses short
 functional checks; 300k runtimes remain projections, not a completed full-corpus run.
 
@@ -135,9 +135,9 @@ Rows for OpenParlData's `affair_topics` table (schema, review fields and Apache 
 parltopic export-opd --results results/digitalisation.jsonl   --topic configs/topics/digitalisation.yaml --output out/affair_topics.ndjson
 ```
 
-User interface and API. The demo has two modes: *Einzelnes Geschäft* loads an affair by its
-OpenParlData ID, classifies it and stores a reviewer's confirm / reject decision; *Thema über
-Parlamente suchen* turns one sentence into search terms in four languages (Apertus), takes the
+User interface and API. The demo has two modes: *Single affair* loads an affair by its
+OpenParlData ID, classifies it and stores a reviewer's confirm / reject decision; *Search a topic across
+parliaments* turns one sentence into search terms in four languages (Apertus), takes the
 newest matches from OpenParlData's search per parliament and lets Apertus check them, with the
 original passage for every hit. Pitch and demo script: [docs/pitch.md](docs/pitch.md).
 

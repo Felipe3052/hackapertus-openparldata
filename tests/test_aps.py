@@ -292,6 +292,24 @@ def test_aps_consensus_builder_excludes_disputes(tmp_path: Path) -> None:
     assert row["consensus"]["topic"] == "1.1.1"
 
 
+def test_aps_consensus_builder_validates_taxonomy(tmp_path: Path) -> None:
+    labels = tmp_path / "labels.jsonl"
+    labels.write_text(
+        json.dumps(
+            {
+                "affair_id": "1",
+                "felipe": {"chapter": "1.1", "topic": "2.1.1", "none": False},
+                "josip": {"chapter": "1.1", "topic": "2.1.1", "none": False},
+            }
+        )
+        + "\n"
+    )
+    with pytest.raises(ValueError, match="requires chapter"):
+        build_consensus_labels(
+            labels, tmp_path / "consensus.jsonl", ROOT / "configs/taxonomies/aps_topics.json"
+        )
+
+
 def test_aps_template_merge_requires_complete_unanimous_annotations(tmp_path: Path) -> None:
     left = tmp_path / "left.jsonl"
     right = tmp_path / "right.jsonl"

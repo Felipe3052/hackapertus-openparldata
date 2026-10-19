@@ -137,11 +137,14 @@ def make_annotation_template(
     }
 
 
-def build_consensus_labels(labels_path: Path, output_path: Path) -> dict[str, Any]:
+def build_consensus_labels(
+    labels_path: Path, output_path: Path, taxonomy_path: Path | None = None
+) -> dict[str, Any]:
     """Write only unanimous double annotations as an evaluator-compatible APS gold file."""
     rows = _load_jsonl(labels_path)
     if not rows:
         raise ValueError("APS labels file is empty")
+    taxonomy = ApsTaxonomy.load(taxonomy_path) if taxonomy_path else None
     output_rows: list[dict[str, Any]] = []
     disputed: list[str] = []
     for row in rows:
@@ -156,6 +159,8 @@ def build_consensus_labels(labels_path: Path, output_path: Path) -> dict[str, An
             disputed.append(affair_id)
             continue
         consensus = _canonical_annotation(left)
+        if taxonomy:
+            taxonomy.validate_annotation(consensus)
         output_rows.append(
             {
                 "affair_id": affair_id,

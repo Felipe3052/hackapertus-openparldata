@@ -193,11 +193,18 @@ def aps_annotation_template(
 def aps_consensus(
     labels: Annotated[Path, typer.Option(exists=True, readable=True)],
     output: Annotated[Path, typer.Option()],
+    taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
+        "configs/taxonomies/aps_topics.json"
+    ),
 ) -> None:
     """Create a gold-label file from unanimous Felipes/Josip APS annotations."""
     from parltopic.evaluation.aps import build_consensus_labels
 
-    typer.echo(json.dumps(build_consensus_labels(labels, output), indent=2, ensure_ascii=False))
+    typer.echo(
+        json.dumps(
+            build_consensus_labels(labels, output, taxonomy), indent=2, ensure_ascii=False
+        )
+    )
 
 
 @app.command("aps-merge-consensus")

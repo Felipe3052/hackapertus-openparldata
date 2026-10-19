@@ -116,7 +116,8 @@ Build the evaluator-compatible unanimous subset after double annotation:
 ```bash
 parltopic aps-consensus \
   --labels data/eval/e3_aps_labels.jsonl \
-  --output data/eval/e3_aps_consensus.jsonl
+  --output data/eval/e3_aps_consensus.jsonl \
+  --taxonomy configs/taxonomies/aps_topics.json
 ```
 
 Only exact agreement on chapter, topic, secondary topic and `none` is retained. The command

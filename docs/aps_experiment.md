@@ -132,7 +132,8 @@ parltopic aps-merge-consensus \
   --output data/eval/aps_holdout_consensus.jsonl
 ```
 
-Incomplete annotations fail the command; complete disagreements are reported and excluded.
+Incomplete annotations fail the command; complete disagreements are reported and excluded. The
+default taxonomy option also rejects unknown codes and Topic/Chapter hierarchy mismatches.
 
 On the checked-in 20 double annotations, this produced 9 unanimous labels and excluded 11
 disputes. After hierarchical parent closure and conservative word-prefix matching, the offline

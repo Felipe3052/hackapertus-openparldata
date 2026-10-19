@@ -205,12 +205,19 @@ def aps_merge_consensus(
     left: Annotated[Path, typer.Option(exists=True, readable=True)],
     right: Annotated[Path, typer.Option(exists=True, readable=True)],
     output: Annotated[Path, typer.Option()],
+    taxonomy: Annotated[Path, typer.Option(exists=True, readable=True)] = Path(
+        "configs/taxonomies/aps_topics.json"
+    ),
 ) -> None:
     """Merge two completed APS annotation templates without resolving disagreements."""
     from parltopic.evaluation.aps import merge_annotation_templates
 
     typer.echo(
-        json.dumps(merge_annotation_templates(left, right, output), indent=2, ensure_ascii=False)
+        json.dumps(
+            merge_annotation_templates(left, right, output, taxonomy),
+            indent=2,
+            ensure_ascii=False,
+        )
     )
 
 

@@ -309,3 +309,25 @@ def test_aps_template_merge_requires_complete_unanimous_annotations(tmp_path: Pa
     report = merge_annotation_templates(left, right, output)
     assert report["consensus_labels"] == 1
     assert json.loads(output.read_text())["consensus"]["topic"] == "1.1.1"
+
+
+def test_aps_template_merge_rejects_invalid_hierarchy(tmp_path: Path) -> None:
+    left = tmp_path / "left.jsonl"
+    right = tmp_path / "right.jsonl"
+    invalid = {
+        "affair_id": "1",
+        "aps_annotation": {
+            "chapter_code": "1.1",
+            "topic_codes": ["2.1.1"],
+            "not_classifiable": False,
+        },
+    }
+    left.write_text(json.dumps(invalid) + "\n")
+    right.write_text(json.dumps(invalid) + "\n")
+    with pytest.raises(ValueError, match="requires chapter"):
+        merge_annotation_templates(
+            left,
+            right,
+            tmp_path / "consensus.jsonl",
+            ROOT / "configs/taxonomies/aps_topics.json",
+        )

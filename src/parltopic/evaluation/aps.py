@@ -181,7 +181,10 @@ def build_consensus_labels(labels_path: Path, output_path: Path) -> dict[str, An
 
 
 def merge_annotation_templates(
-    left_path: Path, right_path: Path, output_path: Path
+    left_path: Path,
+    right_path: Path,
+    output_path: Path,
+    taxonomy_path: Path | None = None,
 ) -> dict[str, Any]:
     """Merge two independently completed template files into unanimous APS labels."""
     left_rows = _load_jsonl(left_path)
@@ -191,11 +194,15 @@ def merge_annotation_templates(
     if set(left) != set(right):
         raise ValueError("APS annotation files must contain the same affair IDs")
 
+    taxonomy = ApsTaxonomy.load(taxonomy_path) if taxonomy_path else None
     output_rows: list[dict[str, Any]] = []
     disputed: list[str] = []
     for affair_id in sorted(left):
         left_annotation = _template_annotation(left[affair_id])
         right_annotation = _template_annotation(right[affair_id])
+        if taxonomy:
+            taxonomy.validate_annotation(left_annotation)
+            taxonomy.validate_annotation(right_annotation)
         if _annotation_signature(left_annotation) != _annotation_signature(right_annotation):
             disputed.append(affair_id)
             continue

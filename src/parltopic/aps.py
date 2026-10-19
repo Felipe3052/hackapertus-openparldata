@@ -230,6 +230,27 @@ class ApsTaxonomy:
             raise ValueError("Assigned APS decision requires at least one topic code")
         return decision
 
+    def validate_annotation(self, annotation: dict[str, object]) -> None:
+        """Validate compact human labels against this taxonomy hierarchy."""
+        chapter = str(annotation.get("chapter") or "")
+        topics = [
+            str(annotation.get(field) or "")
+            for field in ("topic", "topic2")
+            if annotation.get(field)
+        ]
+        if bool(annotation.get("none")) and (chapter or topics):
+            raise ValueError("APS not_classifiable annotations cannot contain codes")
+        if chapter:
+            node = self._by_code.get(chapter)
+            if node is None or node.level != "chapter":
+                raise ValueError(f"Unknown APS chapter code: {chapter}")
+        for topic in topics:
+            node = self._by_code.get(topic)
+            if node is None or node.level != "topic":
+                raise ValueError(f"Unknown APS topic code: {topic}")
+            if node.parent_code != chapter:
+                raise ValueError(f"APS topic {topic} requires chapter {node.parent_code}")
+
     def chapters(self) -> tuple[ApsNode, ...]:
         return tuple(node for node in self.nodes if node.level == "chapter")
 

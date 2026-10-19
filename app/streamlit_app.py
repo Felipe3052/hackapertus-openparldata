@@ -80,8 +80,9 @@ if source == "Echtes Geschäft":
     identity = st.selectbox("Geschäft", list(examples),
                             format_func=lambda key: f"{key}: {examples[key]['title']}")
     selected = examples[identity]
-    st.caption("Sechs mitgelieferte Originalbeispiele aus dem geöffneten Dev-Split; "
-               "DE/FR/IT × Bund/Kanton. Keine neue Qualitätsmessung.")
+    st.caption("Neun mitgelieferte Originalbeispiele aus dem geöffneten Dev-Split; "
+               "DE/FR/IT × Bund/Kanton, inklusive drei positiver Beispiele. Keine neue "
+               "Qualitätsmessung.")
 
 title = st.text_input("Titel des parlamentarischen Geschäfts",
                       value=selected["title"] if selected else "")

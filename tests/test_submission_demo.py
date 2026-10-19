@@ -21,6 +21,8 @@ def test_bundled_original_examples_and_predictions_are_self_contained():
         for level in ("federal", "cantonal")
     }
     assert {a.affair_id for a in affairs} == {r.affair_id for r in results}
+    assert len(affairs) == 9
+    assert sum(result.status == "assigned" for result in results) == 6
     for result in results:
         assert result.status != "failed"
 

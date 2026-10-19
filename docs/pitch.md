@@ -25,12 +25,12 @@ OpenParlData-Suche (keine Präfixe, Datumsfilter ignoriert, tiefe Seiten langsam
 
 ## Demo-Drehbuch
 
-Vorbereitung: `make run`. Sechs echte DE/FR/IT-Originalfälle samt historischen Ergebnissen
+Vorbereitung: `make run`. Neun echte DE/FR/IT-Originalfälle, davon sechs positive Vorschläge, samt historischen Ergebnissen
 sind mitgeliefert. Der sichere Fünf-Minuten-Pitch zeigt zuerst diesen kurzen Offline-Pfad.
 Live-Modus nur mit vorbereitetem Key und vereinbartem API-Budget; kein Vollbestand-Lauf.
 
 1. Modus **Einzelnes Geschäft** → Eingabe **Echtes Geschäft** → Sprache und Ebene wählen.
-   Sechs Originalfälle sind im Container vorhanden; Titel, ID und Quelle zeigen.
+   Neun Originalfälle sind im Container vorhanden; darunter sechs positive Vorschläge. Titel, ID und Quelle zeigen.
 2. Konfiguration **Digitalisierung (validiert)** → *Historisches Ergebnis anzeigen* → Status,
    Erklärung, Belegstelle und historische Kennzeichnung. Optional mit vorbereitetem Budget
    einen Live-Abruf per ID statt des historischen Ergebnisses zeigen.

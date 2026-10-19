@@ -102,7 +102,7 @@ cd /Users/josipjukic/hackapertus-openparldata
    konfiguriertem Modell/Rate-Limit. Ergebnis bleibt beim JSON-Download erhalten.
    Pro Klick kann ein logischer Modellaufruf mit konfigurierten Retries entstehen.
 
-Die Demo ist interaktiv und wurde per Streamlit AppTest ohne API geprüft. Sechs echte Beispiele
+Die Demo ist interaktiv und wurde per Streamlit AppTest ohne API geprüft. Neun echte Beispiele
 und historische Ergebnisse sind mitgeliefert; Docker benötigt dafür keine lokale Eval-Datei,
 kein Ergebnisarchiv und keinen API-Key. `make run` startet diesen Modus auf Port 8501.
 Ein angezeigter Entscheidungswert ist keine kalibrierte Wahrscheinlichkeit.

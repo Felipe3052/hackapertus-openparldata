@@ -34,7 +34,7 @@ PDF-Seitenbegrenzung konnte aus der Challenge-Seite nicht bestätigt werden.
 
 | Anforderung | Nachweis / Status |
 |---|---|
-| Selbstständige Demo ohne API-Key und lokale Rohdaten | Sechs Originalfälle und historische Ausgaben in `data/demo/jury/`; Offline-Containerprüfung bestanden |
+| Selbstständige Demo ohne API-Key und lokale Rohdaten | Neun Originalfälle, davon sechs `assigned`, und historische Ausgaben in `data/demo/jury/`; Offline-Containerprüfung bestanden |
 | Quellen und unveränderte historische Beispiele | `data/demo/jury/manifest.json`: Originaldatei-Hashes, Auswahlverfahren, Snapshot-Hashes |
 | Live-API-Prototyp | `classify-affair`, Streamlit Live-ID, FastAPI; keine neue kostenpflichtige Messung autorisiert |
 | Suchgrenzen | UI kennzeichnet begrenzte Vorauswahl; gemessene Compiler-Grenzen bleiben sichtbar |

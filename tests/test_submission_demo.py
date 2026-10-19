@@ -100,3 +100,39 @@ def test_review_preserves_exact_prediction_and_can_be_downloaded(tmp_path, monke
     assert saved["context"]["historical_snapshot_id"]
     assert demo.session_state["classification"] == before
     assert any(b.label == "Prüfung als JSON sichern" for b in demo.get("download_button"))
+
+
+def test_result_of_previous_affair_is_not_shown_for_another_one():
+    from streamlit.testing.v1 import AppTest
+
+    demo = AppTest.from_file(ROOT / "app/streamlit_app.py").run()
+    next(b for b in demo.button if b.label.startswith("Historisches Ergebnis")).click().run()
+    assert any(w.label.startswith("Kürzel") for w in demo.text_input)
+    next(w for w in demo.selectbox if w.label == "Beispielsprache").select("it").run()
+    assert not demo.exception
+    assert not any(w.label.startswith("Kürzel") for w in demo.text_input)
+
+
+def test_recorded_search_replays_offline_and_hits_can_be_reviewed(tmp_path, monkeypatch):
+    import httpx
+    from streamlit.testing.v1 import AppTest
+
+    from parltopic import integration
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Recorded search must not use the network")
+
+    monkeypatch.setattr(httpx.Client, "send", forbidden)
+    record = integration.record_review
+    target = tmp_path / "reviews.jsonl"
+    monkeypatch.setattr(integration, "record_review", lambda entry, path: record(entry, target))
+    demo = AppTest.from_file(ROOT / "app/streamlit_app.py", default_timeout=10).run()
+    demo.radio[0].set_value("Thema über Parlamente suchen").run()
+    next(b for b in demo.button if b.label == "Aufzeichnung abspielen").click().run()
+    assert not demo.exception
+    next(w for w in demo.text_input if w.label.startswith("Kürzel")).set_value("fixture").run()
+    next(b for b in demo.button if b.label == "👍 Passt").click().run()
+    assert not demo.exception
+    saved = json.loads(target.read_text("utf-8"))
+    assert saved["review_decision"] == "confirmed"
+    assert saved["prediction_id"] == integration.content_id(saved["prediction"])

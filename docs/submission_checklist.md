@@ -72,7 +72,7 @@ erneut nötig sein. Mehrere Prozesse teilen weiterhin keine globale Provider-Quo
 ## Demo starten
 
 `make run` baut das Docker-Image und startet Streamlit auf Port 8501. Kein `.env` erforderlich.
-Im Modus «Echtes Geschäft» stehen DE/FR/IT × Bund/Kanton bereit. «Historisches Ergebnis anzeigen»
+Im Modus «Echtes Geschäft» stehen DE/FR/IT × Bund/Kanton bereit. «Historisches Ergebnis (ohne API)»
 verwendet gespeicherte Vorhersagen und sendet keine API-Anfrage. Es handelt sich um einen
 historischen Dev-Snapshot, nicht um neue Modellmessungen.
 

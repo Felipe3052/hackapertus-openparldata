@@ -29,9 +29,10 @@ Vorbereitung: `make run`. Sechs echte DE/FR/IT-Originalfälle samt historischen 
 sind mitgeliefert. Der sichere Fünf-Minuten-Pitch zeigt zuerst diesen kurzen Offline-Pfad.
 Live-Modus nur mit vorbereitetem Key und vereinbartem API-Budget; kein Vollbestand-Lauf.
 
-1. Modus **Einzelnes Geschäft** → Eingabe **Echtes Geschäft** → Sprache und Ebene wählen.
+1. Modus **Einzelnes Geschäft** → Eingabe **Echtes Geschäft**. Start ist ein französisches
+   Genfer Geschäft (LIPAD); Apertus begründet auf Deutsch. Sprache und Ebene wählbar.
    Sechs Originalfälle sind im Container vorhanden; Titel, ID und Quelle zeigen.
-2. Konfiguration **Digitalisierung (validiert)** → *Historisches Ergebnis anzeigen* → Status,
+2. Konfiguration **Digitalisierung (validiert)** → *Historisches Ergebnis (ohne API)* → Status,
    Erklärung, Belegstelle und historische Kennzeichnung. Optional mit vorbereitetem Budget
    einen Live-Abruf per ID statt des historischen Ergebnisses zeigen.
 3. Kürzel eintragen → **Vorschlag bestätigen** → «Gespeichert».
@@ -45,8 +46,11 @@ Live-Modus nur mit vorbereitetem Key und vereinbartem API-Budget; kein Vollbesta
    editierbar) ist Teil der Botschaft «Mensch behält die Kontrolle».
 
 **Fallback, falls der Endpoint langsam ist** (nachmittags bis 70 s pro Anfrage gemessen):
-Schritt 1–2 mit *Historisches Ergebnis anzeigen (ohne API)* im Modus «Echtes Geschäft».
-Schritt 5 bei langsamem Endpoint durch die Compiler-Ergebnistabelle im Bericht ersetzen.
+Schritt 1–2 mit *Historisches Ergebnis (ohne API)* im Modus «Echtes Geschäft».
+Schritt 5 ohne Netz oder bei langsamem Endpoint: *Ohne Netz: aufgezeichneten Suchlauf zeigen*
+→ *Aufzeichnung abspielen* (Live-Lauf vom 19.10.2026, `data/demo/search/`: 6 Parlamente, 7 geprüft,
+6 passen, 24 s; Apertus-Begriffe von Hand auf Kernbegriffe gekürzt). Treffer lassen sich auch dort
+mit 👍/👎 prüfen.
 Keine lokal vorhandenen, aber nicht ausgelieferten Suchläufe als Fallback voraussetzen.
 
 ## Wahrscheinliche Fragen

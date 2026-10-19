@@ -94,6 +94,26 @@ topics are the stronger offer.
    (table input → `parltopic` → table output) classifies new affairs; the FastAPI service is the
    REST alternative ([docs/integration.md](docs/integration.md)).
 
+### Target architecture (mandatory)
+
+ParlTopic is a Python package and container whose only model dependency is an
+OpenAI-compatible Apertus endpoint (`LLM_BASE_URL`); no proprietary AI service is called.
+
+- **c) Sovereign Swiss cloud — used during the hackathon.** Apertus v1.5 70B on the CSCS
+  inference endpoint (Swiss National Supercomputing Centre, Lugano); a Swiss provider works the
+  same way. The processed data are public OpenParlData records.
+- **a) On-premise — supported by design, not tested by us.** The container and a vLLM server
+  with the open Apertus weights on the organisation's own GPU server (sized for a 70B model);
+  results go into OpenParlData's own PostgreSQL (`affair_topics`).
+- **b) Air-gapped — supported for batch runs, not tested end to end.** With the bulk exports
+  cached and a local endpoint, classification and export need no external network. Live fetch
+  and the search view use `api.openparldata.ch` and are then unavailable. CI runs the demo
+  container with `--network none`; Streamlit usage statistics are switched off.
+
+**Build time:** Python packages (PyPI), the `python:3.12-slim` image, the OpenParlData bulk
+exports and hackathon label files (~350 MB). **Runtime:** the Apertus endpoint; optionally
+`api.openparldata.ch` for live affairs and search; optionally PostgreSQL for `affair_topics`.
+
 ---
 
 ## 3. Use of Apertus
@@ -329,6 +349,10 @@ parltopic run-eval --eval-set data/eval/e1_digitalisation_test.jsonl \
 parltopic compare-runs --eval-set … --baseline-results … --candidate-results …   # paired bootstrap
 ```
 
+**Hardware and commit.** The client runs on a laptop CPU (no GPU); Apertus runs on CSCS. The
+numbers come from the prediction files in the release `results-2026-10-19`; the code is the
+last commit on `main` before the deadline (19 October 2026, 14:30). Seed 42 for all sampling.
+
 Every `run-eval` output has a manifest with the dataset hash, topic, system prompt, settings and
 source-file hashes; resuming with changed inputs is refused. Bounded submission uses a SQLite
 checkpoint journal, per-output writer lock and atomic JSONL snapshots; eight synthetic affairs
@@ -350,3 +374,11 @@ the isolated PostgreSQL check verifies version retention, repeated import and fo
 4. Party bias check; a sealed, adjudicated holdout including municipal affairs.
 
 **License:** code Apache-2.0 ([LICENSE](LICENSE)); report and documentation CC BY 4.0. Data: OpenParlData.ch, CC BY 4.0.
+
+## References
+
+- Swiss AI Initiative: Apertus v1.5 models, <https://huggingface.co/swiss-ai/Apertus-v1.5-70B>.
+- OpenParlData.ch: bulk exports and REST API, <https://openparldata.ch>, <https://api.openparldata.ch/documentation>.
+- Année Politique Suisse topic scheme, as provided in the hackathon label directory, <https://files.openparldata.ch/hackapertus/>.
+- Robertson, S. and Zaragoza, H. (2009). The Probabilistic Relevance Framework: BM25 and Beyond. *Foundations and Trends in Information Retrieval* 3(4).
+- Experiment log and evaluation protocol of this project: [docs/experiments.md](docs/experiments.md), [docs/evaluation_protocol.md](docs/evaluation_protocol.md).

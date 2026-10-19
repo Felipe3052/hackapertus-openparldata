@@ -10,6 +10,7 @@ import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import httpx
 import streamlit as st
 
 from parltopic.classification.service import ClassificationService
@@ -33,11 +34,18 @@ def render() -> None:
                "zusätzlich nach Titelbegriffen gefiltert. Keine vollständige Bestandssuche. "
                "Die bisher gemessenen Vorfilter erreichten etwa 59–68 % Treffer-Recall; "
                "für diese Live-Rangfolge liegt kein Recall-Nachweis vor.")
-    name = st.text_input("Thema", "Künstliche Intelligenz in der Verwaltung", key="s_name")
+    name = st.text_input(
+        "Thema", value="", placeholder="z. B. Künstliche Intelligenz in der Schule", key="s_name"
+    )
     description = st.text_area(
-        "Beschreibung", "Einsatz, Beschaffung, Regulierung und Risiken von KI-Systemen und "
-        "Chatbots in Verwaltung, Schulen und Justiz.", key="s_desc")
-    terms = st.text_input("Eigene Begriffe (optional, kommagetrennt)", "KI, ChatGPT", key="s_terms")
+        "Beschreibung", value="",
+        placeholder="Optional: Einsatz, Regulierung und Risiken des Themas beschreiben.",
+        key="s_desc",
+    )
+    terms = st.text_input(
+        "Eigene Begriffe (optional, kommagetrennt)", value="",
+        placeholder="z. B. KI, ChatGPT, maschinelles Lernen", key="s_terms",
+    )
     topic = TopicDefinition(
         topic_id=name.casefold().strip().replace(" ", "-")[:60] or "topic", name=name,
         description=description, synonyms=[t.strip() for t in terms.split(",") if t.strip()],
@@ -60,7 +68,15 @@ def render() -> None:
                     compiled.terms.get(language, [])
                 )
         except Exception as error:
-            st.error(f"Kompilierung fehlgeschlagen: {error}")
+            if isinstance(error, httpx.HTTPStatusError) and error.response.status_code == 403:
+                st.error(
+                    "Kompilierung fehlgeschlagen: CSCS verweigert den Zugriff (HTTP 403). "
+                    "Der Key ist geladen, aber für diesen Endpoint oder dieses Modell nicht "
+                    "berechtigt. Prüfe den CSCS-Zugriff und LLM_NAME; dies ist kein Fehler "
+                    "deines eingegebenen Themas."
+                )
+            else:
+                st.error(f"Kompilierung fehlgeschlagen: {error}")
 
     if "s_compiled" not in st.session_state:
         return

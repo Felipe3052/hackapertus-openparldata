@@ -101,6 +101,11 @@ bundled. Select **Historisches Ergebnis anzeigen** for offline replay. Live sear
 candidate lists, not complete corpus classifications. The current submission scope uses short
 functional checks; 300k runtimes remain projections, not a completed full-corpus run.
 
+For a live run with an existing `parltopic-jury` image and a configured `.env`, use
+`make run-live`. It parses quoted dotenv values before passing them to Docker. Docker's raw
+`--env-file .env` preserves surrounding quotes, which can cause authentication failures when
+`LLM_NAME` or other values are quoted.
+
 ```bash
 cp .env.example .env          # add LLM_API_KEY for the CSCS endpoint
 python -m venv .venv

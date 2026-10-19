@@ -34,6 +34,9 @@ def test_search_respects_budget_retains_errors_and_invalidates_changed_topic(mon
 
     demo = AppTest.from_file(ROOT / "app/streamlit_app.py", default_timeout=10).run()
     demo.radio[0].set_value("Thema über Parlamente suchen").run()
+    next(widget for widget in demo.text_input if widget.label == "Thema").set_value(
+        "Fixture Thema"
+    ).run()
     page = importlib.import_module("search_page")
     monkeypatch.setattr(page, "compile_topic", lambda topic, settings, **kwargs: CompiledTopic(
         topic_id=topic.topic_id, terms={"de": ["ChatGPT"]}, model="offline-fixture"
@@ -59,6 +62,15 @@ def test_search_respects_budget_retains_errors_and_invalidates_changed_topic(mon
     next(t for t in demo.text_input if t.label == "Thema").set_value("Anderes Thema").run()
     assert "s_compiled" not in demo.session_state
     assert "s_hits" not in demo.session_state
+
+
+def test_search_topic_starts_empty_for_jury_input():
+    from streamlit.testing.v1 import AppTest
+
+    demo = AppTest.from_file(ROOT / "app/streamlit_app.py", default_timeout=10).run()
+    demo.radio[0].set_value("Thema über Parlamente suchen").run()
+    topic = next(widget for widget in demo.text_input if widget.label == "Thema")
+    assert topic.value == ""
 
 
 def test_offline_demo_replay_survives_without_network(monkeypatch):

@@ -1,6 +1,7 @@
 import json
 
 import httpx
+import pytest
 
 from parltopic import compiler
 from parltopic.classification import thinking
@@ -72,3 +73,19 @@ def test_retry_after_is_observed_with_no_network_or_actual_wait(monkeypatch):
             assert client.request({"model": "fixture"}) == {"ok": True}
     assert waits == [7]
     assert len(attempts) == 2
+
+
+def test_forbidden_provider_response_is_not_retried():
+    attempts = []
+
+    def respond(request):
+        attempts.append(request)
+        return httpx.Response(403, json={"error": "forbidden"})
+
+    settings = Settings(_env_file=None, llm_api_key="offline", llm_requests_per_minute=0)
+    with httpx.Client(transport=httpx.MockTransport(respond)) as http:
+        with ApertusClient(settings, http_client=http) as client:
+            with pytest.raises(httpx.HTTPStatusError) as error:
+                client.request({"model": "fixture"})
+    assert error.value.response.status_code == 403
+    assert len(attempts) == 1

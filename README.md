@@ -15,8 +15,8 @@ file; Apertus v1.5 decides for each affair and cites the passage that justifies 
 topics need no training.
 
 - **Challenge:** [Topic classification for Swiss parliaments with Apertus](https://app.sprintd.org/events/hack-apertus-liebefeld/cases/topic-classification-for-swiss-parliaments-with-apertus)
-- **Technical report:** [technical_report.md](technical_report.md) · **Experiment log:** [docs/experiments.md](docs/experiments.md) · **Benchmark notes:** [docs/benchmark.md](docs/benchmark.md)
-- **Demo:** `make run` starts the bundled historical replay without an API key.
+- **Technical report:** [technical_report.md](technical_report.md) ([PDF, 6 pages](TokenTell_Report.pdf)) · **Pitch and demo script:** [docs/pitch.md](docs/pitch.md) · **Experiment log:** [docs/experiments.md](docs/experiments.md) · **Benchmark notes:** [docs/benchmark.md](docs/benchmark.md)
+- **Demo:** `make run` starts the Streamlit demo (English UI) with bundled offline replays; with an API key it classifies live from OpenParlData.
 
 > Topic labels are suggestions about subject matter. They do not judge political positions, and a
 > person should confirm them before they are published.
@@ -95,8 +95,9 @@ subgroup coverage, missing APS references and the limits of the 300k projection.
 Requires Python 3.11 or newer.
 
 For a short jury walkthrough without a key, local datasets or inference charges, run
-`make run` (Docker, port 8501). Six original DE/FR/IT examples and historical predictions are
-bundled. Select **Historical result (no API)** for offline replay. Live searches are bounded
+`make run` (Docker, port 8501). Bundled offline material: six original DE/FR/IT affairs with
+their historical predictions (**Historical result (no API)**) and one recorded live search
+across six parliaments (**Offline: show a recorded search run**). Live searches are bounded
 candidate lists, not complete corpus classifications. The current submission scope uses short
 functional checks; 300k runtimes remain projections, not a completed full-corpus run.
 
@@ -132,14 +133,26 @@ Rows for OpenParlData's `affair_topics` table (schema, review fields and Apache 
 [docs/integration.md](docs/integration.md)):
 
 ```bash
-parltopic export-opd --results results/digitalisation.jsonl   --topic configs/topics/digitalisation.yaml --output out/affair_topics.ndjson
+parltopic export-opd --results results/digitalisation.jsonl \
+  --topic configs/topics/digitalisation.yaml --output out/affair_topics.ndjson
 ```
 
-User interface and API. The demo has two modes: *Single affair* loads an affair by its
-OpenParlData ID, classifies it and stores a reviewer's confirm / reject decision; *Search a topic across
-parliaments* turns one sentence into search terms in four languages (Apertus), takes the
-newest matches from OpenParlData's search per parliament and lets Apertus check them, with the
-original passage for every hit. Pitch and demo script: [docs/pitch.md](docs/pitch.md).
+User interface and API. The Streamlit demo (English interface; affair titles, texts and
+evidence stay in their original language) has two modes:
+
+- *Single affair*: a bundled original affair, any OpenParlData ID fetched live (with ten
+  digitalisation affairs in DE/FR/IT, each verified live twice, in
+  `data/demo/live_examples.json`), or manual input; the validated digitalisation topic or a
+  custom one. The result shows status, Apertus' reasoning, the quoted evidence with a link, and
+  the decision path (term rule or Apertus). A reviewer confirms or rejects; the suggestion is
+  kept and the review is stored (`results/reviews.jsonl`, columns `review_decision`,
+  `reviewed_by` in `affair_topics`).
+- *Search a topic across parliaments*: one sentence becomes search terms in four languages
+  (Apertus, editable), OpenParlData's search returns the newest matches per parliament, and
+  Apertus checks them with a progress bar; every hit shows the original passage and can be
+  confirmed or rejected.
+
+Pitch and demo script: [docs/pitch.md](docs/pitch.md).
 
 ```bash
 make web                      # Streamlit
@@ -206,7 +219,8 @@ app/                    Streamlit demo
 configs/topics/         Topic definitions (digitalisation, adhoc/, experiments/)
 configs/taxonomies/     APS scheme as JSON (22 chapters, 165 topics)
 data/eval/              Frozen eval sets and the human APS labels
-data/demo/              Small synthetic demo inputs
+data/demo/              Demo inputs: jury originals with historical predictions, a recorded
+                        search run, live-verified example IDs, synthetic test affairs
 docs/                   Architecture, integration, evaluation protocol, benchmark notes, log
 integration/opd/        SQL schema for OpenParlData's affair_topics table
 src/parltopic/          Ingestion, classification, retrieval, evaluation, CLI, API
@@ -240,7 +254,9 @@ vLLM server with the open weights. With the exports cached, it runs without inte
 
 - The digitalisation labels have no checked negatives; the test split has been opened and is not a
   sealed holdout.
-- High recall needs every affair read (28–67 h per topic over 325,000 affairs on one key). A
+- High recall needs every affair read: 28–67 h per topic over 325,000 affairs on one key at
+  the measured throughput, about 140 h at the client's default limit of 30 requests per minute
+  (projections; no full-corpus run). A
   compiled-query pre-filter (`parltopic compile-topic`, `find`) finds about 60 % of the hits in
   4–8 % of the affairs; it is a fast first pass, not a replacement (report 5.7).
 - The APS scheme is exported but no multi-label APS mode is

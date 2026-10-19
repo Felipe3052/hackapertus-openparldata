@@ -136,3 +136,18 @@ def test_recorded_search_replays_offline_and_hits_can_be_reviewed(tmp_path, monk
     saved = json.loads(target.read_text("utf-8"))
     assert saved["review_decision"] == "confirmed"
     assert saved["prediction_id"] == integration.content_id(saved["prediction"])
+
+
+def test_live_mode_offers_verified_digitalisation_examples_without_fetching():
+    from streamlit.testing.v1 import AppTest
+
+    demo = AppTest.from_file(ROOT / "app/streamlit_app.py").run()
+    next(r for r in demo.radio if r.label == "Input").set_value("OpenParlData ID (live)").run()
+    picker = next(w for w in demo.selectbox if w.label.startswith("Digitalisation example"))
+    examples = json.loads((ROOT / "data/demo/live_examples.json").read_text("utf-8"))["examples"]
+    assert picker.options[:-1] and len(picker.options) == len(examples) + 1
+    assert {e["language"] for e in examples} == {"de", "fr", "it"}
+    picker.select(examples[2]["affair_id"]).run()
+    assert not demo.exception
+    assert next(w for w in demo.text_input if w.label.startswith("Affair ID")).value == str(
+        examples[2]["affair_id"])

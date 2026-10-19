@@ -35,7 +35,12 @@ Die Oberfläche ist englisch; Titel, Texte und Belegstellen bleiben in der Origi
    Sechs Originalfälle sind im Container vorhanden; Titel, ID und Quelle zeigen.
 2. Konfiguration **Digitalisation (validated)** → *Historical result (no API)* → Status,
    Erklärung, Belegstelle und historische Kennzeichnung. Optional mit vorbereitetem Budget
-   einen Live-Abruf per ID statt des historischen Ergebnisses zeigen.
+   einen Live-Abruf per ID statt des historischen Ergebnisses zeigen: Eingabe **OpenParlData ID
+   (live)** → *Digitalisation example (verified live)* → *Load* → *Classify with Apertus*. Die zehn
+   Beispiele (`data/demo/live_examples.json`, DE/FR/IT, Bund und Kantone) wurden am 19.10.2026
+   je zweimal live klassifiziert, beide Male zugeordnet; acht entscheidet Apertus, zwei die
+   Stichwort-Regel ohne Modellaufruf. Sicherster Einstieg: GE «Usage de l'IA dans l'administration
+   publique» (französisch, Belegstelle aus dem Originaldokument) oder SG «Palantir».
 3. *Reviewer initials* eintragen → **Confirm suggestion** → «Suggestion confirmed … saved».
 4. Die mitgelieferten französischen/italienischen Fälle wechseln. Eigene Themendefinition und
    YAML-Download zeigen: kein Training erforderlich, Qualität neuer Themen separat prüfen.

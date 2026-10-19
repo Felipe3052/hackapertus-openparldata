@@ -1,4 +1,4 @@
-"""Shared presentation for both views: status cards, quoted evidence, headline numbers."""
+"""Shared presentation for both views: status cards and quoted evidence."""
 
 import html
 import re
@@ -36,16 +36,6 @@ CSS = """
 
 def style() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
-
-
-def headline() -> None:
-    """The numbers the jury should remember; all reproducible with `parltopic claims`."""
-    cols = st.columns(4)
-    cols[0].metric("Digitalisation accuracy (F1)", "0.876", "+0.20 vs. full-text search")
-    cols[1].metric("German · French · Italian (F1)", "0.90 · 0.85 · 0.85")
-    cols[2].metric("Current DVS list found", "27 / 30", "+8 vs. full-text search")
-    cols[3].metric("New topics, no training (F1)", "0.78 – 0.87")
-    cols[3].caption("Migration 0.87 · Health 0.81 · Transport 0.78")
 
 
 def status_card(status: str, detail: str = "") -> None:

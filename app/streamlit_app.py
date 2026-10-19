@@ -21,7 +21,6 @@ ui.style()
 st.title("🏛️ ParlTopic")
 st.caption("Which affairs of Swiss parliaments concern a topic? Apertus reads them in German, "
            "French and Italian, quotes the evidence, and a person decides.")
-ui.headline()
 
 mode = st.radio("Mode", ["Single affair", "Search a topic across parliaments"],
                 horizontal=True)
@@ -35,7 +34,6 @@ with st.sidebar:
         "4. A **person** confirms or corrects; nothing is overwritten\n"
         "5. **Export** as table `affair_topics` for OpenParlData"
     )
-    st.caption("Every number above can be recomputed from the release with `parltopic claims`.")
 
 if mode == "Search a topic across parliaments":
     from search_page import render
@@ -58,8 +56,7 @@ with st.sidebar:
                              "Verkehr, Velo, ÖV, Bahn, transports publics, trasporti",
                              disabled=curated)
     if curated:
-        st.caption("Validated on 1,200 test affairs 2024–26 (F1 0.876). The validated "
-                   "definition is kept in its original German.")
+        st.caption("The validated definition is kept in its original German.")
     elif topic_name.strip() and topic_description.strip():
         import yaml
 
@@ -78,8 +75,15 @@ with left:
                       horizontal=True)
     selected = None
     if source == "OpenParlData ID (live)":
-        affair_key = st.text_input("Affair ID in OpenParlData", "303044",
-                                   help="e.g. 303044 (BE, eBau), 235308 (federal), 329562 (TI)")
+        live_examples = json.loads((ROOT / "data/demo/live_examples.json").read_text("utf-8"))
+        picks = {e["affair_id"]: e for e in live_examples["examples"]}
+        pick = st.selectbox(
+            "Digitalisation example (verified live)", [*picks, None],
+            format_func=lambda key: "Other ID …" if key is None else
+            f"{picks[key]['parliament']} · {picks[key]['language'].upper()} · {picks[key]['title']}"
+            + (" · keyword rule" if picks[key]["path"] == "keyword" else ""))
+        affair_key = st.text_input("Affair ID in OpenParlData", str(pick or ""),
+                                   help="Any affair ID from api.openparldata.ch")
         if st.button("Load from the OpenParlData API"):
             if not affair_key.strip().isdigit():
                 st.error("Please enter a numeric OpenParlData ID.")
@@ -94,6 +98,9 @@ with left:
                     st.error(f"Live fetch failed: {error}. "
                              "The bundled original examples remain available.")
         selected = st.session_state.get("live_affair")
+        if selected and selected["affair_id"] != affair_key.strip():
+            st.info(f"Click *Load from the OpenParlData API* to fetch affair {affair_key}.")
+            selected = None
         if selected:
             st.caption(f"Live from api.openparldata.ch: {selected['parliament']}, "
                        f"{selected['level']}, {selected['date']}, "

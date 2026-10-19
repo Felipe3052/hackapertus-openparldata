@@ -40,10 +40,10 @@ def test_export_verifies_topic_and_keeps_all_evidence(tmp_path):
     }))
     output = tmp_path / "export.jsonl"
     assert export(source, topic, output)["rows"] == 1
-    row = json.loads(output.read_text())
+    row = json.loads(output.read_text("utf-8"))
     assert len(row["evidence"]) == 2
     assert row["prediction_id"] and row["run_id"] != "legacy-unverified"
-    assert json.loads((tmp_path / "export.jsonl.run.json").read_text())["manifest_verified"]
+    assert json.loads((tmp_path / "export.jsonl.run.json").read_text("utf-8"))["manifest_verified"]
     with pytest.raises(FileExistsError):
         export(source, topic, output)
     with pytest.raises(ValueError, match="differs"):
@@ -58,7 +58,7 @@ def test_historical_export_requires_explicit_opt_in(tmp_path):
         export(source, topic, tmp_path / "output")
     output = tmp_path / "legacy"
     export(source, topic, output, allow_unverified=True)
-    assert not json.loads((tmp_path / "legacy.run.json").read_text())["manifest_verified"]
+    assert not json.loads((tmp_path / "legacy.run.json").read_text("utf-8"))["manifest_verified"]
 
 
 def test_export_rejects_foreign_topic_even_for_legacy(tmp_path):

@@ -33,7 +33,7 @@ und dessen Manifest, nicht zur späteren Themenkonfiguration aus PR #4.
 
 **Vollständige Ergebnisse veröffentlicht und unabhängig nachgerechnet.** Alle Vorhersagedateien
 hinter README und technischem Bericht liegen im GitHub-Release
-[`results-2026-10-18`](https://github.com/Felipe3052/hackapertus-openparldata/releases/tag/results-2026-10-18)
+[`results-2026-10-19`](https://github.com/Felipe3052/hackapertus-openparldata/releases/tag/results-2026-10-19)
 (30 Dateien inkl. Manifesten). `parltopic fetch-results` lädt sie nach `results/`,
 `parltopic claims` rechnet jede genannte Zahl nach (41 Aussagen, alle bestätigt). Der Prüfer
 `jury.py` bestätigt den eingefrorenen Testlauf (`results/ma_test.jsonl`) unabhängig:

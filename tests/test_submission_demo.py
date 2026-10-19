@@ -9,13 +9,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_bundled_original_examples_and_predictions_are_self_contained():
-    manifest = json.loads((ROOT / "data/demo/jury/manifest.json").read_text())
+    manifest = json.loads((ROOT / "data/demo/jury/manifest.json").read_text("utf-8"))
     for name, digest in manifest["files"].items():
         assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
     affairs = [Affair.model_validate_json(line) for line in
-               (ROOT / "data/demo/jury/affairs.jsonl").read_text().splitlines()]
+               (ROOT / "data/demo/jury/affairs.jsonl").read_text("utf-8").splitlines()]
     results = [ClassificationResult.model_validate_json(line) for line in
-               (ROOT / "data/demo/jury/predictions.jsonl").read_text().splitlines()]
+               (ROOT / "data/demo/jury/predictions.jsonl").read_text("utf-8").splitlines()]
     assert {(a.language, a.level) for a in affairs} == {
         (language, level) for language in ("de", "fr", "it")
         for level in ("federal", "cantonal")
@@ -93,7 +93,7 @@ def test_review_preserves_exact_prediction_and_can_be_downloaded(tmp_path, monke
     ).run()
     next(b for b in demo.button if b.label == "Vorschlag ablehnen").click().run()
     assert not demo.exception
-    saved = json.loads(target.read_text())
+    saved = json.loads(target.read_text("utf-8"))
     assert saved["prediction"] == before
     assert saved["prediction_id"] == integration.content_id(before)
     assert saved["corrected_status"] == "not_assigned"

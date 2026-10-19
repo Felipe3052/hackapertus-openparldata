@@ -19,7 +19,7 @@ E1_DEV = "data/eval/e1_digitalisation_dev.jsonl"
 E1_TEST = "data/eval/e1_digitalisation_test.jsonl"
 E4_DVS = "data/eval/e4_dvs.jsonl"
 DIGI = "configs/topics/digitalisation.yaml"
-RELEASE = "results-2026-10-18"
+RELEASE = "results-2026-10-19"
 
 
 @dataclass(frozen=True)
@@ -138,7 +138,7 @@ RELEASE_URL = (
     "https://github.com/Felipe3052/hackapertus-openparldata/releases/download/"
     f"{RELEASE}/{RELEASE}.tar.gz"
 )
-RELEASE_SHA256 = "fbd69f15bf54c51104629e6f3629caca6722bb92323dbad752d98bdf450e38bd"
+RELEASE_SHA256 = "9a976619900a97a4213514e945b3a18b9228e9b25431e8d1c54b50ec40cadd37"
 
 
 def fetch_results(root: str | Path = ".", url: str = RELEASE_URL,
@@ -158,10 +158,17 @@ def fetch_results(root: str | Path = ".", url: str = RELEASE_URL,
         if url != RELEASE_URL or error.code not in {403, 404}:
             raise
         # Private repositories require the user's existing gh authentication; no key is logged.
-        payload = subprocess.run([
-            "gh", "api", "repos/Felipe3052/hackapertus-openparldata/releases/assets/653741007",
-            "-H", "Accept: application/octet-stream",
-        ], check=True, capture_output=True).stdout
+        repo = "repos/Felipe3052/hackapertus-openparldata"
+        asset = subprocess.run(
+            ["gh", "api", f"{repo}/releases/tags/{RELEASE}", "--jq",
+             f'.assets[] | select(.name == "{RELEASE}.tar.gz") | .id'],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        payload = subprocess.run(
+            ["gh", "api", f"{repo}/releases/assets/{asset}", "-H",
+             "Accept: application/octet-stream"],
+            check=True, capture_output=True,
+        ).stdout
     if hashlib.sha256(payload).hexdigest() != expected_sha256:
         raise ValueError("Published results archive SHA256 mismatch")
     base = (Path(root) / "results").resolve()

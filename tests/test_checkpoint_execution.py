@@ -53,7 +53,7 @@ def test_interruption_keeps_committed_results_and_valid_snapshot(tmp_path):
 
     with pytest.raises(RuntimeError, match="interruption"):
         checkpointed_run(source, out, {}, fail_after_first, workers=1)
-    committed = {json.loads(line)["affair_id"] for line in out.read_text().splitlines()}
+    committed = {json.loads(line)["affair_id"] for line in out.read_text("utf-8").splitlines()}
     assert "0" in committed
     calls = []
 
@@ -63,7 +63,7 @@ def test_interruption_keeps_committed_results_and_valid_snapshot(tmp_path):
 
     checkpointed_run(source, out, {}, resume, workers=1)
     assert not committed.intersection(calls)
-    assert len(out.read_text().splitlines()) == 8
+    assert len(out.read_text("utf-8").splitlines()) == 8
 
 
 def test_exclusive_run_lock_rejects_second_writer(tmp_path):
@@ -74,7 +74,7 @@ def test_exclusive_run_lock_rejects_second_writer(tmp_path):
 
 def test_preflight_duplicate_ids_admits_no_work(tmp_path):
     path = dataset(tmp_path, count=1)
-    path.write_text((path.read_text() + "\n") * 2)
+    path.write_text((path.read_text("utf-8") + "\n") * 2)
     calls = []
     with pytest.raises(ValueError, match="duplicate"):
         checkpointed_run(path, tmp_path / "out", {}, lambda affair: calls.append(affair))
@@ -122,7 +122,7 @@ checkpointed_run(sys.argv[1], sys.argv[2], {}, classify, workers=1)
     checkpointed_run(source, out, {}, resume, workers=1)
     assert "0" not in calls
     assert len(calls) == 7
-    assert len(out.read_text().splitlines()) == 8
+    assert len(out.read_text("utf-8").splitlines()) == 8
 
 
 def test_interrupted_manifest_publish_preserves_previous_provenance(tmp_path, monkeypatch):
@@ -143,4 +143,4 @@ def test_interrupted_manifest_publish_preserves_previous_provenance(tmp_path, mo
             checkpointed_run(source, out, {}, decision, workers=1)
     assert manifest.read_bytes() == before
     checkpointed_run(source, out, {}, decision, workers=1)
-    assert len(out.read_text().splitlines()) == 8
+    assert len(out.read_text("utf-8").splitlines()) == 8

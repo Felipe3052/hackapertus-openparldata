@@ -18,7 +18,7 @@ def test_short_unlabelled_job_runs_and_resumes_without_scoring_or_inference(tmp_
             "--output", str(output), "--workers", "1", "--limit", "2", "--no-score"]
     result = CliRunner().invoke(cli.app, args)
     assert result.exit_code == 0, result.output
-    rows = [json.loads(line) for line in output.read_text().splitlines()]
+    rows = [json.loads(line) for line in output.read_text("utf-8").splitlines()]
     assert len(rows) == 2
     assert all(row["input_tokens"] == 0 and row["status"] == "assigned" for row in rows)
     before = output.read_bytes()

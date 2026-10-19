@@ -154,7 +154,7 @@ docker compose up --build     # both in containers
 Every number above can be recomputed from the published prediction files, without API calls:
 
 ```bash
-parltopic fetch-results      # prediction files + manifests from the release results-2026-10-18
+parltopic fetch-results      # prediction files + manifests from the release results-2026-10-19
 parltopic claims             # recomputes each stated number; exits 1 on any mismatch
 ```
 

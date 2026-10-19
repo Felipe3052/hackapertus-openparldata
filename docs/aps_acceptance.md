@@ -3,6 +3,14 @@
 Branch: `experiment/aps-context-pipeline`
 Baseline: existing classifier with `APS_CONTEXT_ENABLED=false`
 
+## Frozen experiment status
+
+As of 2026-10-19, this branch is frozen for the current hackathon submission. The APS component
+remains an opt-in shadow/context layer; the default classifier path is unchanged. No further
+quality or taxonomy claims should be made from this branch until the open evidence below is
+available. Future work stays on this branch (or a new branch from it) and must not change `main`
+without a fresh paired evaluation.
+
 This matrix records what is proven on the current branch and what is still required before APS
 can be promoted from an opt-in shadow/context component to a hard classifier.
 
@@ -45,3 +53,6 @@ must remain responsible for the final semantic decision.
 4. Run `aps-evaluate` on the sealed consensus holdout and apply the existing regression gate to
    the final classifier outputs.
 5. Repeat the latency/token comparison on the same holdout before changing the default flag.
+
+Until these actions are completed, the branch should be treated as a stable prototype and not as
+a production-ready multilingual APS classifier.

@@ -22,7 +22,7 @@ api:
 	python -m uvicorn parltopic.api:app --reload --port 8000
 
 web:
-	python -m streamlit run app/streamlit_app.py
+	python -m streamlit run app/streamlit_app.py --browser.gatherUsageStats false
 
 demo:
 	python -m parltopic.cli classify --input data/demo/affairs.jsonl --topic configs/topics/digitalisation.yaml --offline

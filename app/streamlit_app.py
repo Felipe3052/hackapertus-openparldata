@@ -48,9 +48,14 @@ with st.sidebar:
     st.header("Thema")
     policy = st.selectbox("Konfiguration", ["Digitalisierung (validiert)", "Eigenes Thema"])
     curated = policy.startswith("Digitalisierung")
-    topic_name = st.text_input("Name", "Digitalisierung", disabled=curated)
-    topic_description = st.text_area("Beschreibung", CURATED_TOPIC.description, disabled=curated)
-    synonyms = st.text_input("Synonyme", ", ".join(CURATED_TOPIC.synonyms), disabled=curated)
+    # An own topic starts from a ready example, never from the curated topic's synonyms.
+    topic_name = st.text_input("Name", "Digitalisierung" if curated else "Verkehr",
+                               disabled=curated)
+    topic_description = st.text_area(
+        "Beschreibung", CURATED_TOPIC.description if curated else
+        "Strassen, öffentlicher Verkehr, Velo, Bahn und Mobilität.", disabled=curated)
+    synonyms = st.text_input("Synonyme", ", ".join(CURATED_TOPIC.synonyms) if curated else
+                             "Velo, ÖV, Bahn, Strasse", disabled=curated)
     if curated:
         st.caption("Validiert auf 1'200 Testgeschäften 2024–26 (F1 0,876).")
     elif topic_name.strip() and topic_description.strip():
@@ -202,7 +207,7 @@ with right:
         ui.status_card("failed", "Technischer Zustand, keine Themenentscheidung.")
         st.error(result.error)
     else:
-        detail = (f"Entscheidungswert {result.score:.2f} (nicht kalibriert)"
+        detail = (f"Entscheidungswert {result.score:.2f} (nicht kalibriert)".replace(".", ",")
                   if result.score and result.status.value != "not_assigned" else "")
         ui.status_card(result.status.value, detail)
         st.markdown(f"**Begründung von Apertus:** {result.explanation}")

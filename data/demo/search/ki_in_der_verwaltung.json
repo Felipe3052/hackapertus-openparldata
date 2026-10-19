@@ -1,0 +1,451 @@
+{
+ "recorded_at": "2026-10-19T07:46:53.974645+00:00",
+ "note": "Live-Lauf aus der App; Apertus-Begriffe (compiled_terms) von Hand auf spezifische Kernbegriffe (terms) gekürzt. Parlamente CHE, BE, ZH, GE, VD, TI; ab 2025-01-01; 15 Kandidaten.",
+ "topic": {
+  "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+  "name": "Künstliche Intelligenz in der Verwaltung",
+  "description": "Einsatz, Beschaffung, Regulierung und Risiken von KI-Systemen und Chatbots in Verwaltung, Schulen und Justiz.",
+  "synonyms": [
+   "KI",
+   "ChatGPT"
+  ],
+  "prompt_version": "topic-v1",
+  "keyword_rule": false
+ },
+ "compiled_terms": {
+  "de": [
+   "KI",
+   "ChatGPT",
+   "KI in der Verwaltung",
+   "KI-Systeme in Behörden",
+   "Chatbots in der Verwaltung",
+   "KI-Regulierung Schweiz",
+   "KI-Einsatz in der Justiz",
+   "KI-Risiken Verwaltung",
+   "KI-Beschaffung Bund",
+   "KI-Strategie Verwaltung",
+   "KI-Ethik Behörden",
+   "KI-Transparenz Verwaltung"
+  ],
+  "fr": [
+   "KI",
+   "ChatGPT",
+   "intelligence artificielle dans l'administration",
+   "chatbots administratifs",
+   "régulation IA en Suisse",
+   "risques IA administration",
+   "IA dans la justice",
+   "achat systèmes IA",
+   "stratégie IA administration",
+   "éthique IA autorités",
+   "transparence IA administration",
+   "déploiement IA collectivités"
+  ],
+  "it": [
+   "KI",
+   "ChatGPT",
+   "intelligenza artificiale nell'amministrazione",
+   "chatbot nella pubblica amministrazione",
+   "regolamentazione IA in Svizzera",
+   "rischi IA amministrazione",
+   "IA nella giustizia",
+   "acquisto sistemi IA",
+   "strategia IA amministrazione",
+   "etica IA autorità",
+   "trasparenza IA amministrazione",
+   "deployment IA enti pubblici"
+  ],
+  "rm": [
+   "KI",
+   "ChatGPT",
+   "intelligenza artifiziala en l’administraziun",
+   "chatbots en l’administraziun",
+   "regulaziun IA en Svizra",
+   "ristgs IA administraziun",
+   "IA en la giustia",
+   "acquist systems IA",
+   "strategia IA administraziun",
+   "etica IA autoritads",
+   "transparenza IA administraziun",
+   "deployment IA instituziuns publicas"
+  ]
+ },
+ "terms": {
+  "de": [
+   "KI",
+   "künstliche Intelligenz",
+   "ChatGPT",
+   "Chatbot",
+   "Algorithmen"
+  ],
+  "fr": [
+   "IA",
+   "intelligence artificielle",
+   "ChatGPT",
+   "chatbot",
+   "algorithmes"
+  ],
+  "it": [
+   "IA",
+   "intelligenza artificiale",
+   "ChatGPT",
+   "chatbot",
+   "algoritmi"
+  ],
+  "rm": [
+   "intelligenza artifiziala",
+   "ChatGPT"
+  ]
+ },
+ "seconds": 24.381437600008212,
+ "matched": {
+  "334913": [
+   "intelligence artificielle",
+   "intelligenza artificiale",
+   "künstliche intelligenz"
+  ],
+  "334952": [
+   "intelligence artificielle",
+   "intelligenza artificiale"
+  ],
+  "334999": [
+   "intelligence artificielle",
+   "intelligenza artificiale"
+  ],
+  "339527": [
+   "chatgpt"
+  ],
+  "340142": [
+   "intelligence artificielle"
+  ],
+  "338314": [
+   "intelligenza artificiale"
+  ],
+  "326403": [
+   "intelligenza artificiale"
+  ]
+ },
+ "hits": [
+  [
+   {
+    "affair_id": "334913",
+    "title": "Generative künstliche Intelligenz. Kohärenz zwischen der Regulierung von Plattformen und der KI-Regulierung",
+    "text": "Systeme der generativen künstlichen Intelligenz (KI) spielen beim Zugang zu Informationen eine zunehmend wichtige Rolle, sei es als Suchmaschinen, durch ihre Integration in diese oder durch ihre Einbindung in soziale Netzwerke. Sie werfen bereichsübergreifende Fragen auf (Datenschutz, Zugang zu Informationen, Verzerrungen, digitale Souveränität). Die Schweiz verfolgt derzeit zwei parallele Regulierungsprozesse. Der Vorentwurf des Bundesgesetzes über Kommunikationsplattformen und Suchmaschinen (VE-KomPG; UVEK/BAKOM) sieht Verpflichtungen für Anbieter sehr grosser Plattformen und grosser Suchmaschinen vor. Der Entwurf zur Regulierung der KI (EJPD/BJ), der für Ende 2026 angekündigt ist, wird die KI-Konvention des Europarats umsetzen. Die generative KI droht zwischen Stuhl und Bank zu fallen: Der VE-KomPG erfasst sie nur teilweise, und es ist unklar, ob die KI-Regulierung Anwendungen der generativen KI ausdrücklich berücksichtigen wird. Fragen 1. Wie gedenkt der Bundesrat, die Regulierung von Plattformen (BAKOM/UVEK) und die KI-Regulierung (BJ/EJPD) aufeinander abzustimmen, um Regelungslücken hinsichtlich der spezifischen Risiken der generativen KI zu vermeiden? 2. Fällt die generative KI als Technologie zur Erstellung von Inhalten hauptsächlich in den Bereich der Regulierung von Plattformen, der KI-Regulierung oder in beide Bereiche? Welche Stelle koordiniert die Abgrenzung? 3. Fallen grosse KI-gestützte Suchmaschinen, in grosse Suchmaschinen integrierte KI-Anwendungen sowie in soziale Netzwerke integrierte KI-Anwendungen in den Anwendungsbereich des VE-KomPG? 4. Sollten Online-Plattformen zusätzliche Verantwortlichkeiten übernehmen, wenn sie Funktionen zur Erstellung und Kuratierung von Informationen integrieren? 5. Wird der für Ende 2026 vorgesehene Vorentwurf zur KI-Regulierung sogenannte generative «Allzweck-KI-Modelle» ausdrücklich erfassen, ähnlich wie dies der europäische AI Act vorsieht? 6. Sieht der Bundesrat formalisierte Mechanismen der interdepartementalen Koordination zwischen dem EJPD, dem UVEK sowie den weiteren betroffenen Departementen und Bundesämtern vor, um die verschiedenen Regulierungsprozesse im Zusammenhang mit KI zu steuern?",
+    "language": "de",
+    "parliament": "CHE",
+    "level": "federal",
+    "date": "2026-06-19",
+    "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263878",
+    "documents": []
+   },
+   {
+    "affair_id": "334913",
+    "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+    "status": "assigned",
+    "score": 0.95,
+    "explanation": "The passage discusses the regulation of generative AI systems in the context of Swiss administration, specifically addressing coordination between platform regulation and AI regulation, which falls within the defined topic of 'Künstliche Intelligenz in der Verwaltung'.",
+    "language": "de",
+    "evidence": [
+     {
+      "segment_id": "334913-affair-242adf92825f",
+      "text": "Systeme der generativen künstlichen Intelligenz (KI) spielen beim Zugang zu Informationen eine zunehmend wichtige Rolle, sei es als Suchmaschinen, durch ihre Integration in diese oder durch ihre Einbindung in soziale Netzwerke. Sie werfen bereichsübergreifende Fragen auf (Datenschutz, Zugang zu Informationen, Verzerrungen, digitale Souveränität). Die Schweiz verfolgt derzeit zwei parallele Regulierungsprozesse. Der Vorentwurf des Bundesgesetzes über Kommunikationsplattformen und Suchmaschinen (VE-KomPG; UVEK/BAKOM) sieht Verpflichtungen für Anbieter sehr grosser Plattformen und grosser Suchmaschinen vor. Der Entwurf zur Regulierung der KI (EJPD/BJ), der für Ende 2026 angekündigt ist, wird die KI-Konvention des Europarats umsetzen. Die generative KI droht zwischen Stuhl und Bank zu fallen: Der VE-KomPG erfasst sie nur teilweise, und es ist unklar, ob die KI-Regulierung Anwendungen der generativen KI ausdrücklich berücksichtigen wird. Fragen 1. Wie gedenkt der Bundesrat, die Regulierung von Plattformen (BAKOM/UVEK) und die KI-Regulierung (BJ/EJPD) aufeinander abzustimmen, um Regelungslücken hinsichtlich der spezifischen Risiken der generativen KI zu vermeiden? 2. Fällt die generative KI als Technologie zur Erstellung von Inhalten hauptsächlich in den Bereich der Regulierung von Plattformen, der KI-Regulierung oder in beide Bereiche? Welche Stelle koordiniert die Abgrenzung? 3.",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263878",
+      "retrieval_score": 3.050947287690643
+     },
+     {
+      "segment_id": "334913-affair-3a0599b67649",
+      "text": "ive KI als Technologie zur Erstellung von Inhalten hauptsächlich in den Bereich der Regulierung von Plattformen, der KI-Regulierung oder in beide Bereiche? Welche Stelle koordiniert die Abgrenzung? 3. Fallen grosse KI-gestützte Suchmaschinen, in grosse Suchmaschinen integrierte KI-Anwendungen sowie in soziale Netzwerke integrierte KI-Anwendungen in den Anwendungsbereich des VE-KomPG? 4. Sollten Online-Plattformen zusätzliche Verantwortlichkeiten übernehmen, wenn sie Funktionen zur Erstellung und Kuratierung von Informationen integrieren? 5. Wird der für Ende 2026 vorgesehene Vorentwurf zur KI-Regulierung sogenannte generative «Allzweck-KI-Modelle» ausdrücklich erfassen, ähnlich wie dies der europäische AI Act vorsieht? 6. Sieht der Bundesrat formalisierte Mechanismen der interdepartementalen Koordination zwischen dem EJPD, dem UVEK sowie den weiteren betroffenen Departementen und Bundesämtern vor, um die verschiedenen Regulierungsprozesse im Zusammenhang mit KI zu steuern?",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263878",
+      "retrieval_score": 2.0242374440052497
+     }
+    ],
+    "needs_review": false,
+    "model": "swiss-ai/Apertus-v1.5-70B",
+    "prompt_version": "topic-v1",
+    "classifier_version": "hybrid-v3",
+    "input_tokens": 931,
+    "output_tokens": 123,
+    "latency_ms": 8249.135599995498,
+    "error": null
+   }
+  ],
+  [
+   {
+    "affair_id": "334952",
+    "title": "Deaktivierung der KI-Modelle Fable 5 und Mythos 5 auf Anordnung der US-Behörden. Welche Folgen hat dies für die Schweiz und welche Strategie verfolgt sie?",
+    "text": "Im Juni 2026 deaktivierte Anthropic auf Anordnung der US-Behörden weltweit seine beiden leistungsfähigsten KI-Modelle, Claude Fable 5 und Claude Mythos 5, da das Unternehmen den Zugang nicht auf US-Staatsangehörige beschränken konnte. Dieser Vorfall zeigt, wie verwundbar auf ausländische KI-Infrastrukturen angewiesene Länder sind. Da die Schweiz weder Mitglied der Europäischen Union noch Teil eines Verbunds mit vergleichbaren Kapazitäten ist, ist sie den einseitigen Entscheidungen von Staaten, die solche Technologien kontrollieren, besonders ausgeliefert. Der Präzedenzfall ist besorgniserregend. Ich bitte den Bundesrat, die folgenden Fragen zu beantworten: Wie beurteilt der Bundesrat die Folgen einer plötzlichen Blockierung des Zugangs zu leistungsfähigen ausländischen KI-Modellen für die Schweizer Wirtschaft, Verwaltung und Forschung? Wie stark ist die Schweiz im öffentlichen und privaten Sektor auf KI-Modelle aus den Vereinigten Staaten angewiesen? Liegt dem Bundesrat eine Übersicht über die betroffenen kritischen Anwendungsbereiche vor? Welchen rechtlichen und geopolitischen Präzedenzfall sieht der Bundesrat darin, dass ein Drittstaat im Namen seiner nationalen Sicherheit den Zugang von Schweizer Staatsangehörigen zu wesentlichen digitalen Diensten einschränken kann, auch ausserhalb seines Hoheitsgebiets? Wie will die Schweiz ihre Wettbewerbsfähigkeit und ihre Innovationsfähigkeit bewahren, wenn ihr der Zugang zu den leistungsfähigsten KI-Modellen ohne Vorankündigung verwehrt werden kann? Welche Massnahmen hält der Bundesrat für geeignet, um die erwähnte Abhängigkeit zu verringern und einen unterbruchsfreien Zugang zu gewährleisten? Kommen insbesondere eine Diversifizierung der Anbieter, eigene oder europäische Kapazitäten sowie internationale Kooperationen in infrage? Bieten der derzeitige Rahmen für das öffentliche Beschaffungswesen und die Verträge des Bundes ausreichenden Schutz vor dem Risiko einer im Ausland verursachten Unterbrechung von Dienstleistungen? Falls nein, welche Anpassungen zieht der Bundesrat in Betracht (Kontinuitätsklauseln, Ausweichlösungen, Wechselmöglichkeiten)? Hat der Bundesrat mit seinen Partnern – insbesondere den europäischen – Kontakt aufgenommen oder beabsichtigt er dies, um ein gemeinsames Vorgehen im Fall solcher extraterritorialer Beschränkungen zu bestimmen?",
+    "language": "de",
+    "parliament": "CHE",
+    "level": "federal",
+    "date": "2026-06-19",
+    "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263940",
+    "documents": []
+   },
+   {
+    "affair_id": "334952",
+    "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+    "status": "assigned",
+    "score": 0.95,
+    "explanation": "The passages discuss the Swiss government's response to the deactivation of foreign AI models and the resulting dependency risks for Swiss administration, economy, and research.",
+    "language": "de",
+    "evidence": [
+     {
+      "segment_id": "334952-affair-56a83f493ae6",
+      "text": "cherheit den Zugang von Schweizer Staatsangehörigen zu wesentlichen digitalen Diensten einschränken kann, auch ausserhalb seines Hoheitsgebiets? Wie will die Schweiz ihre Wettbewerbsfähigkeit und ihre Innovationsfähigkeit bewahren, wenn ihr der Zugang zu den leistungsfähigsten KI-Modellen ohne Vorankündigung verwehrt werden kann? Welche Massnahmen hält der Bundesrat für geeignet, um die erwähnte Abhängigkeit zu verringern und einen unterbruchsfreien Zugang zu gewährleisten? Kommen insbesondere eine Diversifizierung der Anbieter, eigene oder europäische Kapazitäten sowie internationale Kooperationen in infrage? Bieten der derzeitige Rahmen für das öffentliche Beschaffungswesen und die Verträge des Bundes ausreichenden Schutz vor dem Risiko einer im Ausland verursachten Unterbrechung von Dienstleistungen? Falls nein, welche Anpassungen zieht der Bundesrat in Betracht (Kontinuitätsklauseln, Ausweichlösungen, Wechselmöglichkeiten)? Hat der Bundesrat mit seinen Partnern – insbesondere den europäischen – Kontakt aufgenommen oder beabsichtigt er dies, um ein gemeinsames Vorgehen im Fall solcher extraterritorialer Beschränkungen zu bestimmen?",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263940",
+      "retrieval_score": 2.5424436954704697
+     },
+     {
+      "segment_id": "334952-affair-df4a3bd9b615",
+      "text": "Im Juni 2026 deaktivierte Anthropic auf Anordnung der US-Behörden weltweit seine beiden leistungsfähigsten KI-Modelle, Claude Fable 5 und Claude Mythos 5, da das Unternehmen den Zugang nicht auf US-Staatsangehörige beschränken konnte. Dieser Vorfall zeigt, wie verwundbar auf ausländische KI-Infrastrukturen angewiesene Länder sind. Da die Schweiz weder Mitglied der Europäischen Union noch Teil eines Verbunds mit vergleichbaren Kapazitäten ist, ist sie den einseitigen Entscheidungen von Staaten, die solche Technologien kontrollieren, besonders ausgeliefert. Der Präzedenzfall ist besorgniserregend. Ich bitte den Bundesrat, die folgenden Fragen zu beantworten: Wie beurteilt der Bundesrat die Folgen einer plötzlichen Blockierung des Zugangs zu leistungsfähigen ausländischen KI-Modellen für die Schweizer Wirtschaft, Verwaltung und Forschung? Wie stark ist die Schweiz im öffentlichen und privaten Sektor auf KI-Modelle aus den Vereinigten Staaten angewiesen? Liegt dem Bundesrat eine Übersicht über die betroffenen kritischen Anwendungsbereiche vor? Welchen rechtlichen und geopolitischen Präzedenzfall sieht der Bundesrat darin, dass ein Drittstaat im Namen seiner nationalen Sicherheit den Zugang von Schweizer Staatsangehörigen zu wesentlichen digitalen Diensten einschränken kann, auch ausserhalb seines Hoheitsgebiets? Wie will die Schweiz ihre Wettbewerbsfähigkeit und ihre",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263940",
+      "retrieval_score": 2.0305947948605665
+     },
+     {
+      "segment_id": "334952-title-8c6a54c8fbc4",
+      "text": "Deaktivierung der KI-Modelle Fable 5 und Mythos 5 auf Anordnung der US-Behörden. Welche Folgen hat dies für die Schweiz und welche Strategie verfolgt sie?",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263940",
+      "retrieval_score": 0.7122619732428846
+     }
+    ],
+    "needs_review": false,
+    "model": "swiss-ai/Apertus-v1.5-70B",
+    "prompt_version": "topic-v1",
+    "classifier_version": "hybrid-v3",
+    "input_tokens": 904,
+    "output_tokens": 126,
+    "latency_ms": 5464.630699949339,
+    "error": null
+   }
+  ],
+  [
+   {
+    "affair_id": "334999",
+    "title": "Minderjährige vor KI-generierten intimen Bildern schützen",
+    "text": "Die Belege häufen sich, dass sexuelle Deepfakes überwiegend zu pornografischen Zwecken oder mit dem Ziel der Erniedrigung verwendet werden und Kinder grösseren Risiken ausgesetzt sind als Erwachsene. Unicef hat den Missbrauch durch Deepfakes kürzlich als eine Form von Missbrauch bezeichnet und Regierungen und die betroffene Branche dazu aufgerufen, gegen KI-generierte sexualisierte Bilder von Kindern vorzugehen. Die öffentliche Politik reagiert zunehmend. Die Europäische Union hat eine Richtlinie verabschiedet, wonach die nicht einvernehmliche Weitergabe von intimem oder manipuliertem Material unter Strafe zu stellen ist. Das Vereinigte Königreich hat einen spezifischen Straftatbestand für die Erstellung sexuell expliziter Deepfakes geschaffen. Australien hat ein Bundesgesetz gegen sexuelle Deepfake-Inhalte erlassen. Und der «Take it down Act» der USA gibt eine strenge Frist für die Entfernung von Inhalten vor, die durch die Federal Trade Commission durchgesetzt wird. Gleichzeitig ist in den USA eine Debatte über Verfahrensgarantien und das Risiko einer übermässigen Entfernung von Inhalten aufgekommen. Davon kann die Schweiz profitieren und engere Definitionen und einen stärkeren Verfahrensschutz vorsehen.\n\nDer Bundesrat wird beauftragt, im Rahmen der laufenden Gesetzgebungsvorhaben rechtliche Anpassungen und konkrete Umsetzungsmassnahmen vorzulegen, um Minderjährige vor ohne Einwilligung künstlich generierten intimen Bildern (sexuelle Deepfakes und «Nudifizierung») zu schützen, die rasche Entfernung solcher Bilder sicherzustellen, eine wirksame strafrechtliche Verfolgung zu ermöglichen und eine koordinierte Unterstützung für Schulen zu gewährleisten. Das Strafrecht und das Gesetz über Kommunikationsplattformen sollen entsprechend angepasst und eine bundesweite Koordination mit den Kantonen aufgebaut werden, um die Herstellung, Verbreitung und missbräuchliche Nutzung ohne Einwilligung künstlich generierter intimer Bilder von Minderjährigen wirksam zu verhindern und zu ahnden. Dazu sind rasche Mechanismen zur Meldung solcher Bilder, zur Sicherung von Beweisen und zur Unterstützung der Opfer einzurichten.",
+    "language": "de",
+    "parliament": "CHE",
+    "level": "federal",
+    "date": "2026-06-19",
+    "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263955",
+    "documents": []
+   },
+   {
+    "affair_id": "334999",
+    "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+    "status": "assigned",
+    "score": 0.95,
+    "explanation": "The passages address the regulation and protection of minors from AI-generated intimate images, which falls under the topic of KI in der Verwaltung regarding risks and regulation of AI systems.",
+    "language": "de",
+    "evidence": [
+     {
+      "segment_id": "334999-affair-437896b87893",
+      "text": "Die Belege häufen sich, dass sexuelle Deepfakes überwiegend zu pornografischen Zwecken oder mit dem Ziel der Erniedrigung verwendet werden und Kinder grösseren Risiken ausgesetzt sind als Erwachsene. Unicef hat den Missbrauch durch Deepfakes kürzlich als eine Form von Missbrauch bezeichnet und Regierungen und die betroffene Branche dazu aufgerufen, gegen KI-generierte sexualisierte Bilder von Kindern vorzugehen. Die öffentliche Politik reagiert zunehmend. Die Europäische Union hat eine Richtlinie verabschiedet, wonach die nicht einvernehmliche Weitergabe von intimem oder manipuliertem Material unter Strafe zu stellen ist. Das Vereinigte Königreich hat einen spezifischen Straftatbestand für die Erstellung sexuell expliziter Deepfakes geschaffen. Australien hat ein Bundesgesetz gegen sexuelle Deepfake-Inhalte erlassen. Und der «Take it down Act» der USA gibt eine strenge Frist für die Entfernung von Inhalten vor, die durch die Federal Trade Commission durchgesetzt wird. Gleichzeitig ist in den USA eine Debatte über Verfahrensgarantien und das Risiko einer übermässigen Entfernung von Inhalten aufgekommen. Davon kann die Schweiz profitieren und engere Definitionen und einen stärkeren Verfahrensschutz vorsehen.\n\nDer Bundesrat wird beauftragt, im Rahmen der laufenden Gesetzgebungsvorhaben rechtliche Anpassungen und konkrete Umsetzungsmassnahmen vorzulegen, um Minderjährige vor ohne",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263955",
+      "retrieval_score": 4.255572956177279
+     },
+     {
+      "segment_id": "334999-affair-c3472a6f77ec",
+      "text": "Verfahrensschutz vorsehen.\n\nDer Bundesrat wird beauftragt, im Rahmen der laufenden Gesetzgebungsvorhaben rechtliche Anpassungen und konkrete Umsetzungsmassnahmen vorzulegen, um Minderjährige vor ohne Einwilligung künstlich generierten intimen Bildern (sexuelle Deepfakes und «Nudifizierung») zu schützen, die rasche Entfernung solcher Bilder sicherzustellen, eine wirksame strafrechtliche Verfolgung zu ermöglichen und eine koordinierte Unterstützung für Schulen zu gewährleisten. Das Strafrecht und das Gesetz über Kommunikationsplattformen sollen entsprechend angepasst und eine bundesweite Koordination mit den Kantonen aufgebaut werden, um die Herstellung, Verbreitung und missbräuchliche Nutzung ohne Einwilligung künstlich generierter intimer Bilder von Minderjährigen wirksam zu verhindern und zu ahnden. Dazu sind rasche Mechanismen zur Meldung solcher Bilder, zur Sicherung von Beweisen und zur Unterstützung der Opfer einzurichten.",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263955",
+      "retrieval_score": 3.3279160667083687
+     },
+     {
+      "segment_id": "334999-title-649424749903",
+      "text": "Minderjährige vor KI-generierten intimen Bildern schützen",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263955",
+      "retrieval_score": 0.8081143481568427
+     }
+    ],
+    "needs_review": false,
+    "model": "swiss-ai/Apertus-v1.5-70B",
+    "prompt_version": "topic-v1",
+    "classifier_version": "hybrid-v3",
+    "input_tokens": 818,
+    "output_tokens": 133,
+    "latency_ms": 3802.3839999805205,
+    "error": null
+   }
+  ],
+  [
+   {
+    "affair_id": "339527",
+    "title": "ChatGPT, Claude und weitere LLMs KI-Agents in der Bundesverwaltung",
+    "text": "Ich bitte den Bundesrat um Beantwortung folgender Fragen: 1. Welche LLMs und KI-Agenten werden in der Bundesverwaltung eingesetzt, und gibt es klare, einheitliche Regelungen für deren Nutzung? 2. Wie geht die Bundesverwaltung mit der Aggregationsgefahr um? 3. Gelten für Bundesämter, die für kritische Infrastruktur oder Beschaffungen von nationaler Sicherheit zuständig sind, weitergehende Regelungen?",
+    "language": "de",
+    "parliament": "CHE",
+    "level": "federal",
+    "date": "2026-09-23",
+    "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20267984",
+    "documents": []
+   },
+   {
+    "affair_id": "339527",
+    "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+    "status": "assigned",
+    "score": 1.0,
+    "explanation": "The affair passage explicitly discusses the use of LLMs and AI agents in the federal administration, which falls directly under the defined topic of AI in administration.",
+    "language": "de",
+    "evidence": [
+     {
+      "segment_id": "339527-title-6fb029a65e27",
+      "text": "ChatGPT, Claude und weitere LLMs KI-Agents in der Bundesverwaltung",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20267984",
+      "retrieval_score": 2.059632083599296
+     },
+     {
+      "segment_id": "339527-affair-6aedbda36977",
+      "text": "Ich bitte den Bundesrat um Beantwortung folgender Fragen: 1. Welche LLMs und KI-Agenten werden in der Bundesverwaltung eingesetzt, und gibt es klare, einheitliche Regelungen für deren Nutzung? 2. Wie geht die Bundesverwaltung mit der Aggregationsgefahr um? 3. Gelten für Bundesämter, die für kritische Infrastruktur oder Beschaffungen von nationaler Sicherheit zuständig sind, weitergehende Regelungen?",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20267984",
+      "retrieval_score": 1.234498044998644
+     }
+    ],
+    "needs_review": false,
+    "model": "swiss-ai/Apertus-v1.5-70B",
+    "prompt_version": "topic-v1",
+    "classifier_version": "hybrid-v3",
+    "input_tokens": 376,
+    "output_tokens": 103,
+    "latency_ms": 8988.5449000285,
+    "error": null
+   }
+  ],
+  [
+   {
+    "affair_id": "340142",
+    "title": "IA : Impossible d’Attendre - Pour une cellule interdépartementale de l'intelligence artificielle, garante de la souveraineté numérique et de la protection des données de l'État de Vaud",
+    "text": "Motion Jean Valentin de Saussure et consorts au nom d'A. Demaurex (VL), M. Wyssa (PLR), A. Billard (PS), Y. Glayre (UDC), V. Keller (EP) - IA : Impossible d’Attendre - Pour une cellule interdépartementale de l'intelligence artificielle, garante de la souveraineté numérique et de la protection des données de l'État de Vaud.",
+    "language": "fr",
+    "parliament": "VD",
+    "level": "cantonal",
+    "date": "2026-09-08",
+    "source_url": "https://www.vd.ch/gc/seances-du-grand-conseil/point-seance/point/24db3349-ce15-4f71-8228-54799cd9c499/meeting/1033709",
+    "documents": []
+   },
+   {
+    "affair_id": "340142",
+    "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+    "status": "assigned",
+    "score": 1.0,
+    "explanation": "The affair explicitly proposes the creation of an interdepartmental AI cell for the State of Vaud, focusing on AI deployment, data protection, and digital sovereignty within the administration.",
+    "language": "fr",
+    "evidence": [
+     {
+      "segment_id": "340142-title-257570561f36",
+      "text": "IA : Impossible d’Attendre - Pour une cellule interdépartementale de l'intelligence artificielle, garante de la souveraineté numérique et de la protection des données de l'État de Vaud",
+      "document_id": null,
+      "source_url": "https://www.vd.ch/gc/seances-du-grand-conseil/point-seance/point/24db3349-ce15-4f71-8228-54799cd9c499/meeting/1033709",
+      "retrieval_score": 0.0
+     },
+     {
+      "segment_id": "340142-affair-dc45e17078e6",
+      "text": "Motion Jean Valentin de Saussure et consorts au nom d'A. Demaurex (VL), M. Wyssa (PLR), A. Billard (PS), Y. Glayre (UDC), V. Keller (EP) - IA : Impossible d’Attendre - Pour une cellule interdépartementale de l'intelligence artificielle, garante de la souveraineté numérique et de la protection des données de l'État de Vaud.",
+      "document_id": null,
+      "source_url": "https://www.vd.ch/gc/seances-du-grand-conseil/point-seance/point/24db3349-ce15-4f71-8228-54799cd9c499/meeting/1033709",
+      "retrieval_score": 0.0
+     }
+    ],
+    "needs_review": false,
+    "model": "swiss-ai/Apertus-v1.5-70B",
+    "prompt_version": "topic-v1",
+    "classifier_version": "hybrid-v3",
+    "input_tokens": 403,
+    "output_tokens": 110,
+    "latency_ms": 10066.854600037914,
+    "error": null
+   }
+  ],
+  [
+   {
+    "affair_id": "338314",
+    "title": "Quale scuola per il mondo del lavoro di domani? Licealizzazione, occupazione giovanile e intelligenza artificiale",
+    "text": "",
+    "language": "it",
+    "parliament": "TI",
+    "level": "cantonal",
+    "date": "2026-09-11",
+    "source_url": "https://www4.ti.ch/poteri/gc/ricerca-messaggi-e-atti/ricerca/risultati/dettaglio?user_gcparlamento_pi8%5Battid%5D=134668",
+    "documents": [
+     {
+      "document_id": "923025",
+      "text": "Repubblica e Cantone Ticino \n   \n\n \n\n1 di 3 \nGran Consiglio \n6501 Bellinzona \n  \n\n \n \n\nINTERROGAZIONE (art. 98 LGC) \n  \nQuale scuola per il mondo del lavoro di domani? Licealizzazione, occupazione giovanile \ne intelligenza artificiale \n\n \n\nPresentata da: Giuseppe Cotti \n\nCofirmatari: Berardi - Capoferri - Caroni - Corti - Demir - Ghisla - Isabella - Tricarico  \n\nData: 11 settembre 2026 \n\nNumero: 170.26 \n\nTesto: \nI dati pubblicati il 27 agosto 2026 dall’Ufficio federale di statistica meritano una riflessione \nche va oltre il dato congiunturale e investe direttamente gli indirizzi della politica scolastica \ne formativa del nostro Cantone. \nTra il 2023 e il 2025 è infatti aumentata sensibilmente la disoccupazione tra le persone che \nhanno concluso una formazione universitaria o presso una scuola universitaria professionale. \nA un anno dal conseguimento del titolo, tra i titolari di un master universitario il tasso è \npassato dal 3,9% al 6,4%, mentre tra i titolari di un bachelor SUP è salito dal 3,4% al 4,9%. \nLe differenze tra i diversi percorsi sono considerevoli. Per i bachelor SUP la disoccupazione \nraggiunge il 10,8% nella musica e nel teatro e il 10% nel design. Particolarmente significativo \nè però il fatto che l’aumento interessi ormai anche formazioni tradizionalmente associate a \nbuone prospettive professionali: tra i titolari di un master universitario il tasso è più che \nraddoppiato nelle scienze tecniche, passando dal 2,1% al 4,8%, mentre nelle scienze \neconomiche è",
+      "language": null,
+      "source_url": "https://files.openparldata.ch/doc/TI/4f4038a3ea2dfecbcf3b96088466a44df2993c70e4eba8fc7c3a2553e25780fc"
+     }
+    ]
+   },
+   {
+    "affair_id": "338314",
+    "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+    "status": "not_assigned",
+    "score": 0.0,
+    "explanation": "The passage discusses youth unemployment and educational pathways but does not address the deployment, procurement, regulation, or risks of AI systems in administration, schools, or justice.",
+    "language": "it",
+    "evidence": [],
+    "needs_review": false,
+    "model": "swiss-ai/Apertus-v1.5-70B",
+    "prompt_version": "topic-v1",
+    "classifier_version": "hybrid-v3",
+    "input_tokens": 838,
+    "output_tokens": 66,
+    "latency_ms": 11191.905099956784,
+    "error": null
+   }
+  ],
+  [
+   {
+    "affair_id": "326403",
+    "title": "Umsetzung der KI-Konvention des Europarates in der Schweiz",
+    "text": "Am 27. März 2025 hat BR Albert Rösti die Konvention des Europarats über Künstliche Intelligenz und Menschenrechte, Demokratie und Rechtsstaatlichkeit im Namen der Schweiz unterzeichnet. Der Bundesrat hat am 12. Februar 2025 beschlossen, die Konvention zu ratifizieren und das EJPD beauftragt, bis Ende 2026 eine «Minimalvorlage» zu erarbeiten. Die bisherigen Kommunikationen des Bundesrates zur Umsetzung der KI-Konvention bleiben jedoch auffallend vage. Während die technologische Entwicklung im KI-Bereich mit hoher Geschwindigkeit voranschreitet und KI-Systeme zunehmend in grundrechtsrelevanten Bereichen zum Einsatz kommen, setzt der Bundesrat vorwiegend auf rechtlich unverbindliche Instrumente wie Selbstverpflichtungserklärungen und Ethikkodizes. Es ist fraglich, ob dieser Ansatz dem Schutzauftrag der Konvention gerecht wird. Die KI-Konvention des Europarats verpflichtet die Unterzeichnerstaaten, den Schutz der Menschenrechte, der Demokratie und der Rechtsstaatlichkeit im gesamten Lebenszyklus von KI-Systemen sicherzustellen. Angesichts der rasanten Entwicklung von KI-Technologien und ihrer zunehmenden Bedeutung in zentralen Lebensbereichen der Bevölkerung stellen sich grundlegende Fragen zur Ernsthaftigkeit und Wirksamkeit der geplanten Umsetzung. Besonders besorgniserregend ist die Ausklammerung des Privatsektors. Die Konvention selbst ermöglicht zwar diese Flexibilität, doch zahlreiche zivilgesellschaftliche Organisationen bemängeln, dass eine solche Ausnahme die Konvention erheblich schwächt. Vor diesem Hintergrund bitte ich um die Beantwortung folgender Fragen: 1. Welche konkreten Gesetzesanpassungen sind in der Vernehmlassungsvorlage bis Ende 2026 vorgesehen, namentlich in den Bereichen Transparenz, Datenschutz, Nichtdiskriminierung und Aufsicht? 2. Welche Evidenz liegt dem Bundesrat vor, dass Selbstverpflichtungserklärungen und Ethikkodizes ein wirksames Instrument darstellen, um die Grundrechte der Bevölkerung beim Einsatz von KI-Systemen durch private Akteure zu schützen? 3. Wie stellt der Bundesrat sicher, dass die gewählte «Minimalvariante» der Umsetzung nicht dazu führt, dass die Schweiz im internationalen Vergleich – insbesondere gegenüber der EU mit ihrem AI-Act – zu einem Standort mit tieferem Schutzniveau wird?",
+    "language": "de",
+    "parliament": "CHE",
+    "level": "federal",
+    "date": "2026-03-20",
+    "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263414",
+    "documents": []
+   },
+   {
+    "affair_id": "326403",
+    "topic_id": "künstliche-intelligenz-in-der-verwaltung",
+    "status": "assigned",
+    "score": 0.95,
+    "explanation": "The passage discusses the ratification of the Council of Europe's AI Convention, the Swiss government's planned implementation measures, and concerns regarding the exclusion of the private sector and the adequacy of voluntary instruments like self-declarations.",
+    "language": "de",
+    "evidence": [
+     {
+      "segment_id": "326403-affair-ecec722ef1bf",
+      "text": "Am 27. März 2025 hat BR Albert Rösti die Konvention des Europarats über Künstliche Intelligenz und Menschenrechte, Demokratie und Rechtsstaatlichkeit im Namen der Schweiz unterzeichnet. Der Bundesrat hat am 12. Februar 2025 beschlossen, die Konvention zu ratifizieren und das EJPD beauftragt, bis Ende 2026 eine «Minimalvorlage» zu erarbeiten. Die bisherigen Kommunikationen des Bundesrates zur Umsetzung der KI-Konvention bleiben jedoch auffallend vage. Während die technologische Entwicklung im KI-Bereich mit hoher Geschwindigkeit voranschreitet und KI-Systeme zunehmend in grundrechtsrelevanten Bereichen zum Einsatz kommen, setzt der Bundesrat vorwiegend auf rechtlich unverbindliche Instrumente wie Selbstverpflichtungserklärungen und Ethikkodizes. Es ist fraglich, ob dieser Ansatz dem Schutzauftrag der Konvention gerecht wird. Die KI-Konvention des Europarats verpflichtet die Unterzeichnerstaaten, den Schutz der Menschenrechte, der Demokratie und der Rechtsstaatlichkeit im gesamten Lebenszyklus von KI-Systemen sicherzustellen. Angesichts der rasanten Entwicklung von KI-Technologien und ihrer zunehmenden Bedeutung in zentralen Lebensbereichen der Bevölkerung stellen sich grundlegende Fragen zur Ernsthaftigkeit und Wirksamkeit der geplanten Umsetzung. Besonders besorgniserregend ist die Ausklammerung des Privatsektors. Die Konvention selbst ermöglicht zwar diese Flexibilität, doch",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263414",
+      "retrieval_score": 4.394588248980689
+     },
+     {
+      "segment_id": "326403-affair-90809a638402",
+      "text": "Fragen zur Ernsthaftigkeit und Wirksamkeit der geplanten Umsetzung. Besonders besorgniserregend ist die Ausklammerung des Privatsektors. Die Konvention selbst ermöglicht zwar diese Flexibilität, doch zahlreiche zivilgesellschaftliche Organisationen bemängeln, dass eine solche Ausnahme die Konvention erheblich schwächt. Vor diesem Hintergrund bitte ich um die Beantwortung folgender Fragen: 1. Welche konkreten Gesetzesanpassungen sind in der Vernehmlassungsvorlage bis Ende 2026 vorgesehen, namentlich in den Bereichen Transparenz, Datenschutz, Nichtdiskriminierung und Aufsicht? 2. Welche Evidenz liegt dem Bundesrat vor, dass Selbstverpflichtungserklärungen und Ethikkodizes ein wirksames Instrument darstellen, um die Grundrechte der Bevölkerung beim Einsatz von KI-Systemen durch private Akteure zu schützen? 3. Wie stellt der Bundesrat sicher, dass die gewählte «Minimalvariante» der Umsetzung nicht dazu führt, dass die Schweiz im internationalen Vergleich – insbesondere gegenüber der EU mit ihrem AI-Act – zu einem Standort mit tieferem Schutzniveau wird?",
+      "document_id": null,
+      "source_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20263414",
+      "retrieval_score": 2.5495408060665143
+     }
+    ],
+    "needs_review": false,
+    "model": "swiss-ai/Apertus-v1.5-70B",
+    "prompt_version": "topic-v1",
+    "classifier_version": "hybrid-v3",
+    "input_tokens": 867,
+    "output_tokens": 119,
+    "latency_ms": 15180.105400038883,
+    "error": null
+   }
+  ]
+ ]
+}

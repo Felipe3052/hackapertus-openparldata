@@ -96,7 +96,7 @@ Requires Python 3.11 or newer.
 
 For a short jury walkthrough without a key, local datasets or inference charges, run
 `make run` (Docker, port 8501). Six original DE/FR/IT examples and historical predictions are
-bundled. Select **Historisches Ergebnis anzeigen** for offline replay. Live searches are bounded
+bundled. Select **Historisches Ergebnis (ohne API)** for offline replay. Live searches are bounded
 candidate lists, not complete corpus classifications. The current submission scope uses short
 functional checks; 300k runtimes remain projections, not a completed full-corpus run.
 

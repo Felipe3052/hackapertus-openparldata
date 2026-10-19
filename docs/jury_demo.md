@@ -89,7 +89,7 @@ cd /Users/josipjukic/hackapertus-openparldata
 
 1. «Echtes Geschäft» und «Digitalisierung (validiert)» wählen. DE/FR/IT sowie Bund/Kanton
    durchwechseln. Affair-ID, Originaltitel und Text zeigen; Titel allein sind zulässig.
-2. «Historisches Ergebnis anzeigen» lädt den vorhandenen Dev-Lauf ohne API-Aufruf.
+2. «Historisches Ergebnis (ohne API)» lädt den vorhandenen Dev-Lauf ohne API-Aufruf.
    Der Hinweis nennt ausdrücklich den historischen Konfigurationsstand. Auswahl erfolgt
    nach Sprache/Ebene und ID, ohne Filter auf erfolgreiche oder korrekte Klassifikationen.
 3. Evidenz und Originalquelle zeigen, strukturiertes JSON herunterladen. Der Status `failed`

@@ -65,7 +65,7 @@ Keine lokal vorhandenen, aber nicht ausgelieferten Suchläufe als Fallback vorau
 |---|---|
 | Wie gut ist die Precision wirklich? | 0,875 auf der Stichprobe. Bei der echten Häufigkeit (2,3 %) ist etwa jeder vierte Vorschlag getaggt – gleich wie bei der Volltextsuche, aber mit 1,6-fachem Recall. Ein Teil der «Fehlalarme» sind Lücken im PolitMonitor-Tag. Darum: Vorschlagsliste mit Prüfung. |
 | Was ist mit APS? | Zwei Personen sind sich beim APS-Kapitel nur in 11 von 20 Fällen einig (κ 0,51). Ein starres Schema ist schon für Menschen schwer; wir setzen auf frei definierbare Themen. Das Schema ist exportiert. |
-| Wie lange für 300'000 Geschäfte? | Kein Vollbestand-Lauf ausgeführt. Beim Default von 30 RPM und historischem Mix etwa 139 h als Hochrechnung. Höhere historische Durchsätze sind keine Kapazitätszusage. Geldkosten hängen vom Vertrag ab; nächtliche inkrementelle Laufzeiten sind nicht gemessen. |
+| Wie lange für 300'000 Geschäfte? | Kein Vollbestand-Lauf ausgeführt. Beim Default von 30 RPM etwa 140 h als Hochrechnung (gemessener Durchsatz: 28–67 h). Höhere historische Durchsätze sind keine Kapazitätszusage. Geldkosten hängen vom Vertrag ab; nächtliche inkrementelle Laufzeiten sind nicht gemessen. |
 | Warum nicht 8B? | Gemessen: F1 0,43 statt 0,80, Recall 0,28. |
 | Warum nicht nur suchen statt lesen? | Gemessen: Die beste Suche findet 60–68 % der Treffer in 4–8 % der Geschäfte. Für hohen Recall muss Apertus jedes Geschäft lesen. |
 | Bias? | Positive F1 DE/FR/IT 0,897/0,849/0,846: Abstand etwa 0,051 und damit knapp über dem 0,05-Ziel. Parteien und eine belastbare kommunale Stichprobe fehlen. |

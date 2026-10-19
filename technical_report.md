@@ -4,7 +4,7 @@
 - **Event:** Hack Apertus Liebefeld, 18–19 October 2026
 - **Team:** Token Tell — Felipe Wüthrich, Josip Jukic
 - **Repository:** [GitHub](https://github.com/Felipe3052/hackapertus-openparldata) · **Experiment log:** [docs/experiments.md](docs/experiments.md) · **Benchmark notes:** [docs/benchmark.md](docs/benchmark.md)
-- **Demo:** `make run` (Docker, bundled offline replay) · API (`make api`) · CLI (`parltopic classify`)
+- **Demo:** Streamlit (`make run`: Docker, offline replays; live with an API key) · API (`make api`) · CLI (`parltopic classify`) · [pitch and demo script](docs/pitch.md)
 
 ---
 
@@ -83,6 +83,16 @@ topics are the stronger offer.
    a minute use the generic prompt v1 without the rule (5.3).
 7. **Optional stages,** measured and off by default: a second look with Apertus reasoning for
    rejected affairs (`parltopic rethink`), retrieved few-shot examples, title-only rules.
+8. **Human review.** Every suggestion can be confirmed or rejected, with an optional corrected
+   status and note, in the Streamlit demo, both for a single affair and for each hit of a topic
+   search. The review is stored next to the unchanged suggestion and its exact prediction ID; a
+   review never overwrites or deletes the suggestion.
+9. **Integration into OpenParlData.** `parltopic export-opd` turns results into rows for a
+   PostgreSQL table `affair_topics` (status, explanation, evidence text and link, model, prompt
+   and topic version, review columns), keyed by affair, topic, topic version and run, so repeated
+   imports are idempotent and old topic versions remain available. A nightly Apache Hop pipeline
+   (table input → `parltopic` → table output) classifies new affairs; the FastAPI service is the
+   REST alternative ([docs/integration.md](docs/integration.md)).
 
 ---
 
@@ -296,7 +306,7 @@ nothing, so compounds such as "Digitalisierungsstrategie" are missed) and date f
 - **Standard topics:** the APS scheme is available, but a multi-label APS mode is not evaluated.
 - **Full-corpus runtime:** high recall needs every affair read (28–67 h per topic over 325,000
   affairs projected from historical higher-throughput runs, not a completed corpus measurement);
-  the default 30 RPM yields about 139 h for 300,000 at the measured 25/30 model-call mix.
+  the default limit of 30 requests per minute stretches this to about 140 h (5.6).
   The submission deliberately runs small functional checks only; a lexical pre-filter keeps
   only about 60 % of the hits (5.7).
 - **Party bias** is not checked yet.
@@ -324,8 +334,8 @@ source-file hashes; resuming with changed inputs is refused. Bounded submission 
 checkpoint journal, per-output writer lock and atomic JSONL snapshots; eight synthetic affairs
 exercise interrupted resume, including process termination. No 300k run was executed.
 Compiler, classifier and thinking share HTTP transport and process-local quota admission.
-All settings are in `.env.example`. `make run` starts the bundled six-case historical replay
-without an API key. Export preserves all evidence and checks the declared topic manifest;
+All settings are in `.env.example`. `make run` starts the demo without an API key, with the
+bundled six-case historical replay and one recorded live search. Export preserves all evidence and checks the declared topic manifest;
 the isolated PostgreSQL check verifies version retention, repeated import and foreign keys.
 
 ---

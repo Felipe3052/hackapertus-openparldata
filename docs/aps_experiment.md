@@ -107,6 +107,10 @@ The command stratifies by language and parliament level, leaves APS labels blank
 source hash and refuses duplicate source IDs. Two independent annotations and a documented
 consensus step are required before the file can be used as a quality benchmark.
 
+The repository also contains a reproducible 100-row template generated from the checked-in
+`data/eval/e1_fewshot_pool.jsonl` at seed 42. It is intentionally unlabeled and must not be
+treated as an evaluation result until two annotators complete it.
+
 Build the evaluator-compatible unanimous subset after double annotation:
 
 ```bash

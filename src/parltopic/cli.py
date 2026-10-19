@@ -200,6 +200,20 @@ def aps_consensus(
     typer.echo(json.dumps(build_consensus_labels(labels, output), indent=2, ensure_ascii=False))
 
 
+@app.command("aps-merge-consensus")
+def aps_merge_consensus(
+    left: Annotated[Path, typer.Option(exists=True, readable=True)],
+    right: Annotated[Path, typer.Option(exists=True, readable=True)],
+    output: Annotated[Path, typer.Option()],
+) -> None:
+    """Merge two completed APS annotation templates without resolving disagreements."""
+    from parltopic.evaluation.aps import merge_annotation_templates
+
+    typer.echo(
+        json.dumps(merge_annotation_templates(left, right, output), indent=2, ensure_ascii=False)
+    )
+
+
 @app.command("aps-benchmark")
 def aps_benchmark(
     input: Annotated[Path, typer.Option(exists=True, readable=True)],

@@ -10,6 +10,7 @@ from parltopic.evaluation.aps import (
     check_disjoint_ids,
     evaluate_shadow,
     make_annotation_template,
+    merge_annotation_templates,
     regression_gate,
 )
 from parltopic.models import Affair
@@ -289,3 +290,22 @@ def test_aps_consensus_builder_excludes_disputes(tmp_path: Path) -> None:
     assert report["disputed_affair_ids"] == ["2"]
     row = json.loads(output.read_text().strip())
     assert row["consensus"]["topic"] == "1.1.1"
+
+
+def test_aps_template_merge_requires_complete_unanimous_annotations(tmp_path: Path) -> None:
+    left = tmp_path / "left.jsonl"
+    right = tmp_path / "right.jsonl"
+    output = tmp_path / "consensus.jsonl"
+    base = {
+        "affair_id": "1",
+        "aps_annotation": {
+            "chapter_code": "1.1",
+            "topic_codes": ["1.1.1"],
+            "not_classifiable": False,
+        },
+    }
+    left.write_text(json.dumps(base) + "\n")
+    right.write_text(json.dumps(base) + "\n")
+    report = merge_annotation_templates(left, right, output)
+    assert report["consensus_labels"] == 1
+    assert json.loads(output.read_text())["consensus"]["topic"] == "1.1.1"

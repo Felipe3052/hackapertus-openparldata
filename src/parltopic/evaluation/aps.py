@@ -180,6 +180,76 @@ def build_consensus_labels(labels_path: Path, output_path: Path) -> dict[str, An
     }
 
 
+def merge_annotation_templates(
+    left_path: Path, right_path: Path, output_path: Path
+) -> dict[str, Any]:
+    """Merge two independently completed template files into unanimous APS labels."""
+    left_rows = _load_jsonl(left_path)
+    right_rows = _load_jsonl(right_path)
+    left = _index_template_rows(left_rows, left_path)
+    right = _index_template_rows(right_rows, right_path)
+    if set(left) != set(right):
+        raise ValueError("APS annotation files must contain the same affair IDs")
+
+    output_rows: list[dict[str, Any]] = []
+    disputed: list[str] = []
+    for affair_id in sorted(left):
+        left_annotation = _template_annotation(left[affair_id])
+        right_annotation = _template_annotation(right[affair_id])
+        if _annotation_signature(left_annotation) != _annotation_signature(right_annotation):
+            disputed.append(affair_id)
+            continue
+        output_rows.append(
+            {
+                "affair_id": affair_id,
+                "consensus": left_annotation,
+                "annotator_a": left_annotation,
+                "annotator_b": right_annotation,
+            }
+        )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in output_rows),
+        encoding="utf-8",
+    )
+    return {
+        "left": str(left_path),
+        "right": str(right_path),
+        "output": str(output_path),
+        "input_affairs": len(left),
+        "consensus_labels": len(output_rows),
+        "disputed_labels": len(disputed),
+        "disputed_affair_ids": disputed,
+        "warning": "Only complete unanimous labels are retained; disputes are excluded.",
+    }
+
+
+def _index_template_rows(rows: list[dict[str, Any]], path: Path) -> dict[str, dict[str, Any]]:
+    indexed = {str(row.get("affair_id")): row for row in rows}
+    if len(indexed) != len(rows) or "" in indexed:
+        raise ValueError(f"{path} contains duplicate or missing affair IDs")
+    return indexed
+
+
+def _template_annotation(row: dict[str, Any]) -> dict[str, Any]:
+    annotation = row.get("aps_annotation")
+    if not isinstance(annotation, dict):
+        raise ValueError(f"APS annotation is missing for affair {row.get('affair_id')}")
+    chapter = str(annotation.get("chapter_code") or "")
+    topics = annotation.get("topic_codes") or []
+    if not isinstance(topics, list) or not all(isinstance(topic, str) for topic in topics):
+        raise ValueError(f"APS topic_codes must be a list of strings for affair {row['affair_id']}")
+    not_classifiable = annotation.get("not_classifiable")
+    if not chapter and not topics and not_classifiable is None:
+        raise ValueError(f"APS annotation is incomplete for affair {row['affair_id']}")
+    return {
+        "chapter": chapter,
+        "topic": topics[0] if topics else "",
+        "topic2": topics[1] if len(topics) > 1 else "",
+        "none": bool(not_classifiable),
+    }
+
+
 def _canonical_annotation(annotation: dict[str, Any]) -> dict[str, Any]:
     return {
         "chapter": str(annotation.get("chapter", "")),

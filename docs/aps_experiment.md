@@ -122,6 +122,18 @@ parltopic aps-consensus \
 Only exact agreement on chapter, topic, secondary topic and `none` is retained. The command
 reports and excludes disputed affairs instead of silently choosing one annotator.
 
+For the repository template, create two copies, let independent annotators fill the
+`aps_annotation` object, then merge them without resolving disagreements automatically:
+
+```bash
+parltopic aps-merge-consensus \
+  --left data/eval/aps_holdout_annotations.annotator-a.jsonl \
+  --right data/eval/aps_holdout_annotations.annotator-b.jsonl \
+  --output data/eval/aps_holdout_consensus.jsonl
+```
+
+Incomplete annotations fail the command; complete disagreements are reported and excluded.
+
 On the checked-in 20 double annotations, this produced 9 unanimous labels and excluded 11
 disputes. After hierarchical parent closure and conservative word-prefix matching, the offline
 router diagnostic on those 9 labels reached 42.9 % chapter recall and 42.9 % topic recall at the
